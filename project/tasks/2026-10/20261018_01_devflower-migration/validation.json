@@ -1,0 +1,18 @@
+{
+  "kind": "local-self-test-not-independent-review",
+  "python": "3.13.5",
+  "git": "2.47.3",
+  "command": "python3 -m unittest discover -s tests -v",
+  "tests": 24,
+  "passed": 24,
+  "exit_code": 0,
+  "initial_additional_regression_failures": 3,
+  "tested_git_blobs": {
+    "tools/devflower.py": "40879569a8a047d5c97890825c4df5b15c9afa63",
+    "tests/test_devflower.py": "68ddb032718fb903224f857250a0be5c3dd5ba62",
+    "tests/test_failure_modes.py": "a81bc9cc13ab761a340fcd2121f17fb92523e5b4",
+    "templates/TASK.md": "9046fb2a52f019a74d29cf85ae4736b82b999aa0",
+    "templates/PROJECT.md": "623a65b054a88e39f1841cffa973646b1a6d077b"
+  },
+  "limitations": ["No remote CI run", "Container GitHub DNS prevented git clone; scripts/templates reconstructed and hashes verified against API", "Root docs are existence-only fixtures in unit tests", "No Windows, power-loss or multi-host filesystem testing", "Not a correctness or authorization proof"]
+}

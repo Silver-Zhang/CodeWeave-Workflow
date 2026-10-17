@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "slug": "codeweave",
+  "framework_base": "218a6e81652d5c6e20dc8909d93dfd1b9395f58a",
+  "framework_status": "candidate-unmerged",
+  "migration_from": "bd548cd21529b4e088886f32c39a98e6ecd63778",
+  "legacy_index_blob": "1ab0b6694bfe2760827e08c43703c7132b4cc5f7"
+}

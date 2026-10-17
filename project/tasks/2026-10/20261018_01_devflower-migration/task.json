@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "20261018_01_devflower-migration",
+  "date": "2026-10-18",
+  "mode": "B",
+  "status": "待复核",
+  "source_refs": [
+    {"repository": "Silver-Zhang/CodeWeave-Workflow", "base": "bd548cd21529b4e088886f32c39a98e6ecd63778", "result": "218a6e81652d5c6e20dc8909d93dfd1b9395f58a", "branch": "refactor/devflower-baseline"},
+    {"repository": "Silver-Zhang/CodeWeave", "observed_head": "676f63d4c8d14f23e263f43e828deae566a9b9ec", "modified": false}
+  ]
+}

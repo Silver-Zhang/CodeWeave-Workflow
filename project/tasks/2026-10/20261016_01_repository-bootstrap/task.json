@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "20261016_01_repository-bootstrap",
+  "date": "2026-10-16",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {"repository": "Silver-Zhang/CodeWeave", "result": "676f63d4c8d14f23e263f43e828deae566a9b9ec"}
+  ],
+  "legacy_readme_blob": "56a34d05a91152b74a49fe26f4269283020fa16c",
+  "note": "历史任务按原记录登记完成，不代表本轮重新执行其测试；README 原文未修改。"
+}
