@@ -1,5 +1,3 @@
-# Agent 工作流（Claude 入口）
+# DevFlower · Claude 入口
 
-请先阅读同目录 [AGENTS.md](AGENTS.md)，该文件是适用于所有 Agent 的统一硬规则；再按需阅读 [WORKFLOW.md](WORKFLOW.md) 与当前项目档案。无需通读整个历史任务库。
-
-本仓库仅管理跨项目的研发流程和记录，不承载被分析项目的源码，不改变目标项目的构建/运行方式。不得把任务报告、推测或计划写成已验证的源码事实。
+读取同目录 [AGENTS.md](AGENTS.md)，它是唯一共同规则入口，不复制另一套规则。再按需读 [WORKFLOW.md](WORKFLOW.md)；有项目实例时读 `project/STATUS.md` 与 `project/AGENT_CONTEXT.md`。本仓库管理工作流，不替代目标源码、真实测试或用户决策。

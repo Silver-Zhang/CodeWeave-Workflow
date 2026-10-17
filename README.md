@@ -1,27 +1,44 @@
-# 通用研发工作流 · CodeWeave-Workflow
+# DevFlower
 
-这是**可复用的多项目开发工作流仓库**，与任一软件源码仓库独立。它记录开发任务、方案、决策、有限的验证证据以及源码版本关联，不是 CodeWeave 的运行依赖，也不是代码地图知识库。
+面向人类与 Agent 协作的轻量研发工作流。通用主线负责规则与工具，项目长期分支负责实际工作记录；源码保持独立仓库。
 
-灵感来源：本账号 [AI_MC_WW_interation](https://github.com/Silver-Zhang/AI_MC_WW_interation) 的 MLVR_develop 任务制实践；已去除 RMC 和核物理专属规则。
+## 分支，而不是 main 下的多项目目录
 
-## 快速入口
+| 分支 | 内容 | 合并方向 |
+|---|---|---|
+| `main` | 通用规则、模板、工具和测试；不含任何项目实例 | 接收经过提炼的通用改进 |
+| `project/<slug>` | 通用文件 + `project/` 下单个项目的方案、进度、任务记录 | 接收 main；不整体合回 main |
+| `work/<slug>/<task>` | 从对应项目分支创建的任务分支 | 回对应 project 分支 |
+| `flow/<topic>` 或 `refactor/<topic>` | 从 main 派生的通用框架改进 | 经审阅回 main |
 
-- [WORKFLOW.md](WORKFLOW.md)：A/B/C 模式、五步流程、审核关口、归档和提交边界。
-- [AGENTS.md](AGENTS.md)：Codex、Claude 等 Agent 的简短硬规则。
-- [STATUS.md](STATUS.md)：所有项目的一屏状态与待决策事项。
-- [projects/](projects/)：每个项目独立维护 PROJECT、INDEX、plans 和逐任务档案。
-- [templates/TASK.md](templates/TASK.md)：统一五节任务模板。
-- [tools/new_task.py](tools/new_task.py)：创建任务档案并登记到项目 INDEX。
-- [tools/check_archives.py](tools/check_archives.py)：只读归档一致性检查。
+一个项目工作目录不要反复切换多个项目分支。并行项目用独立 clone 或经批准的 worktree，避免未跟踪文件串项目。详见 [分支与回流](docs/BRANCHING.md)。
 
-## 适用范围
+## 入口
 
-可以同时管理 CodeWeave、其他科研软件和工程项目，各代码仓库仍分别管理 Git 提交。工作流仓库仅以项目配置、路径和**真实 Commit SHA** 关联源码，不把源码本体或运行缓存复制过来。
+Agent 先读 [AGENTS.md](AGENTS.md)，存在项目实例时再读 `project/STATUS.md` 与 `project/AGENT_CONTEXT.md`；任务只按需读 §1/§3/§4。详细规则见 [WORKFLOW.md](WORKFLOW.md)。
 
-## Git 仓库边界
+## 开始一个项目
 
-工作空间可以并列放置多个独立 Git 仓库；无需 Git submodule，更不应为工作空间顶层再创建混合仓库。任何项目可以采用自己的语言、构建系统和 CI。
+需要 Python 3.11+ 和 Git，无第三方 Python 依赖。先在干净的工作流 clone 中确认远端与基线，再创建 `project/<slug>` 分支：
 
-**本仓库当前为 Public。** 禁止提交令牌、密码、私有源码摘录、含敏感数据的原始日志或真实内部路径；需要保留的原始证据放本地受控空间，只登记安全摘要和可复现方式。软件源码仓库不得依赖本仓库才能构建或运行。
+```bash
+git switch -c project/demo main
+python3 tools/devflower.py init demo
+python3 tools/devflower.py new parser-smoke --mode B
+python3 tools/devflower.py check
+```
 
-当前已登记项目：[CodeWeave](projects/CodeWeave/PROJECT.md)。
+`init` 只写当前工作流仓库的 `project/`，不创建/切换分支，不修改源码仓库，不提交或推送。`new` 创建一份五节 README 和一份小型 `task.json`；后者是任务模式与状态的唯一机器可读来源。编辑状态后运行 `python3 tools/devflower.py index` 更新台账；不要手工修改生成表。
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 tools/devflower.py check --baseline
+```
+
+`--baseline` 验证当前树中没有项目实例；普通 `check` 在项目分支检查任务与台账。检查通过不等于结果正确、用户验收或允许发布。
+
+## 迁移与许可边界
+
+现有项目记录先保留到项目分支，再从通用基线的当前树移除；不重写旧提交。物理仓库重命名由管理员执行，品牌名称不等于远端已改名。公开仓库的所有项目分支都公开，分支不提供权限隔离。
+
+本轮不改变既有仓库许可证，不拷贝外部框架的实现或技能文件；调研与取舍见 [REFERENCES](docs/REFERENCES.md)。
