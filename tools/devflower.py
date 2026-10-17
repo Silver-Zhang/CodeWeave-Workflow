@@ -120,7 +120,10 @@ def records(root: Path) -> list[tuple[Path, dict]]:
     task_dirs = {p.parent for p in base.glob('*/*/README.md')}
     if task_dirs != {p.parent for p, _ in output}:
         raise ValueError('README/task.json pairing mismatch')
-    return output
+    folders = {p for p in base.glob('*/*') if p.is_dir()}
+    if folders != {p.parent for p, _ in output}:
+        raise ValueError('Orphan task directory without metadata and README')
+    return sorted(output, key=lambda item: (item[1]['date'], int(ID.fullmatch(item[1]['id'])[2])))
 
 
 def index_text(root: Path) -> str:
@@ -149,9 +152,11 @@ def initialize(root: Path, name: str) -> None:
             (tmp / 'PROJECT.md').write_text((root / 'templates/PROJECT.md').read_text(encoding='utf-8').replace('<PROJECT>', name), encoding='utf-8')
             (tmp / 'STATUS.md').write_text('# 当前状态\n\n项目实例已创建；尚未授权任何实现。下一步明确基线、目标和首项任务。\n', encoding='utf-8')
             (tmp / 'AGENT_CONTEXT.md').write_text('# 接手入口\n\n先读 STATUS.md 与 PROJECT.md，再定位 INDEX.md 中的当前任务 §1/§3/§4。不通读历史。\n', encoding='utf-8')
+            # Complete the initial index before publishing the project directory.
+            empty_index = '# 任务台账（自动生成）\n\n模式与状态来自 task.json；结论、证据和授权见任务 README。\n\n| 日期 | 任务 | 模式 | 状态 |\n|---|---|---|---|\n'
+            atomic(tmp / 'INDEX.md', empty_index)
             guard(root, name)
             os.rename(tmp, dest)
-            atomic(dest / 'INDEX.md', index_text(root))
         except BaseException:
             if tmp.exists():
                 shutil.rmtree(tmp)
