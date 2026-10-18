@@ -2,14 +2,14 @@
 
 ## 当前关口
 
-DevFlower 通用规则与项目分支隔离已形成候选；源码 CodeWeave 仍为 Bootstrap，M0 未启动。
+M0 独立审查已完成，裁决 **NEEDS CORRECTION**：发现 P0 1 项、P1 9 项、P2 3 项。P0 为编译数据库输出参数可覆盖已有文件；核心语义和源码一致性也有阻塞。不建议批准 M0 冻结，尚未修复或用户验收。候选已提交为 `abf140452b348784bba9516e079fb3a4dbc718dd`；提交不改变审查结论。
 
 ## 本轮入口
 
-[工作流迁移记录](tasks/2026-10/20261018_01_devflower-migration/README.md)；通用候选 `refactor/devflower-baseline`。候选尚未合并 main，用户验收和物理仓库更名仍待完成。
+[独立审查报告](tasks/2026-10/20261018_03_m0-independent-review/README.md)绑定审查时的未提交候选与独立构建/测试证据；提交版仅移除测试中未使用的本机 LLVM 绝对路径，报告清单中的候选哈希对应提交前工作树。[原实施任务](tasks/2026-10/20261018_02_m0-code-index/README.md)保持原样。源码为 `feat/m0-code-index`，任务起点为 `676f63d4c8d14f23e263f43e828deae566a9b9ec`，HEAD 为已提交候选。
 
 ## 下一步
 
-先审阅通用候选，再使用 [M0 本地交接方案](plans/NEXT_M0.md) 核对环境和首项验收；不要直接实施整个 v0.1。
+由用户决定另立修正任务；关闭 P0/P1 后重新固定候选并独立复审。本轮仅整理并提交候选，未修复审查问题、未合并、不进入 M1。
 
-[任务台账](INDEX.md) · [接手上下文](AGENT_CONTEXT.md)。本文件只维护当前关口，不复制历史结论。
+[任务台账](INDEX.md) · [接手上下文](AGENT_CONTEXT.md)。

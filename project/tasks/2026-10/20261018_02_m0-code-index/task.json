@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "20261018_02_m0-code-index",
+  "date": "2026-10-18",
+  "mode": "B",
+  "status": "待复核",
+  "source_refs": [
+    {
+      "repository": "Silver-Zhang/CodeWeave",
+      "branch": "feat/m0-code-index",
+      "base": "676f63d4c8d14f23e263f43e828deae566a9b9ec"
+    },
+    {
+      "repository": "Silver-Zhang/DevFlower",
+      "branch": "project/codeweave",
+      "base": "a466fd5b1f00737177d07ba2c425773b3c44d379",
+      "framework_base": "218a6e81652d5c6e20dc8909d93dfd1b9395f58a"
+    }
+  ],
+  "authorization": "2026-10-18 用户明确授权 M0 实现与自验；不得提交、推送、合并或进入 M1。",
+  "result": "实现已提交为 abf140452b348784bba9516e079fb3a4dbc718dd（提交前移除测试中未使用的本机 LLVM 绝对路径）；独立审查结论仍为 NEEDS CORRECTION，等待修正任务；不代表用户验收。"
+}
