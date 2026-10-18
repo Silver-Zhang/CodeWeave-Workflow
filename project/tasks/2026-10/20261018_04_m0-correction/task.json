@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "20261018_04_m0-correction",
+  "date": "2026-10-18",
+  "mode": "B",
+  "status": "待复核",
+  "source_refs": [
+    {
+      "repository": "Silver-Zhang/CodeWeave",
+      "branch": "feat/m0-code-index",
+      "base": "abf140452b348784bba9516e079fb3a4dbc718dd"
+    },
+    {
+      "repository": "Silver-Zhang/DevFlower",
+      "branch": "project/codeweave",
+      "base": "6679d5bab1fe18dc111a28d4317b205bef4506d5"
+    }
+  ],
+  "authorization": "2026-10-18 用户授权修复 M0-R、执行针对性测试和工作流记录；禁止自动提交、推送、合并、发布或进入 M1。",
+  "result": "实施者自验通过且候选已提交为 d6490539f7b204351b79393633ec9b08ea6e011d；等待新的独立复核；不代表独立审核关闭或用户验收。"
+}
