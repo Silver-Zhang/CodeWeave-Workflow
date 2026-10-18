@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "20261019_01_m0-correction-r2",
+  "date": "2026-10-19",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {
+      "repository": "Silver-Zhang/CodeWeave",
+      "branch": "feat/m0-code-index",
+      "base": "d6490539f7b204351b79393633ec9b08ea6e011d"
+    },
+    {
+      "repository": "Silver-Zhang/DevFlower",
+      "branch": "project/codeweave",
+      "base": "3ac33b8e27d971017a4dda93ded170d0b8a958fa"
+    }
+  ],
+  "authorization": "2026-10-19 用户附件明确授权 M0-R2 源码、测试和 B 模式新任务；不 commit/push/merge/release/M1，不改旧报告或真实私有工程。",
+  "result": "M0-R2 候选已提交为 608d4e7821868289028abcbdb89bfd87d9bb224c（与审核清单一致）；独立复核 ACCEPT；用户验收与冻结待定。"
+}

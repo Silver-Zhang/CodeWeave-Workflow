@@ -4,6 +4,8 @@
 
 | 日期 | 任务 | 模式 | 状态 |
 |---|---|---|---|
+| 2026-10-19 | [20261019_02_m0-r2-independent-review](tasks/2026-10/20261019_02_m0-r2-independent-review/README.md) | B | 已完成 |
+| 2026-10-19 | [20261019_01_m0-correction-r2](tasks/2026-10/20261019_01_m0-correction-r2/README.md) | B | 已完成 |
 | 2026-10-18 | [20261018_05_m0-correction-review](tasks/2026-10/20261018_05_m0-correction-review/README.md) | B | 待设计 |
 | 2026-10-18 | [20261018_04_m0-correction](tasks/2026-10/20261018_04_m0-correction/README.md) | B | 待复核 |
 | 2026-10-18 | [20261018_03_m0-independent-review](tasks/2026-10/20261018_03_m0-independent-review/README.md) | B | 已完成 |

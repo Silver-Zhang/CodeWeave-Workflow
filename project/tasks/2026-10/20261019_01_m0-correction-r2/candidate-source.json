@@ -1,0 +1,179 @@
+{
+  "repository": "Silver-Zhang/CodeWeave",
+  "branch": "feat/m0-code-index",
+  "head": "d6490539f7b204351b79393633ec9b08ea6e011d",
+  "remote": "origin\thttps://github.com/Silver-Zhang/CodeWeave.git (fetch)\norigin\thttps://github.com/Silver-Zhang/CodeWeave.git (push)\n",
+  "status": " M README.md\n M analyzer/README.md\n M analyzer/main.cpp\n M backend/codeweave/cli.py\n M backend/codeweave/index.py\n M backend/tests/test_m0_correction.py\n M backend/tests/test_m0_index.py\n M scripts/verify_m0.sh\n?? backend/tests/support/\n?? backend/tests/test_m0_r2.py\n",
+  "staged": "",
+  "unstaged": "M\tREADME.md\nM\tanalyzer/README.md\nM\tanalyzer/main.cpp\nM\tbackend/codeweave/cli.py\nM\tbackend/codeweave/index.py\nM\tbackend/tests/test_m0_correction.py\nM\tbackend/tests/test_m0_index.py\nM\tscripts/verify_m0.sh\n",
+  "untracked": "backend/tests/support/pause_open.c\nbackend/tests/test_m0_r2.py\n",
+  "deleted": [],
+  "files": [
+    {
+      "path": ".editorconfig",
+      "sha256": "8d0ee1f479c25b6f1251e2ed7c4b6277bc5b00264be281b20e92532ed2687bca",
+      "mode": "0o664"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "5146b465fc5497cd2a2a8f9c996e01c4674154b9e943756bf5cf2bac9b2e6c91",
+      "mode": "0o664"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "71f491b3a1db5055ef710e3f5b0267b1fc866deff5612d7f7142718272e59bff",
+      "mode": "0o664"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "10ae32f7113b95b5911b6805b429dd9a6ae0030fdebea664c4b8f4df6a062a41",
+      "mode": "0o664"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "b0a3128a905c1d844f7088e08412860994c5bc2bef66ced402ccf01012806736",
+      "mode": "0o664"
+    },
+    {
+      "path": "README.md",
+      "sha256": "6b280fd5cfe5456875612cfced3a6f0323b692363782fac57cb5951fb17813b8",
+      "mode": "0o664"
+    },
+    {
+      "path": "analyzer/CMakeLists.txt",
+      "sha256": "b35113bb0c64c7cbba9fcafe81c15d8a9a6c034cac59bbd1609bde4a67950ff9",
+      "mode": "0o664"
+    },
+    {
+      "path": "analyzer/README.md",
+      "sha256": "b89256d157a33f7e1a6ae209704804cdf3468eaaf6b06db7ebeb4485998e3b07",
+      "mode": "0o664"
+    },
+    {
+      "path": "analyzer/main.cpp",
+      "sha256": "23ada77249c036cbacf2a21ddc6664601741f77d1d4cdb4d32cc85c817a2842b",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/codeweave/__init__.py",
+      "sha256": "1e962fc35a1cf7837acefecd5c15d2951089a11e6e97ee80bdeaf3798d3aaf09",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/codeweave/__main__.py",
+      "sha256": "212800b753997effc17357014e98e1c7b49231b80ce6d5f7559ea312a458468a",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/codeweave/app.py",
+      "sha256": "087c935d265edb44c6a5d4c7b260c8444259431e5baa9af2cd77d3b9d3921d59",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/codeweave/cli.py",
+      "sha256": "0ff0fdd4368ebdb19495c191d5f65eba86fc6fa463eef11fb4fd91e7812aae1d",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/codeweave/index.py",
+      "sha256": "035636f81a6acb4940a5a23ab209d5c843956c58c6fe2042d90b0a98abab3dfa",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/pyproject.toml",
+      "sha256": "901cbba0f9280c6c61ca616ce345be67df203baeec11cbb48229597ac1582fd0",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/tests/support/pause_open.c",
+      "sha256": "92038766ffd409ecd07278db704ab1c42c3f9b41184b40581e6abf7abee75a1a",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/tests/test_health.py",
+      "sha256": "cf148122159680a9ec5415e3ce51840a08af2e82878d65bd0078fac4ca0da76b",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/tests/test_m0_correction.py",
+      "sha256": "ccced6d4120fb457ac13bebffdb8a8e313179626aef66fd2f07de4493e613d63",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/tests/test_m0_index.py",
+      "sha256": "3f149cc2867c1a4e96212caef6de49ea23349a674309c2e628dc1ba95ab0c767",
+      "mode": "0o664"
+    },
+    {
+      "path": "backend/tests/test_m0_r2.py",
+      "sha256": "72221393cc603282f1b7ddb3a93d88db4f3f4d4aab7d24ee0db31c3410b44d47",
+      "mode": "0o664"
+    },
+    {
+      "path": "frontend/README.md",
+      "sha256": "208fc365c2806d82460c7a2c93d7d1b8aced181736478c638a5a719283ef8994",
+      "mode": "0o664"
+    },
+    {
+      "path": "scripts/check_repository.py",
+      "sha256": "4ce74171039be2b7164470766f5bda549e0f71b05dba6a1fb79eeacb417c0422",
+      "mode": "0o664"
+    },
+    {
+      "path": "scripts/verify_m0.sh",
+      "sha256": "14766f369324fa2eb178205f9eaa1d7c5a36815892412a239fca3c58b3e59c07",
+      "mode": "0o775"
+    },
+    {
+      "path": "tests/create_fixture_repo.py",
+      "sha256": "64483493fe092f27c05859ec9e4b537d5f6b84ac57517039db9af7e2f972b343",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/cpp_versions/v1/CMakeLists.txt",
+      "sha256": "f3648fc8eda62aac4fbfc90bf3b2e3d24be39e496f09604ceb17d65c23e8c50a",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/cpp_versions/v1/main.cpp",
+      "sha256": "290e21911b17f41c4fd284f5d11df260fe00c6b7347bce3dde880cc2bc6cdf77",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/cpp_versions/v2/CMakeLists.txt",
+      "sha256": "f3648fc8eda62aac4fbfc90bf3b2e3d24be39e496f09604ceb17d65c23e8c50a",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/cpp_versions/v2/main.cpp",
+      "sha256": "9641f9c157f4cefb0e9e38cf398a0e66ed924bcf6388e52445a6712b4659ebc8",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/m0/CMakeLists.txt",
+      "sha256": "f1526c38045e82c0de9b6a91247904db75f94cc68b441831f2240b012b262b4d",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/m0/alpha.cpp",
+      "sha256": "e06943b3b6cb2248d57927850cfb63f85ebaf0dd16067887f5bd5bbe275f7a14",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/m0/beta.cpp",
+      "sha256": "75d9cd446ff121e909dffc9bb92f6d5125e335bacd2cc8127e12e29dd2d33a4d",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/fixtures/m0/shared.hpp",
+      "sha256": "ede925e3c754f2093819edb1a0905d5c5f79c37ff211f9badf5a1372d1326ec2",
+      "mode": "0o664"
+    },
+    {
+      "path": "tests/test_fixture_repo.py",
+      "sha256": "5797a4d3d28868e5a3fa3ef3516c19349e186efabefcf895b4894eb68559d754",
+      "mode": "0o664"
+    }
+  ],
+  "manifest_sha256": "290550ef33cfd58b3cbce4b93347388edef793218c4546cd91b40268fb8022c1"
+}
