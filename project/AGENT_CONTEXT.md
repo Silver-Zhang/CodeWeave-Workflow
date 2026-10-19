@@ -1,9 +1,9 @@
 # CodeWeave 接手上下文
 
-1. 先读 STATUS.md，再按需读 PROJECT.md 和当前任务 §1/§3/§4；不通读历史。
-2. 当前入口：[M0-R2](tasks/2026-10/20261019_01_m0-correction-r2/README.md)及其[独立审核](tasks/2026-10/20261019_02_m0-r2-independent-review/README.md)，B 模式；审核为 ACCEPT，等待用户决定冻结/提交，不自动执行。
-3. CodeWeave `feat/m0-code-index`，HEAD `608d4e7821868289028abcbdb89bfd87d9bb224c`（M0-R2 候选，33 文件清单 SHA-256 `290550ef33cfd58b3cbce4b93347388edef793218c4546cd91b40268fb8022c1`）；DevFlower `project/codeweave` 的任务与导航记录随本次归档提交。开始后仍需重新核验实际状态。
-4. 架构保持 LibTooling → Python → SQLite → JSON CLI。protocol 2/schema 3；旧库只读拒绝、新路径重建；显式 project/dependency/toolchain/resource 根；单 TU 互斥配置拒绝。直接 analyzer 为内部受信组件，公开 CLI 始终 Bubblewrap。
-5. 当前本机 LLVM/Clang 18.1.3 位于工作区 `.toolchain/llvm-18` 解包目录，Python 3.12.3、CMake 3.28.3、GNU C++ 13.3、Bubblewrap 0.9.0。专用入口全新构建：55 passed/0 failed/0 skipped；完整 backend 56 passed，均为实施者证据。
-6. M0-R2 独立复核已完成并裁决 ACCEPT，候选已提交/推送；用户验收和冻结仍未发生。原 m0-independent-review、m0-correction、m0-correction-review 档案保持原样。
-7. 不自动提交/推送/合并/发布或启动 M1；不访问 RMC、核数据库、reference、F11 或其他真实私有项目。本地大日志目录 m0-correction-r2-20261019；工作流只存摘要与候选清单。
+1. 先读STATUS，再按需读当前任务。当前入口：[M0-R3独立审核](tasks/2026-10/20261019_04_m0-final-independent-review/README.md)，B模式，审核任务已完成；Claude独立裁决ACCEPT，等待用户冻结决定。
+2. CodeWeave `feat/m0-code-index` HEAD `0e9c093a5a2456814c5543ec1e52089035b4bc2e`（M0-R3 候选，34文件清单摘要 `31f8d5a882ad98711c60264569a0720ce4d84ac870a6e2d6314edb53a6fadc7d`）；DevFlower `project/codeweave` 的本轮记录随后提交；接手仍须现场复核。
+3. P1响应token前置拒绝、P2 status摘要/分页/字节预算均独立CLOSED；schema3/protocol2、事实和C++源码未改变。超长字段可用byte offset/base64分块无损恢复。
+4. 独立新构建验收87 passed/零失败零Skip，正确Clang资源目录下backend88 passed（1既有Starlette warning）；自有30拒绝场景、真实300TU/301输入、极端字段和正常两TU全CLI通过。报告明确非严格盲审，记录提前读实施README和资源误配/审核脚本错误，错误轮不计PASS。
+5. 用户已明确授权固定候选/必要材料发送Claude及限定审核操作。会话名CodeWeave独立审核，Opus5.5/xhigh、auto；原6c504510因配置恢复已停止，当前06fd5ee6保留历史并完成审核。源码只读；独立报告在审查专用detached worktree生成，再原文归档。
+6. 环境Python3.12.3/CMake3.28.3/GNU C++13.3/LLVM18.1.3/Bubblewrap0.9.0/SQLite3.45.1；LLVM解包于.toolchain/llvm-18，resource-dir为其lib/clang/18。大日志在m0-final-independent-review-20261019-claude，监护记录在m0-final-hardening-20261019/claude-review，不入库。
+7. 用户验收/冻结未发生；候选已提交/推送，未合并/tag/发布/M1。旧实施和审查档案保持原样；不访问RMC、核数据库、reference、F11或其他真实私有工程。若候选改变须重新绑定并复核，不能沿用本次ACCEPT。

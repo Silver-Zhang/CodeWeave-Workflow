@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "20261019_03_m0-final-hardening",
+  "date": "2026-10-19",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {
+      "repository": "Silver-Zhang/CodeWeave",
+      "branch": "feat/m0-code-index",
+      "base": "608d4e7821868289028abcbdb89bfd87d9bb224c"
+    },
+    {
+      "repository": "Silver-Zhang/DevFlower",
+      "branch": "project/codeweave",
+      "base": "6a693b75be20ae6008f9f53f7cba2b9c5c091ddf"
+    }
+  ],
+  "authorization": "2026-10-19 用户授权 M0-R3 两项定向实施、测试、B 模式任务和导航；不 commit/push/merge/tag/release/M1，不修改旧任务。",
+  "result": "M0-R3 候选已提交为 0e9c093a5a2456814c5543ec1e52089035b4bc2e（与审核清单一致）；独立复核 ACCEPT；用户验收与冻结待定。"
+}

@@ -2,14 +2,14 @@
 
 ## 当前关口
 
-M0-R2 的独立审核已完成并裁决为 **ACCEPT**：被审核候选已按用户指示提交为 `feat/m0-code-index` @ `608d4e7821868289028abcbdb89bfd87d9bb224c`，33 文件清单 SHA-256 仍为 `290550ef33cfd58b3cbce4b93347388edef793218c4546cd91b40268fb8022c1`。这不等同用户冻结或验收。
+**M0-R3 独立审核已完成，Claude 裁决 ACCEPT；候选已提交，尚未由用户冻结或验收。** P1 响应文件入口和 P2 status 有界查询均 CLOSED，无新增确定阻塞。候选为 `feat/m0-code-index` @ `0e9c093a5a2456814c5543ec1e52089035b4bc2e`（34 文件清单 SHA-256 `31f8d5a882ad98711c60264569a0720ce4d84ac870a6e2d6314edb53a6fadc7d`）。
 
 ## 本轮入口
 
-[M0-R2 修正与证据](tasks/2026-10/20261019_01_m0-correction-r2/README.md)及[独立审核](tasks/2026-10/20261019_02_m0-r2-independent-review/README.md)：审查者以全新构建、55 项验收、完整 backend 56 项及独立 A–G 实测给出 ACCEPT。原审核与 M0-R 任务保持不变。
+[Claude 独立审核原文](tasks/2026-10/20261019_04_m0-final-independent-review/README.md)与[实施交付及34文件清单](tasks/2026-10/20261019_03_m0-final-hardening/README.md)。独立全新构建验收87项零失败零Skip；正确资源配置下backend88项；自有30种响应文件拒绝、真实300TU/301输入和超长字段无损恢复。报告如实记录提前阅读实施README的流程偏差和环境错误重验，未将错误轮计为通过。
 
 ## 下一步
 
-等待用户决定是否冻结 M0；独立 ACCEPT 不是用户验收；不自行冻结、不合并、不进入 M1。
+候选哈希复核一致，等待用户决定M0冻结；不自行合并、tag、发布或进入M1。审核报告由Claude独立撰写，协同会话仅原文同步归档与维护导航；旧档案不变。
 
 [任务台账](INDEX.md) · [接手上下文](AGENT_CONTEXT.md)。
