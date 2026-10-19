@@ -1,9 +1,9 @@
 # 接手入口
 
-DevFlower 自身工作区 /home/workspace/DevFlower。唯一开发仓库 DevFlower/，flow/multi-agent-orchestration，当前 2e298e4；同仓库 project/devflower 记录工作树为 records/，自身项目档案就在 records/project/。原始证据为 archives/v0.2-a-final-integration/evidence/。
+本轮20261020_01_studio-v01-stabilization已完成，最终ACCEPT。先读STATUS.md和任务README；必要机器摘要在同目录evidence.json，原始证据在archives/studio-v01-stabilization-20261020/。源码Studio-stabilization/（flow/studio-mvp，ab6ea15）；DevFlower/保留Controller分支，Studio-validation/保留旧基线；自身记录仅records/project/。这些为同一DevFlower仓库的独立工作树。
 
-当前任务 20261019_02_v02a-final-integration，按需读任务 README §1/§3/§4 和 evidence.json。已具备 READY_TO_MERGE：89+4 自验、46+46 独立/外部检查、真实当前 CLI 修复闭环及框架 ACCEPT。主线仍 536a058、PR #2 待人工合并；main 合并和临时分支删除分别等待明确授权，禁止用旧任务授权覆盖未来业务交付。
+Codex实施、真实Claude Code通过已批准DeepSeek路由审核，请求max、resolved effort unknown。框架审核UUID ed0a5ce5-2478-4577-bf8b-ee05413a7f31，cwd=/home/workspace/DevFlower，第二轮明确resume；默认Claude历史已有指向专用HOME会话的符号链接，未迁移其他会话。该会话两轮均有真实终态；第1轮ACCEPT后被外部SELF-R01阻断，第2轮新候选ACCEPT且全部必需缺陷关闭。新Controller不批准自身。
 
-Controller 的 doctor/run 等命令从源码 DevFlower/tools/devflower.py 执行；记录的 init/new/index/check 在 records 工作树执行。该记录分支只写项目档案，不把框架实现或大日志混入。
+下一步仅按用户新指示处理PR #3的Draft/评审与依赖PR #2的人工合并。没有main合并、删分支、release或业务自动交付的追加授权。当前Git产品backend仍限本地bare remote；本次GitHub交付由授权外部步骤完成，不能推导未来任务永久许可。
 
-CodeWeave_dev 的 CodeWeave 是业务源码，DevFlower 是其 project/codeweave 工作流实例，12 份任务记录必须保留；不要在其中开发本框架。历史原始路径/授权/会话记录不改写；迁移回执在 archives/workspace-migrations/。模型路由和 effort 保持用户当前批准配置，缺失实际字段仍写 unknown。
+工作区职责：/home/workspace/DevFlower开发框架并保留自身project记录；/home/workspace/CodeWeave_dev的CodeWeave仓库与DevFlower project/codeweave实例均保留，未经授权不动。Studio v0.1任务完成即停止，不自动进入v0.2。

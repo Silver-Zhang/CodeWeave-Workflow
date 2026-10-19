@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "20261020_01_studio-v01-stabilization",
+  "date": "2026-10-20",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {
+      "repository": "https://github.com/Silver-Zhang/DevFlower.git",
+      "branch": "flow/studio-mvp",
+      "base": "a93ed81170ead88f78ab7e3e9f9d57ab9594c407",
+      "result": "ab6ea154e795ecd8ff57dd3c6181c6c3835d1816"
+    }
+  ]
+}

@@ -1,9 +1,7 @@
 # 当前状态
 
-READY_TO_MERGE，待人工合并决策。DevFlower v0.2-A 最终集成源码 2e298e4 已普通快进交付 flow/multi-agent-orchestration；原生 fetch 后 38 文件与被审候选 dcb445f1 一致。当前 89/89、宿主隔离 4/4、独立与外部重跑 46/46，均 0 skip。真实当前 Controller fixture 自动两轮 NEEDS_CORRECTION→修复→ACCEPT；第三次框架独立审核 ACCEPT，DF-R01–DF-R05 CLOSED，A01–A16 PASS。
+Studio v0.1 稳定化已完成，最终 ACCEPT。源码 flow/studio-mvp 已交付 ab6ea154e795ecd8ff57dd3c6181c6c3835d1816；全量132/132、host4/4、竞态9/9、普通HTTP/真实模型23/23、模拟11/11、真实clamp6/6，均0 Skip。第二轮实际DeepSeek max审核ACCEPT，全部必需缺陷CLOSED；固定外部核对通过。第1轮原ACCEPT及外部SELF-R01阻断均保留。
 
-PR #2 面向 main，等待人工合并；本轮不自动 merge/tag/release/force/delete。任务状态为待决策，实施自验/独立复核完成不等于用户最终验收或已入 main。main 合并批准后再回归；临时分支删除另行授权。
+任务：tasks/2026-10/20261020_01_studio-v01-stabilization/README.md。项目记录仅project/devflower；原始大日志在archives/studio-v01-stabilization-20261020/。源码工作树Studio-stabilization/；Controller分支2e298e4及旧验收工作树保留。
 
-工作区 /home/workspace/DevFlower：DevFlower/ 是唯一开发仓库；records/project/ 是自身项目记录（同仓库 project/devflower 工作树）；archives/ 是原始日志、失败、固定候选和备份。CodeWeave_dev 保留 CodeWeave 源码及自己的 DevFlower（project/codeweave）工作流仓库，12 份档案均保全。
-
-任务 tasks/2026-10/20261019_02_v02a-final-integration/README.md 与 evidence.json 保存逐轮原始结论。旧 ACCEPT、ACCEPT_WITH_LIMITATIONS/BLOCKED 和用户中断均保留。完成本轮后不进入下一代或 CodeWeave 后续研发。
+当前人工关口：PR #3仍Draft，base为未合并PR #2的flow/multi-agent-orchestration；可决定转正式评审及合并顺序，未授权自动合入main。用户最终验收与技术ACCEPT分开。本任务结束，不进入v0.2。CodeWeave及project/codeweave完整保留，未参与本轮修改。
