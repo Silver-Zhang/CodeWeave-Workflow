@@ -23,7 +23,7 @@ PHASE = {'CREATED': 'authorization', 'PREFLIGHT': 'authorization', 'IMPLEMENTING
 ACTIVE = {'IMPLEMENTING', 'REVIEWING', 'VERIFYING', 'COMMITTING', 'PUSHING'}
 TOKEN = re.compile(r'[A-Za-z0-9_.:/@\[\]-]{1,160}\Z')
 HASH = re.compile(r'[0-9a-f]{40}(?:[0-9a-f]{24})?\Z')
-EVENT_KINDS = STATES | {'INTENT', 'RUNNING', 'EXITED', 'AGENT_COMPLETED', 'AGENT_FAILED', 'COMMITTED', 'PUSHED', 'PUSH_UNKNOWN', 'REMOTE_CONFLICT', 'RETRYING'}
+EVENT_KINDS = STATES | {'INTENT', 'RUNNING', 'EXITED', 'AGENT_COMPLETED', 'AGENT_FAILED', 'COMMITTED', 'PUSHED', 'PUSH_UNKNOWN', 'REMOTE_CONFLICT', 'RETRYING', 'EXECUTED', 'VALIDATED', 'VERIFICATION_BLOCKED'}
 
 
 class Unavailable(ValueError):
@@ -108,29 +108,28 @@ class Reader:
             op = db.execute("SELECT status,data FROM operations WHERE run=? AND kind='PROCESS' AND length(data)<8388608 ORDER BY rowid DESC LIMIT 1", (run,)).fetchone()
             process = json.loads(op['data']) if op else {}
             live = liveness(process.get('process')) if op and op['status'] == 'RUNNING' else 'unconfirmed'
-            active_test = None
-            if state == 'VERIFYING' and live == 'alive':
-                argv = process.get('argv', [])
-                matches = [v.get('id') for v in data.get('config', {}).get('policy', {}).get('verification', [])
-                           if len(argv) == len(v.get('argv', [])) and all(
-                               '{result}' in a or '{artifacts}' in a or a == b for a, b in zip(v['argv'], argv))]
-                if len(matches) == 1:
-                    active_test = matches[0]
-            return project(run, state, data, events, live, active_test)
+            # Explicit identities only. Equal argv is legal and cannot identify a verifier.
+            rows = db.execute("SELECT id,kind,status,data FROM operations WHERE run=? AND kind IN ('PROCESS','VERIFICATION') AND length(data)<8388608 ORDER BY rowid DESC LIMIT 1000", (run,)).fetchall()
+            operations = [{**dict(r), 'data': json.loads(r['data'])} for r in rows]
+            return project(run, state, data, events, live, operations=operations)
         finally:
             db.close()
 
 
-def project(run, state, data, events, live, active_test=None):
+def project(run, state, data, events, live, active_test=None, operations=()):
     config = data.get('config', {}); number = data.get('round', 0)
     graph = from_task(config)
     graph['limits'] = {k: v for k, v in graph['limits'].items() if k in ('max_review_rounds', 'max_infrastructure_retries', 'step_timeout_seconds', 'max_log_bytes') and type(v) is int}
     graph['goal'] = ''  # Never project raw prompts/source into the monitor.
     graph['name'] = token(config.get('task_id'))
+    verification_ids = {n['id']: n['config']['id'] for n in graph['nodes'] if n['type'] == 'verification'}
+    display_ids = {node_id: f'{i}. {token(identity)}' for i, (node_id, identity) in enumerate(verification_ids.items(), 1)}
     for node in graph['nodes']:
         node['label'] = token(node['config'].get('id')) if node['type'] == 'verification' else node['label']
         if node['type'] == 'verification':
-            node['config'] = {'id': token(node['config'].get('id'))}
+            # A unique plan position prevents crafted raw IDs from aliasing a sanitized label.
+            node['label'] = display_ids[node['id']]
+            node['config'] = {'id': display_ids[node['id']]}
         elif node['type'] in ('implementer', 'reviewer'):
             node['config'] = {k: token(v) for k, v in node['config'].items()}
     stage = PHASE.get(state)
@@ -138,7 +137,23 @@ def project(run, state, data, events, live, active_test=None):
         stage = next((PHASE[e['kind']] for e in reversed(events) if e['kind'] in PHASE), None)
     sequence = ['authorization', 'implementer', 'freeze', 'verification', 'reviewer', 'gate', 'delivery']
     phase_index = sequence.index(stage) if stage in sequence else -1
-    results = {token(v.get('id')): v for v in data.get('verification', []) if v.get('round') == number}
+    results = {v.get('id'): v for v in data.get('verification', []) if v.get('round') == number}
+    candidate_hash = sha(data.get('candidate', {}).get('sha256'))
+    candidate_round = data.get('candidate_round')
+    # Legacy records without explicit provenance are kept as unassigned previous evidence.
+    current_candidate = candidate_hash if type(candidate_round) is int and candidate_round == number else None
+    progress = {}
+    for operation in reversed(operations):
+        info = operation['data']
+        if operation['kind'] != 'VERIFICATION' or info.get('run_id') != run or info.get('round') != number:
+            continue
+        if not current_candidate or info.get('candidate_sha256') != current_candidate or info.get('acceptance_sha256') != data.get('acceptance_sha256'):
+            continue
+        progress[info.get('verification_id')] = operation
+    processes = {op['data'].get('context', {}).get('verification_operation_id'): op for op in reversed(operations)
+                 if op['kind'] == 'PROCESS' and op['data'].get('context', {}).get('run_id') == run
+                 and op['data'].get('context', {}).get('round') == number}
+
     review = data.get('review', {}).get('report', {})
     if review.get('round') != number:
         review = {}
@@ -158,13 +173,33 @@ def project(run, state, data, events, live, active_test=None):
             else:
                 status = 'running' if live == 'alive' else 'unconfirmed'
         if kind == 'verification':
-            result = results.get(node['config']['id'])
-            if state == 'VERIFYING' and not result:
-                status = 'running' if active_test == node['config']['id'] and live == 'alive' else 'pending'
-            node['counts'] = counts(result.get('counts')) if result else None
-            if result:
-                node['status'] = 'passed' if result.get('passed') is True else 'failed'
-                status = node['status']
+            identity = verification_ids[node['id']]
+            result = results.get(identity)
+            status = 'pending'
+            node['counts'] = None
+            operation = progress.get(identity)
+            if operation:
+                info = operation['data']; process = processes.get(operation['id'])
+                node['operation_id'] = operation['id']
+                node['verification_round'] = number
+                if operation['status'] == 'VALIDATED':
+                    node['counts'] = counts(info.get('counts'))
+                    status = 'passed' if info.get('passed') is True and node['counts'] else 'failed'
+                elif operation['status'] == 'VERIFICATION_BLOCKED':
+                    status = 'blocked'
+                elif operation['status'] == 'EXECUTED' or process and process['status'] == 'EXITED':
+                    status = 'executed'
+                elif process and process['status'] == 'RUNNING':
+                    status = 'running' if liveness(process['data'].get('process')) == 'alive' else 'unconfirmed'
+            elif result:
+                # Historical Controller reports predate operation identities. Use exact IDs, never display tokens.
+                node['counts'] = counts(result.get('counts'))
+                status = 'passed' if result.get('passed') is True and node['counts'] else 'failed'
+            elif state == 'VERIFYING' and active_test == identity and live == 'alive':
+                # Compatibility for direct callers supplying an explicit identity; Reader never guesses argv.
+                status = 'running'
+            if state in ('BLOCKED', 'CANCELLED') and status in ('running', 'unconfirmed', 'executed'):
+                status = 'blocked' if state == 'BLOCKED' else 'cancelled'
         if kind == 'reviewer' and verdict:
             status = {'ACCEPT': 'passed', 'NEEDS_CORRECTION': 'needs_correction', 'BLOCKED': 'blocked', 'ACCEPT_WITH_LIMITATIONS': 'blocked'}[verdict]
         if kind == 'delivery' and not config.get('policy', {}).get('delivery', {}).get('commit'):
@@ -187,7 +222,10 @@ def project(run, state, data, events, live, active_test=None):
                 'LOCAL_COMMITTED': '提交已持久保存到内部 ref；没有推送。', 'PARTIAL_DELIVERY': '部分交付；不得回滚已成功远端。'}
     return {'id': run, 'state': state, 'round': number, 'project': token(config.get('project')),
             'mode': config.get('policy', {}).get('mode') if config.get('policy', {}).get('mode') in ('A', 'B', 'C') else 'unknown',
-            'candidate': sha(data.get('candidate', {}).get('sha256')), 'config_sha256': digest(config),
+            'candidate': current_candidate, 'candidate_round': number if current_candidate else None,
+            'candidate_frozen': current_candidate is not None,
+            'previous_candidate': {'sha256': candidate_hash, 'round': candidate_round if type(candidate_round) is int else None}
+                                  if candidate_hash and not current_candidate else None, 'config_sha256': digest(config),
             'graph': graph, 'rounds': rounds, 'events': timeline, 'process_liveness': live,
             'observed_at': time.time(), 'message': messages.get(state, '状态来自 Controller；无进程身份时不宣称 Agent 正在工作。'),
             'delivery': [{'kind': token(r.get('kind')), 'commit': sha(r.get('commit')), 'pushed': r.get('pushed') is True}

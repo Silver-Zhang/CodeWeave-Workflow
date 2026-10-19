@@ -40,7 +40,7 @@ def stop(record):
 
 
 def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
-            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock'):
+            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock', context=None):
     if not argv or not isinstance(argv, list):
         raise Blocked('argv required')
     home = Path(home)
@@ -72,7 +72,7 @@ def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
         if isolate and backend == 'landlock':
             sandbox.enforce(sandbox.runtime_paths() + list(read), ['/dev/null', str(home)] + list(write))
 
-    op = store.intent(run, 'PROCESS', {'argv': argv, 'cwd': str(cwd)}) if store else None
+    op = store.intent(run, 'PROCESS', {'argv': argv, 'cwd': str(cwd), 'context': context or {}}) if store else None
     proc = subprocess.Popen(argv, cwd=cwd, env=env, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             start_new_session=True, close_fds=True, preexec_fn=setup)
@@ -146,7 +146,7 @@ def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
         for pipe in (proc.stdin, proc.stdout, proc.stderr):
             if not pipe.closed:
                 pipe.close()
-    result = {'exit': code, 'process': record, 'timeout': timed_out,
+    result = {'operation_id': op, 'exit': code, 'process': record, 'timeout': timed_out,
               'overflow': overflow, 'cancelled': cancelled,
               'bytes': counts, 'sha256': {k: h.hexdigest() for k, h in hashes.items()},
               'duration': round(time.monotonic() - start, 3)}

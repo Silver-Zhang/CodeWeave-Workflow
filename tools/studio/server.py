@@ -230,6 +230,9 @@ def handler(app):
                 if post and path == '/api/validate':
                     self.response(200, {'order': validate(body['document']), 'revision': digest(body['document'])}); return
                 if post and path == '/api/from-task':
+                    specs = body['task'].get('policy', {}).get('verification', [])
+                    if not 1 <= len(specs) <= 20:
+                        raise Invalid('Studio editor supports 1–20 verification nodes; task was not imported')
                     graph = from_task(body['task']); validate(graph)
                     if body['task'].get('policy', {}).get('mode') != 'B':
                         raise Invalid('A/C are not silently converted to B')

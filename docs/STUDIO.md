@@ -1,6 +1,6 @@
 # DevFlower Studio 0.1
 
-可运行的本地 Web 画布，不是 n8n 的 fork。独立 Python 标准库服务 + 原生 HTML/CSS/JavaScript/SVG，无 npm 构建、CDN、字体下载或第三方运行依赖。Engine 的现有文件不修改；A/B/C、五阶段流程、Controller 授权与 Git 门禁保持原状。
+可运行的本地 Web 画布，不是 n8n 的 fork。独立 Python 标准库服务 + 原生 HTML/CSS/JavaScript/SVG，无 npm 构建、CDN、字体下载或第三方运行依赖。Controller 以最小增量记录验证操作身份和候选轮次；A/B/C、五阶段流程、Controller 授权与 Git 门禁保持原状。
 
 ## 1. 启动
 
@@ -34,7 +34,7 @@ ssh -N -L 8765:127.0.0.1:8765 your-user@your-server
           └──────────────── 有界修复 ─────────────────────┘
 ```
 
-可以增加测试节点、调整验证顺序、修改参数；从模块出口拖到另一个模块入口连接，也可点击出口再点击入口。选择连线后可删除。只有满足执行语法的图才能保存或导出任务，孤立节点、并行分支、任意循环、缺少修复边或越过门禁的边均被后端拒绝。固定环节不能删除，既有任务的必需验证 ID 不能悄悄移除。
+可以增加测试节点、调整验证顺序、修改参数；从模块出口拖到另一个模块入口连接，也可点击出口再点击入口。选择连线后可删除。只有满足执行语法的图才能保存或导出任务，孤立节点、并行分支、任意循环、缺少修复边或越过门禁的边均被后端拒绝。固定环节不能删除，既有任务的必需验证 ID 不能悄悄移除。编辑器支持 1–20 项验证和 ASCII 字母/数字/`_.-` ID（首位字母或数字，最多 80 字符）；超出此子集的导入明确拒绝，不截断任务。只读监控保留实际全部验证节点。
 
 **坐标是布局；验证顺序、goal、model/effort 和 limits 会真正编译到任务配置。** 本版不是任意图执行器；不支持额外并行 Agent、任意条件节点、子工作流或 C 模式 G1–G4 的程序化调度。A/C 原有人工工作流继续使用，导入它们不会自动转换为 B。
 
@@ -67,6 +67,8 @@ python3 tools/devflower_studio.py \
 
 选择左侧真实运行，进入“运行监控”。每秒读取 Controller 的 `runs/events/operations`；每次查询在同一个只读 SQLite 事务中取得一致快照，支持读取正在更新的 WAL，不使用会漏掉新事务的 `immutable=1`。缺库不会创建假运行或数据库。
 
+验证节点按运行、轮次、验证 ID 与操作 ID 关联，区分未开始、运行中、已执行待结果验证、通过、失败和阻断。退出码 0 不等于通过；计数和结论来自 Controller 的结果校验。相同命令的不同验证不会混淆。新轮次冻结前，旧候选单列为 previous_candidate；旧审核和测试不作为本轮证据。旧版本缺少候选轮次时标为未归属，不猜测。
+
 运行视图从**实际运行的 config**生成，不能用编辑中的草稿冒充本次执行。显示 Controller 状态、当前轮次、测试计数、当前候选、真实裁决、最近最多 200 条事件、最近审核轮次及交付收据。不显示原始 argv、prompt、授权、会话全文、隐藏推理、原始 stdout/stderr 或任意 artifact 文件。
 
 只有 host、boot ID、PID/start identity 与本机活进程匹配，才显示“进程运行中”。外机、过期记录或无法确认进程都显示“未证实”；数据库的 RUNNING 字符串不自动变成绿色活跃状态。断线会明确降级，不继续播放活跃连线。事件日志是阶段记录，不是模型思考或 token 流；UI 不猜测完成百分比。
@@ -85,7 +87,7 @@ python3 tools/devflower_studio.py \
   --authorization /absolute/operator.json
 ```
 
-浏览器导入这份任务并导出校验后，只有编译得到的 config hash 与终端绑定完全一致，按钮才启用。启动前再次核验文件、授权和 Engine `authorized()`。客户端不能传路径、shell 或任意命令。每个服务实例只允许一次启动；已有同配置的未终结运行会阻止盲目重复。失败后先检查记录，不自动重试。
+浏览器导入这份任务并导出校验后，只有编译得到的 config hash 与终端绑定完全一致，按钮才启用。每次输入、导入、新建和加载都会使旧编译失效；编译绑定完整文档/任务快照及请求版本，丢弃过期或逆序返回的结果。启动前重新核对画布、编译快照及操作员绑定。后端再次核验文件、授权和 Engine `authorized()`。客户端不能传路径、shell 或任意命令。每个服务实例只允许一次启动；已有同配置的未终结运行会阻止盲目重复。失败后先检查记录，不自动重试。
 
 这只调用固定的 `tools/devflower.py run`，并不赋予 Git 交付能力。Controller 的目标、授权、隔离、锁、验证和自举规则仍然生效。启动回执不是成功证明，最终以状态库为准。关闭 Studio/浏览器不会取消已经明确启动的 Controller；需要停止时用原 CLI 的 cancel。UI 不管理主线合并。
 
@@ -100,9 +102,13 @@ python3 tools/devflower_studio.py \
 ```sh
 python3 -m unittest discover -s tests -p test_studio.py -v
 node --check tools/studio/static/app.js
+# 定向竞态测试：真实 HTTP；启动状态使用显式夹具，不调用模型
+python3 tests/studio_races.py --chromium /usr/bin/chromium --artifacts /tmp/studio-races
 # 可选浏览器测试（另行安装 Playwright 和可用 Chromium）：
 python3 tests/studio_browser.py --chromium /usr/bin/chromium
 ```
+
+初版交付记录（a93ed81，以下限制属于当时证据）：
 
 本次实现环境：Python 3.13.5、Node 22.16.0。新增 35 项单元/HTTP/SQLite/编译测试通过；16 项 Chromium 交互检查通过，包括拖拽、导入、保存、导出、WAL 更新、旧进程、断线和只读画布。
 

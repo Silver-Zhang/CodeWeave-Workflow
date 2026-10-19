@@ -177,7 +177,7 @@ def from_task(task):
     graph['goal'] = str(task.get('goal', ''))[:16000]
     graph['limits'].update(task.get('policy', {}).get('limits', {}))
     graph['nodes'] = [n for n in graph['nodes'] if n['type'] != 'verification']
-    tests = task.get('policy', {}).get('verification', [])[:20]
+    tests = task.get('policy', {}).get('verification', [])
     for i, spec in enumerate(tests):
         graph['nodes'].append(dict(id=f'verify-{i}', type='verification', label=str(spec.get('id', 'Test'))[:120],
                                    x=870 + i * 250, y=110, config=copy.deepcopy(spec)))
