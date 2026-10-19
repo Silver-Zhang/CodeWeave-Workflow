@@ -2,14 +2,14 @@
 
 ## 当前关口
 
-**M0-R3 独立审核已完成，Claude 裁决 ACCEPT；候选已提交，尚未由用户冻结或验收。** P1 响应文件入口和 P2 status 有界查询均 CLOSED，无新增确定阻塞。候选为 `feat/m0-code-index` @ `0e9c093a5a2456814c5543ec1e52089035b4bc2e`（34 文件清单 SHA-256 `31f8d5a882ad98711c60264569a0720ce4d84ac870a6e2d6314edb53a6fadc7d`）。
+M1实施、自验与第三轮Claude独立ACCEPT完成，Unicode定位和异步选择回退均CLOSED，无未关闭阻塞。源码已提交推送；本任务记录随project/codeweave归档。用户正式验收/冻结、main合并和发布分别待定。
 
 ## 本轮入口
 
-[Claude 独立审核原文](tasks/2026-10/20261019_04_m0-final-independent-review/README.md)与[实施交付及34文件清单](tasks/2026-10/20261019_03_m0-final-hardening/README.md)。独立全新构建验收87项零失败零Skip；正确资源配置下backend88项；自有30种响应文件拒绝、真实300TU/301输入和超长字段无损恢复。报告如实记录提前阅读实施README的流程偏差和环境错误重验，未将错误轮计为通过。
+[B模式M1任务](tasks/2026-10/20261019_05_m1-interactive-map/README.md)。CodeWeave feat/m1-interactive-map，结果HEAD `2d49db0e0b3d5e17cb95e9b876ffea0077e4ba8b`，60文件接受清单SHA256 `fed1b6fe54a7844bd23e812182dafc54da79bd9ac19b404f37ce7d3659d6108e`，Git tree逐文件一致，远端同SHA。共用内核只读HTTP/CLI、React局部图和Monaco历史快照；最终新构建110后端/27前端/4真实Chromium+fixture1，零Skip。
 
 ## 下一步
 
-候选哈希复核一致，等待用户决定M0冻结；不自行合并、tag、发布或进入M1。审核报告由Claude独立撰写，协同会话仅原文同步归档与维护导航；旧档案不变。
+用户验收M1并决定是否冻结；不自动进入M2、合并main、tag或release。复核沿用原CodeWeave独立审核UUID06fd5ee6、Opus5.5/xhigh/auto，三轮原始结论和失败证据保留。工作流最终提交与推送结果见本轮交付回复及Git引用。
 
 [任务台账](INDEX.md) · [接手上下文](AGENT_CONTEXT.md)。

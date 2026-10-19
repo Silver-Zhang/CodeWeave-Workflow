@@ -1,0 +1,23 @@
+{
+  "candidate_manifest_sha256": "fed1b6fe54a7844bd23e812182dafc54da79bd9ac19b404f37ce7d3659d6108e",
+  "findings": [],
+  "limitations": [
+    "This acceptance binds only the independently verified 60-file round-three candidate and the Linux/LLVM 18/Bubblewrap/Node 22 environment.",
+    "Vite reports the lazy Monaco source-editor chunk at approximately 694.66 kB gzip, above its advisory 500 kB threshold. It is lazy-loaded and does not violate M1's local bounded graph or correctness contract.",
+    "M1 does not cover PCH/modules, complex full-program virtual dispatch, large-project performance benchmarking, M2 workspace incrementality/Git comparison, or private-project validation."
+  ],
+  "recommendation": "ACCEPT. The Unicode source-location defect and delayed-navigation selection race are closed for this candidate. The user may approve M1 freezing; this audit does not authorize or perform commit, push, merge, release, or M2.",
+  "test_summary": {
+    "independent_commands": [
+      "Fresh CMake build from `round-3/candidate/analyzer` completed exit 0; analyzer SHA-256 `8562b0369cf35e6affdefe011cc83a8e65cb6e7527fa0a0649de18ab15014e94`.",
+      "`CODEWEAVE_LLVM_PREFIX=…/llvm-18 CODEWEAVE_RESOURCE_DIR=…/lib/clang/18 PYTHON=…/.venv/bin/python bash scripts/verify_m1.sh` completed exit 0: 110 backend tests passed with zero failures/errors/skips, fixture unittest passed, frontend build passed, 27 Vitest tests passed, and 4 real Playwright Chromium tests passed.",
+      "Independent `navigation_race_check.mjs` completed exit 0 using the round-three analyzer, public CLI-built fixture index, local HTTP and production frontend. A held pong neighbors request was released only after a newer real ping call-edge selection; the newer source/evidence/index persisted. A subsequent index switch removed old graph/editor state.",
+      "Candidate identity was independently verified before and after testing: raw manifest SHA-256 `fed1b6fe54a7844bd23e812182dafc54da79bd9ac19b404f37ce7d3659d6108e`; all 60 entries matched size, SHA-256, and executable mode."
+    ],
+    "not_run": [
+      "No testing outside stated M1 scope: private/RMC sources, M2 functions, PCH/modules, full-program virtual dispatch, or large-scale performance."
+    ],
+    "results": "All required M1 contracts passed for the frozen round-three candidate. The final navigation-race counterexample used real facts and responses with timing control only, and confirmed delayed expansion cannot overwrite a newer call-edge selection or leak old snapshot UI after index switch."
+  },
+  "verdict": "ACCEPT"
+}

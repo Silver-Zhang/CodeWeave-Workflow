@@ -1,0 +1,23 @@
+{
+  "candidate_manifest_sha256": "81b71e32a6094949338fba307a9b85983c463e0830cd4f1323d24b93c68711ae",
+  "findings": [],
+  "limitations": [
+    "This acceptance applies only to the independently reverified 60-file round-two candidate and Linux/LLVM 18/Bubblewrap/Node 22 environment.",
+    "Vite reports the lazy Monaco source-editor chunk at about 694.66 kB gzip, above its advisory 500 kB threshold. It is lazy-loaded and does not invalidate M1's bounded local-graph or correctness contract, but remains an engineering optimization opportunity.",
+    "M1 does not claim PCH/modules, complex full-program virtual dispatch, large-repository performance, workspace incrementality, Git version comparison, or private-project validation."
+  ],
+  "recommendation": "ACCEPT. The prior mandatory Unicode Monaco positioning issue is closed. The user may approve M1 candidate freezing; do not infer approval for commit, push, merge, release, or M2 from this audit.",
+  "test_summary": {
+    "independent_commands": [
+      "Fresh CMake build from `round-2/candidate/analyzer` completed exit 0; analyzer SHA-256 `8562b0369cf35e6affdefe011cc83a8e65cb6e7527fa0a0649de18ab15014e94`.",
+      "`CODEWEAVE_LLVM_PREFIX=…/llvm-18 CODEWEAVE_RESOURCE_DIR=…/lib/clang/18 PYTHON=…/.venv/bin/python bash scripts/verify_m1.sh` completed exit 0: 110 backend tests passed with zero failures/errors/skips, fixture unittest passed, frontend build passed, 26 Vitest tests passed, and 3 real Playwright Chromium tests passed.",
+      "Independent `crlf_unicode_check.mjs` completed exit 0 using a reviewer-owned CRLF C++ source, public CLI indexing, fresh analyzer/Bubblewrap, HTTP, and Chromium: expected raw UTF-8 fact column 65, expected Monaco UTF-16 column 61, observed Monaco column 61 while UI provenance retained raw `:2:65`.",
+      "Candidate identity was independently verified before and after testing: raw manifest SHA-256 `81b71e32a6094949338fba307a9b85983c463e0830cd4f1323d24b93c68711ae`; all 60 entries matched size, SHA-256, and executable mode."
+    ],
+    "not_run": [
+      "No evaluation outside declared M1 scope, including private/RMC projects, M2 features, PCH/modules, or large-scale performance benchmarking."
+    ],
+    "results": "All required M1 contracts passed for this frozen round-two candidate. Source review plus candidate regressions and an independent CRLF mixed-Unicode Chromium counterexample demonstrate that raw Clang UTF-8 provenance remains correct while Monaco receives the required UTF-16 editor position."
+  },
+  "verdict": "ACCEPT"
+}

@@ -1,0 +1,366 @@
+{
+  "base_head": "0e9c093a5a2456814c5543ec1e52089035b4bc2e",
+  "branch": "feat/m1-interactive-map",
+  "files": [
+    {
+      "bytes": 164,
+      "mode": "100644",
+      "path": ".editorconfig",
+      "sha256": "8d0ee1f479c25b6f1251e2ed7c4b6277bc5b00264be281b20e92532ed2687bca"
+    },
+    {
+      "bytes": 382,
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "2d1c5008e789644baa4d0318aeb4ac8acd32f19bb95c151dc4f388a949cab953"
+    },
+    {
+      "bytes": 1558,
+      "mode": "100644",
+      "path": "AGENTS.md",
+      "sha256": "bf5f9127dbdc75c42ffb663faf2a370ba9286ad1888c6da3dd392a220e2db6ea"
+    },
+    {
+      "bytes": 407,
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "10ae32f7113b95b5911b6805b429dd9a6ae0030fdebea664c4b8f4df6a062a41"
+    },
+    {
+      "bytes": 1079,
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "b0a3128a905c1d844f7088e08412860994c5bc2bef66ced402ccf01012806736"
+    },
+    {
+      "bytes": 11044,
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "3655e9a21f21a166a9165c73a77029f8d1cc0230afbaacc15689f1551c39058b"
+    },
+    {
+      "bytes": 556,
+      "mode": "100644",
+      "path": "analyzer/CMakeLists.txt",
+      "sha256": "b35113bb0c64c7cbba9fcafe81c15d8a9a6c034cac59bbd1609bde4a67950ff9"
+    },
+    {
+      "bytes": 2284,
+      "mode": "100644",
+      "path": "analyzer/README.md",
+      "sha256": "b89256d157a33f7e1a6ae209704804cdf3468eaaf6b06db7ebeb4485998e3b07"
+    },
+    {
+      "bytes": 14369,
+      "mode": "100644",
+      "path": "analyzer/main.cpp",
+      "sha256": "23ada77249c036cbacf2a21ddc6664601741f77d1d4cdb4d32cc85c817a2842b"
+    },
+    {
+      "bytes": 105,
+      "mode": "100644",
+      "path": "backend/codeweave/__init__.py",
+      "sha256": "1e962fc35a1cf7837acefecd5c15d2951089a11e6e97ee80bdeaf3798d3aaf09"
+    },
+    {
+      "bytes": 70,
+      "mode": "100644",
+      "path": "backend/codeweave/__main__.py",
+      "sha256": "212800b753997effc17357014e98e1c7b49231b80ce6d5f7559ea312a458468a"
+    },
+    {
+      "bytes": 6160,
+      "mode": "100644",
+      "path": "backend/codeweave/app.py",
+      "sha256": "eb1bd4cbc2b5ad65c74eb6e20629b973c27292acfdb3c23347b8840252c5ad26"
+    },
+    {
+      "bytes": 4270,
+      "mode": "100644",
+      "path": "backend/codeweave/cli.py",
+      "sha256": "72323a6842dd909cd3d1221c56ce52da3c3f339ca990d62857e3911369954bcf"
+    },
+    {
+      "bytes": 37335,
+      "mode": "100644",
+      "path": "backend/codeweave/index.py",
+      "sha256": "701172995d59c215bb351ef51b25df26816b5e88b98413c8d41a1ce62734ab72"
+    },
+    {
+      "bytes": 490,
+      "mode": "100644",
+      "path": "backend/pyproject.toml",
+      "sha256": "d51f1c9d64be6f7aab3dc4877bdef8e2e0e52083d9ec4fb8c14e5f91843a70d0"
+    },
+    {
+      "bytes": 1474,
+      "mode": "100644",
+      "path": "backend/tests/support/pause_open.c",
+      "sha256": "92038766ffd409ecd07278db704ab1c42c3f9b41184b40581e6abf7abee75a1a"
+    },
+    {
+      "bytes": 495,
+      "mode": "100644",
+      "path": "backend/tests/test_health.py",
+      "sha256": "a8d8c6587cd0b88575741898cf1106cc3612073549ef99d6b662b359cdafcbc1"
+    },
+    {
+      "bytes": 5054,
+      "mode": "100644",
+      "path": "backend/tests/test_m0_correction.py",
+      "sha256": "ccced6d4120fb457ac13bebffdb8a8e313179626aef66fd2f07de4493e613d63"
+    },
+    {
+      "bytes": 10275,
+      "mode": "100644",
+      "path": "backend/tests/test_m0_final_hardening.py",
+      "sha256": "92b52379fb7e133dd02356785686cf607016517bc399a6638b79f7c85ea1d0c9"
+    },
+    {
+      "bytes": 4447,
+      "mode": "100644",
+      "path": "backend/tests/test_m0_index.py",
+      "sha256": "3f149cc2867c1a4e96212caef6de49ea23349a674309c2e628dc1ba95ab0c767"
+    },
+    {
+      "bytes": 29475,
+      "mode": "100644",
+      "path": "backend/tests/test_m0_r2.py",
+      "sha256": "9557aa4c207b957b080ba00e1a64556f0350866419748117d6995e887c5ce9d4"
+    },
+    {
+      "bytes": 10723,
+      "mode": "100644",
+      "path": "backend/tests/test_m1_api.py",
+      "sha256": "ccd72abcd900134150bfca9d3b4be3470e0ee1cd067dd7b64f43cf2f22c35ff9"
+    },
+    {
+      "bytes": 4820,
+      "mode": "100644",
+      "path": "docs/http-api.md",
+      "sha256": "864213ec1a332283445a6457cfd5fc0ab9770b8bdd99331493f4c814f1bdc772"
+    },
+    {
+      "bytes": 1009,
+      "mode": "100644",
+      "path": "frontend/README.md",
+      "sha256": "a7699a2ee0c7539789407a2c4aac287e313e73435b32975d2a4061aa72455986"
+    },
+    {
+      "bytes": 7307,
+      "mode": "100644",
+      "path": "frontend/e2e/map.spec.ts",
+      "sha256": "808551dd20824d58cfca4ee6e66bdaceaad69f9d5c74c513c254f78363a5352a"
+    },
+    {
+      "bytes": 308,
+      "mode": "100644",
+      "path": "frontend/index.html",
+      "sha256": "125a75f95921749bdfa89503de876f995e34690a83052e6bff2f588bab58753c"
+    },
+    {
+      "bytes": 83103,
+      "mode": "100644",
+      "path": "frontend/package-lock.json",
+      "sha256": "f60b6af1a31b480e7e0d5b8d4f80cb9cb999cbc5e99983e609061c0b8a8d5f89"
+    },
+    {
+      "bytes": 873,
+      "mode": "100644",
+      "path": "frontend/package.json",
+      "sha256": "15112addc2500105baceedb6213bec9b0ddb109a42834e6b634f1a1877b4189c"
+    },
+    {
+      "bytes": 374,
+      "mode": "100644",
+      "path": "frontend/playwright.config.ts",
+      "sha256": "1b12a91391e821d862ba108fa081778f9833f0c4605a954e20e37e794d459b62"
+    },
+    {
+      "bytes": 3672,
+      "mode": "100644",
+      "path": "frontend/src/App.test.tsx",
+      "sha256": "ca88bf94835478522b5f4394ab2c354b00701cab3544d61ed47c63924e478d52"
+    },
+    {
+      "bytes": 14081,
+      "mode": "100644",
+      "path": "frontend/src/App.tsx",
+      "sha256": "db13acc258f30285ae9d78056616ab70ebd8d1e012c37dd9db724563ec6036bd"
+    },
+    {
+      "bytes": 478,
+      "mode": "100644",
+      "path": "frontend/src/SourceBoundary.tsx",
+      "sha256": "ab6f9ce79ea495ca892844bcfd0594f6c9d47f457d93c8d90339329d15d34129"
+    },
+    {
+      "bytes": 1786,
+      "mode": "100644",
+      "path": "frontend/src/SourcePanel.tsx",
+      "sha256": "c440f96938ab6965964eadc1ec576301fac66394bbf4c5d96b435ecfe7baea4d"
+    },
+    {
+      "bytes": 2098,
+      "mode": "100644",
+      "path": "frontend/src/api.ts",
+      "sha256": "dc555862010c1811df7d78457fe51cb752944bb3b7d7f2d5c3d42cbb24287e16"
+    },
+    {
+      "bytes": 108,
+      "mode": "100644",
+      "path": "frontend/src/env.d.ts",
+      "sha256": "058963a936c23a07f8c0d84951c4beb9c5cb74c17f01eb9a59498b1861b3e093"
+    },
+    {
+      "bytes": 1951,
+      "mode": "100644",
+      "path": "frontend/src/graph.test.ts",
+      "sha256": "2f42b9fb80f817eaf97db9fa43f2a62890741ecde0c8c408b837fa19fc79a3b6"
+    },
+    {
+      "bytes": 1586,
+      "mode": "100644",
+      "path": "frontend/src/graph.ts",
+      "sha256": "a409c99485a34dfc372d5bf443acff099bd41ca043063294cfc65ddcc6f52e9a"
+    },
+    {
+      "bytes": 262,
+      "mode": "100644",
+      "path": "frontend/src/main.tsx",
+      "sha256": "52f85ebb12df746ce299302837c0505bcea4306684675db3864c7a56d10e5fc7"
+    },
+    {
+      "bytes": 681,
+      "mode": "100644",
+      "path": "frontend/src/sourceLocation.test.ts",
+      "sha256": "2470ea61007968f7c0da53aae10a5662b112a1eb9a23463396c4e5910e17ed1f"
+    },
+    {
+      "bytes": 717,
+      "mode": "100644",
+      "path": "frontend/src/sourceLocation.ts",
+      "sha256": "e388859024923121aa5b3965629334c08a193ca5f7cc4b9b7fc6c432a1c883b7"
+    },
+    {
+      "bytes": 5227,
+      "mode": "100644",
+      "path": "frontend/src/style.css",
+      "sha256": "c7ec394c10ae31590200791c076af913e2de8d1bbb52146b2437b73960401c11"
+    },
+    {
+      "bytes": 301,
+      "mode": "100644",
+      "path": "frontend/tsconfig.json",
+      "sha256": "9971b9473a549c055ed9dc1f68de7fc107a9e5924b7a8afcc5522765997bc090"
+    },
+    {
+      "bytes": 305,
+      "mode": "100644",
+      "path": "frontend/vite.config.ts",
+      "sha256": "b77e3d7f5120a9f40a380572a7d0f3886ff406af551cff3ccf6e0c1214480f5a"
+    },
+    {
+      "bytes": 1038,
+      "mode": "100644",
+      "path": "scripts/check_repository.py",
+      "sha256": "4ce74171039be2b7164470766f5bda549e0f71b05dba6a1fb79eeacb417c0422"
+    },
+    {
+      "bytes": 1796,
+      "mode": "100755",
+      "path": "scripts/verify_m0.sh",
+      "sha256": "72bac51324f068630a250e07c4822b627c4422896f241f018b52a635305c3462"
+    },
+    {
+      "bytes": 1584,
+      "mode": "100755",
+      "path": "scripts/verify_m1.sh",
+      "sha256": "7505a4caa51214261223cc8bfd85b5ca30d13451d6c18ff305665298c74d5a99"
+    },
+    {
+      "bytes": 1634,
+      "mode": "100644",
+      "path": "tests/create_fixture_repo.py",
+      "sha256": "64483493fe092f27c05859ec9e4b537d5f6b84ac57517039db9af7e2f972b343"
+    },
+    {
+      "bytes": 148,
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v1/CMakeLists.txt",
+      "sha256": "f3648fc8eda62aac4fbfc90bf3b2e3d24be39e496f09604ceb17d65c23e8c50a"
+    },
+    {
+      "bytes": 619,
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v1/main.cpp",
+      "sha256": "290e21911b17f41c4fd284f5d11df260fe00c6b7347bce3dde880cc2bc6cdf77"
+    },
+    {
+      "bytes": 148,
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v2/CMakeLists.txt",
+      "sha256": "f3648fc8eda62aac4fbfc90bf3b2e3d24be39e496f09604ceb17d65c23e8c50a"
+    },
+    {
+      "bytes": 681,
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v2/main.cpp",
+      "sha256": "9641f9c157f4cefb0e9e38cf398a0e66ed924bcf6388e52445a6712b4659ebc8"
+    },
+    {
+      "bytes": 156,
+      "mode": "100644",
+      "path": "tests/fixtures/m0/CMakeLists.txt",
+      "sha256": "f1526c38045e82c0de9b6a91247904db75f94cc68b441831f2240b012b262b4d"
+    },
+    {
+      "bytes": 166,
+      "mode": "100644",
+      "path": "tests/fixtures/m0/alpha.cpp",
+      "sha256": "e06943b3b6cb2248d57927850cfb63f85ebaf0dd16067887f5bd5bbe275f7a14"
+    },
+    {
+      "bytes": 581,
+      "mode": "100644",
+      "path": "tests/fixtures/m0/beta.cpp",
+      "sha256": "75d9cd446ff121e909dffc9bb92f6d5125e335bacd2cc8127e12e29dd2d33a4d"
+    },
+    {
+      "bytes": 84,
+      "mode": "100644",
+      "path": "tests/fixtures/m0/shared.hpp",
+      "sha256": "ede925e3c754f2093819edb1a0905d5c5f79c37ff211f9badf5a1372d1326ec2"
+    },
+    {
+      "bytes": 670,
+      "mode": "100644",
+      "path": "tests/fixtures/m1/left/unit.cpp",
+      "sha256": "a99d3fc2f85da9b3ebfc467ae4d30787e98afa4d04bf450213c6ac8aeffef5f4"
+    },
+    {
+      "bytes": 251,
+      "mode": "100644",
+      "path": "tests/fixtures/m1/right/unit.cpp",
+      "sha256": "233c9ee1d015df1f05c88c1a89c429a759596ff198784a0863e68f5989aa8acf"
+    },
+    {
+      "bytes": 159,
+      "mode": "100644",
+      "path": "tests/fixtures/m1/shared.hpp",
+      "sha256": "66a2bc48f6cd435e253ccc31432ffb3ce1e203aae8d742d64229929d31410310"
+    },
+    {
+      "bytes": 1949,
+      "mode": "100644",
+      "path": "tests/serve_m1_fixture.py",
+      "sha256": "d6fac4b6f15cd01bafd79200df89cd2020f075bd57c4fa73128acd645de824a8"
+    },
+    {
+      "bytes": 852,
+      "mode": "100644",
+      "path": "tests/test_fixture_repo.py",
+      "sha256": "5797a4d3d28868e5a3fa3ef3516c19349e186efabefcf895b4894eb68559d754"
+    }
+  ]
+}

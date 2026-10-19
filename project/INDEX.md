@@ -4,6 +4,7 @@
 
 | 日期 | 任务 | 模式 | 状态 |
 |---|---|---|---|
+| 2026-10-19 | [20261019_05_m1-interactive-map](tasks/2026-10/20261019_05_m1-interactive-map/README.md) | B | 已完成 |
 | 2026-10-19 | [20261019_04_m0-final-independent-review](tasks/2026-10/20261019_04_m0-final-independent-review/README.md) | B | 已完成 |
 | 2026-10-19 | [20261019_03_m0-final-hardening](tasks/2026-10/20261019_03_m0-final-hardening/README.md) | B | 已完成 |
 | 2026-10-19 | [20261019_02_m0-r2-independent-review](tasks/2026-10/20261019_02_m0-r2-independent-review/README.md) | B | 已完成 |

@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "20261019_05_m1-interactive-map",
+  "date": "2026-10-19",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    "CodeWeave feat/m1-interactive-map; base 0e9c093a5a2456814c5543ec1e52089035b4bc2e; result 2d49db0e0b3d5e17cb95e9b876ffea0077e4ba8b; tree 0fc291cb05addd7dd230315ab926519355be2447; accepted 60-file manifest SHA256 fed1b6fe54a7844bd23e812182dafc54da79bd9ac19b404f37ce7d3659d6108e"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "candidate_manifest_sha256": "8243cbbc1b891dab6a437cc19acdb62c59e8971ee578d285d59daf1a87006ff4",
+  "findings": [
+    {
+      "evidence": "`frontend/src/SourcePanel.tsx:15-17` passes the Clang fact column directly to Monaco. For `void entry() { const char *s = u8\"汉😀\"; (void)s; target(); }`, independently recalculated values are UTF-8 byte column 54 and Monaco UTF-16 column 50. The supplied real CLI/Clang/HTTP/Chromium evidence records fact_column=54 and Monaco getPosition().column=54 versus expected 50 (`unicode-check/oracle.json`, `facts.json`, `result.json`). Thus the stored fact is correct but the editor cursor is four UTF-16 code units after the target call.",
+      "file": "frontend/src/SourcePanel.tsx:15-17",
+      "fix": "Retain Clang's physical byte column for facts and displayed provenance, but convert the selected line's 1-based UTF-8 byte column to a bounded 1-based UTF-16 code-unit column before Monaco `setPosition`/decoration. Handle BMP multibyte characters, non-BMP surrogate pairs, boundary validation and clamping.",
+      "id": "M1-R1-P2-UNICODE-MONACO-COLUMN",
+      "impact": "Clicking an indexed call edge does not precisely locate its true call site whenever preceding source text contains non-ASCII UTF-8, violating the required source-navigation contract. It does not alter SQLite facts or expose files.",
+      "regression": "Add a real Clang → public CLI/HTTP → Chromium regression for ASCII, Han, emoji, and mixed prefixes. Assert the API/title preserve the Clang byte column while Monaco `getPosition()` equals the converted UTF-16 column for both node and call-edge navigation, with the same index snapshot.",
+      "severity": "P2"
+    }
+  ],
+  "limitations": [
+    "This verdict binds only the frozen 58-file candidate whose manifest raw SHA-256 was independently verified before and after review.",
+    "The candidate's own full `verify_m1.sh` performed real Chromium acceptance successfully. My additional Chromium harness was not completed as an independent PASS because its early failures were harness import/locator/NBSP/asynchronous-selection errors, not product conclusions.",
+    "The Unicode browser result was supplied as external raw evidence after my initial independent source/run assessment; I independently verified the byte-vs-UTF-16 arithmetic and the exact candidate code path, but did not personally execute that supplied browser harness.",
+    "Advanced graph layout, large-repository performance, PCH/modules, full-program virtual dispatch, M2 and private-project analysis remain out of M1 scope."
+  ],
+  "recommendation": "Correct P2-UNICODE-MONACO-COLUMN, preserve the raw Clang fact column in all provenance, run the required real Chromium regression plus full M1 acceptance on a newly frozen candidate, then request a new complete independent review. Do not commit, push, freeze, or release this candidate.",
+  "test_summary": {
+    "independent_commands": [
+      "Fresh CMake build of `round-1/candidate/analyzer` with LLVM 18 produced analyzer SHA-256 `8562b0369cf35e6affdefe011cc83a8e65cb6e7527fa0a0649de18ab15014e94`.",
+      "`CODEWEAVE_LLVM_PREFIX=.../llvm-18 CODEWEAVE_RESOURCE_DIR=.../lib/clang/18 PYTHON=.../.venv/bin/python bash scripts/verify_m1.sh`: exit 0; 103 backend passed, one fixture unittest passed, frontend type/build/Vitest 6 passed, Playwright Chromium 2 passed.",
+      "Independent `independent_api_check.py`: exit 0; public CLI-built two-snapshot database; HTTP status/search/symbol/calls/neighbors exactly equaled CLI kernel results; old/new snapshot source remained isolated; virtual and unknown dispatch remained explicit; path/origin/host negative checks passed; database SHA unchanged.",
+      "Independent manifest verification before and after: raw manifest SHA-256 `8243cbbc1b891dab6a437cc19acdb62c59e8971ee578d285d59daf1a87006ff4`, 58 files, zero content/size/mode errors.",
+      "Independent UTF-8/UTF-16 calculation for the Unicode counterexample returned byte column 54 and UTF-16 column 50."
+    ],
+    "not_run": [
+      "No final standalone independent Chromium PASS from the supplemental reviewer harness; its failed attempts were preserved and are not used as product PASS/FAIL evidence.",
+      "No post-fix regression exists because the candidate remains unmodified by audit scope."
+    ],
+    "results": "Substantial API, security, identity, real-index, frontend build and candidate acceptance evidence passed, but the confirmed mandatory Unicode call-edge Monaco positioning defect prevents acceptance."
+  },
+  "verdict": "NEEDS_CORRECTION"
+}
