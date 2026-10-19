@@ -1,6 +1,6 @@
 # DevFlower v0.2-A：可恢复的双 Agent 执行器
 
-状态：实施设计合同；Controller 尚未实现。本目录不是已发布的 v0.2，也不能证明真实 Agent 或 Git 门禁已经运行通过。
+状态：实施设计合同；Controller 候选接口见 [运行说明](../../ORCHESTRATOR.md)。本目录不是已发布的 v0.2，也不能证明真实 Agent 或 Git 门禁已经运行通过；实际证据另在 project/devflower 记录。
 
 ## 1. 目标、范围与既有规则
 

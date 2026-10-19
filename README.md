@@ -39,6 +39,10 @@ python3 tools/devflower.py check --baseline
 
 ## 迁移与许可边界
 
+Linux 本地双 Agent 运行器的候选接口、授权格式及限制见
+[ORCHESTRATOR](docs/ORCHESTRATOR.md)。实施设计合同与 A01–A16 仍见
+[v0.2-A](docs/design/v0.2-a/README.md)；设计文档不代替实际测试或独立验收。
+
 现有项目记录先保留到项目分支，再从通用基线的当前树移除；不重写旧提交。物理仓库重命名由管理员执行，品牌名称不等于远端已改名。公开仓库的所有项目分支都公开，分支不提供权限隔离。
 
 本轮不改变既有仓库许可证，不拷贝外部框架的实现或技能文件；调研与取舍见 [REFERENCES](docs/REFERENCES.md)。

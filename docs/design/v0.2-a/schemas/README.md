@@ -1,6 +1,6 @@
 # 合同 Schema 与运行时门禁的边界
 
-JSON Schema 2020-12 仅用于接口草案，尚未接入现有tools/devflower.py。examples中的会话/哈希均为明确示例，不是授权或审核证据；默认交付关闭。
+这两份 JSON Schema 已由 tools/orchestration 的封闭子集校验器读取；不宣称支持任意 JSON Schema 2020-12。新 run/deliver 路径使用它们，旧 init/new/index/check 不迁移。examples 中的会话/哈希均为明确示例，不是授权或审核证据；默认交付关闭。
 
 workflow-policy不包含密钥、实际主机路径或会话UUID。绑定、批准配置哈希、远端和Controller版本由本地受信授权另存。timeout是运行预算示例，不是向用户承诺耗时。
 
