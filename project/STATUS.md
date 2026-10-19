@@ -1,9 +1,9 @@
 # 当前状态
 
-DevFlower v0.2-A 实施与独立复核完成：源码 210e208；自验 72/72、隔离 3/3，均 0 skip；真实 Codex/Claude fixture 8/8、ACCEPT；最终 DeepSeek（Claude Code）独立审核 ACCEPT，231 项检查及外部重跑通过。
+READY_TO_MERGE，待人工合并决策。DevFlower v0.2-A 最终集成源码 2e298e4 已普通快进交付 flow/multi-agent-orchestration；原生 fetch 后 38 文件与被审候选 dcb445f1 一致。当前 89/89、宿主隔离 4/4、独立与外部重跑 46/46，均 0 skip。真实当前 Controller fixture 自动两轮 NEEDS_CORRECTION→修复→ACCEPT；第三次框架独立审核 ACCEPT，DF-R01–DF-R05 CLOSED，A01–A16 PASS。
 
-云端同步：PR #1 已由外部操作合入 main（536a058）；PR #2 已面向 main，说明已更新为实际实现，仍 open。project/devflower 保存精简研发档案。用户最终验收与 PR #2 合并待处理。
+PR #2 面向 main，等待人工合并；本轮不自动 merge/tag/release/force/delete。任务状态为待决策，实施自验/独立复核完成不等于用户最终验收或已入 main。main 合并批准后再回归；临时分支删除另行授权。
 
-本地过程材料已移入工作区 archives/，现行档案与证据路径见 AGENT_CONTEXT.md。原始失败、报告、字节与 mode 均保全；源码入口 DevFlower/ 已正常快进至已审核提交。
+工作区 /home/workspace/DevFlower：DevFlower/ 是唯一开发仓库；records/project/ 是自身项目记录（同仓库 project/devflower 工作树）；archives/ 是原始日志、失败、固定候选和备份。CodeWeave_dev 保留 CodeWeave 源码及自己的 DevFlower（project/codeweave）工作流仓库，12 份档案均保全。
 
-任务：tasks/2026-10/20261019_01_v02a-orchestrator/README.md。本轮仅同步与整理，不进入 v0.2-B/CodeWeave 后续研发，不自动合并。
+任务 tasks/2026-10/20261019_02_v02a-final-integration/README.md 与 evidence.json 保存逐轮原始结论。旧 ACCEPT、ACCEPT_WITH_LIMITATIONS/BLOCKED 和用户中断均保留。完成本轮后不进入下一代或 CodeWeave 后续研发。

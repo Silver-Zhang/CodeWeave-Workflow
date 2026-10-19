@@ -1,9 +1,9 @@
 # 接手入口
 
-当前源码入口为工作区 DevFlower/，flow/multi-agent-orchestration，已同步到 210e208；本 clone 位于 archives/devflower/v0.2-a/checkouts/records/，仅管理 project/devflower 档案。
+DevFlower 自身工作区 /home/workspace/DevFlower。唯一开发仓库 DevFlower/，flow/multi-agent-orchestration，当前 2e298e4；同仓库 project/devflower 记录工作树为 records/，自身项目档案就在 records/project/。原始证据为 archives/v0.2-a-final-integration/evidence/。
 
-通用依赖 218a6e8 已随 PR #1 合入 main（536a058）；PR #2 面向 main，仍 open。源码实现与用户最终验收、主线合并分别记录，不自动 merge 或进入下一阶段。
+当前任务 20261019_02_v02a-final-integration，按需读任务 README §1/§3/§4 和 evidence.json。已具备 READY_TO_MERGE：89+4 自验、46+46 独立/外部检查、真实当前 CLI 修复闭环及框架 ACCEPT。主线仍 536a058、PR #2 待人工合并；main 合并和临时分支删除分别等待明确授权，禁止用旧任务授权覆盖未来业务交付。
 
-当前任务见 STATUS.md 与 INDEX.md，按需读任务 §1/§3/§4。原始证据在工作区 archives/devflower/v0.2-a/evidence/；原路径映射与完整保全结果见 archives/layout.json 和 archives/inventory/organization.json。
+Controller 的 doctor/run 等命令从源码 DevFlower/tools/devflower.py 执行；记录的 init/new/index/check 在 records 工作树执行。该记录分支只写项目档案，不把框架实现或大日志混入。
 
-模型配置由用户维护；当前独立审核为 Claude Code 接入 DeepSeek（high），旧真实 Claude 闭环单独保留。认证、会话、大日志及构建物留本地 archives，不进入公开 Git。历史原始报告不改写；旧授权不能直接用于迁移路径后的恢复。
+CodeWeave_dev 的 CodeWeave 是业务源码，DevFlower 是其 project/codeweave 工作流实例，12 份任务记录必须保留；不要在其中开发本框架。历史原始路径/授权/会话记录不改写；迁移回执在 archives/workspace-migrations/。模型路由和 effort 保持用户当前批准配置，缺失实际字段仍写 unknown。

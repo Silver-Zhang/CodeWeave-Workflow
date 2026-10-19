@@ -1,0 +1,572 @@
+{
+  "schema_version": 1,
+  "task_id": "20261019_02_v02a-final-integration",
+  "status": "READY_TO_MERGE_AWAITING_HUMAN_DECISION",
+  "phase_status": {
+    "A0": "COMPLETE: deterministic state/gate/simulation regressions",
+    "A1": "COMPLETE: actual CLI owned correction cycle; current hash",
+    "A2": "COMPLETE within local bare remote fault scope; business delivery excluded"
+  },
+  "environment": {
+    "python": "3.12.3",
+    "git": "2.43.0",
+    "codex_cli": "0.163.0",
+    "claude_code": "2.1.303",
+    "landlock_abi": 8,
+    "bwrap_host_available": true
+  },
+  "current": {
+    "executor": "fixed-outer-bootstrap-evidence-check-no-DevFlower-imports",
+    "passed": true,
+    "candidate_sha256": "dcb445f11471f1b3f3ae78e2e7381ba4d4c6ccc351e98729cd7d8f5107661dd7",
+    "controller_sha256": "d48d15d0acb315ead91df80e51aa0509258b9f3c1950fa253cf4d1dcf76b7aaf",
+    "acceptance_sha256": "3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242",
+    "integration_contract_sha256": "68822195bbd61a9b4d5c80327d12b46720f74a61218d4266ea2c50d4cca85856",
+    "prospective_git_tree": "d27a9c35e4b23a2cf751d4e465b47a13fe150eff",
+    "review_session": "92ef8354-974f-412f-970c-fda2f5325abf",
+    "review_process_exit": 0,
+    "review_raw_sha256": "e8e516fd2292c2394dc3f12bec3409b5549f197950108a27d1940f17315398be",
+    "reviewer_script_sha256": "899b43fb595b30477f4bb530534483eca80de9fcbba9ad9bbee8b52f6aa09260",
+    "self_tests": 89,
+    "host_isolation_tests": 4,
+    "independent_groups": 46,
+    "external_groups": 46,
+    "real_fixture_run": "c756392076c94a8285574e96af24600c",
+    "source_manifest_identical": true,
+    "new_controller_approved_itself": false,
+    "main_merge_authorized": false,
+    "branch_deletion_authorized": false
+  },
+  "source_delivery": {
+    "branch": "flow/multi-agent-orchestration",
+    "commit": "2e298e484665807fda18b728535c1a114042ea50",
+    "parent": "210e208b5872507b9ff5c6471b5ef0acdea9518d",
+    "tree": "d27a9c35e4b23a2cf751d4e465b47a13fe150eff",
+    "transport": "GitHub connected API fast-forward expected_sha, force=false",
+    "native_git_fetch_readback": true,
+    "reviewed_manifest_files": 38,
+    "reviewed_manifest_identical": true,
+    "local_head": "2e298e484665807fda18b728535c1a114042ea50",
+    "local_clean": true,
+    "records_branch_delivered_at_source_readback": false
+  },
+  "records_delivery": "This commit is the project/devflower archive; its own SHA/readback is recorded externally to avoid a self-hash cycle.",
+  "fresh_tests": {
+    "baseline": {
+      "tests": 72,
+      "failures": 0,
+      "skipped": 0,
+      "transcript_sha256": "63fdb457ea7f8b155edfa696585cdf650ba6bfa94e4aeead4bedcd2cd8d09ea3"
+    },
+    "current_selftest": {
+      "tests": 89,
+      "failures": 0,
+      "skipped": 0,
+      "transcript_sha256": "86e47d33627a6b228bb652fd9691255caee91d88643135d8a94c450adee0b606"
+    },
+    "host_isolation": {
+      "tests": 4,
+      "failures": 0,
+      "skipped": 0,
+      "transcript_sha256": "cdffb0dbbb969e7b6f88b2d7bd0fd67c8f0872e794350cea138c1d6570e3ec26"
+    },
+    "independent_groups": 46,
+    "external_rerun": {
+      "executor": "external-controlled-runner",
+      "exit": 0,
+      "timeout": false,
+      "seconds": 2.984,
+      "script_sha256_before": "899b43fb595b30477f4bb530534483eca80de9fcbba9ad9bbee8b52f6aa09260",
+      "script_sha256_after": "899b43fb595b30477f4bb530534483eca80de9fcbba9ad9bbee8b52f6aa09260",
+      "script_unchanged": true,
+      "stdout_sha256": "07b93566453a745bc97e6b8b3bbef5e701d41c0cf22c6c7f4bf9ef21697a19e1",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/workspace/DevFlower/archives/v0.2-a-final-integration/evidence/review-3-final/reviewer-tests/independent_negatives.py"
+      ],
+      "kernel_boundary": "bwrap-empty-root-readonly-candidate-no-network-no-credentials"
+    },
+    "known_defects_before_fix_sha256": "f2b0105a781d15ef89919ed7c52e08df453ae169e8c17ef2bf21775f9ff690fd",
+    "cancellation_before_fix_sha256": "f8ffdbd0447fa8e6cba9a1ea0fe8f893263f4f328d21cb2e0b5d869de154af1d"
+  },
+  "framework_review_attempts": [
+    {
+      "attempt": 1,
+      "candidate_sha256": "f426b9fcff078fd46b824c8c3824ffc294228de8ae7f3cfd81dec348d373e02e",
+      "session_id": "332a8bad-382a-43c4-be3e-35e4305f3390",
+      "process": {
+        "pid": 3012112,
+        "start": "97854192",
+        "exit": -15,
+        "timeout": false,
+        "seconds": 261.91,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "af2f4f95914df9c684b8c6d9f07bfa793cb3ed8a4c9f15c3022ee6363d84537e"
+      },
+      "raw_process_record_sha256": "a7798f6c69b8c028b389f7ebcc562310f6079fc3b1ca629420e6e88a4f42df3f",
+      "verdict": null,
+      "reason": "User requested workspace migration; owned process stopped. No model terminal verdict, not counted as passing."
+    },
+    {
+      "attempt": 2,
+      "candidate_sha256": "f426b9fcff078fd46b824c8c3824ffc294228de8ae7f3cfd81dec348d373e02e",
+      "session_id": "323b7857-c9c4-4188-9d33-09b2fedbbf9a",
+      "process": {
+        "pid": 3093576,
+        "start": "97916393",
+        "exit": 0,
+        "timeout": false,
+        "seconds": 924.05,
+        "stdout_sha256": "4ca142210eaa1803cfb04bddc3dcb6d417bf4d2cb712bd10022c97e3a9c7e75e",
+        "stderr_sha256": "af2f4f95914df9c684b8c6d9f07bfa793cb3ed8a4c9f15c3022ee6363d84537e"
+      },
+      "raw_process_record_sha256": "df6ab56136e9a846b128a588c26e40e9ded58b06c9cdd2c7a5382c9a92554492",
+      "verdict": "ACCEPT",
+      "raw_final_report_text": "{\n  \"candidate_sha256\": \"f426b9fcff078fd46b824c8c3824ffc294228de8ae7f3cfd81dec348d373e02e\",\n  \"acceptance_sha256\": \"3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242\",\n  \"integration_contract_sha256\": \"68822195bbd61a9b4d5c80327d12b46720f74a61218d4266ea2c50d4cca85856\",\n  \"verdict\": \"ACCEPT\",\n  \"findings\": [\n    {\n      \"id\": \"DF-R01\",\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Protected-path descendants and physical symlink aliases rejected; real kernel denial proven; legitimate dependencies preserved\",\n      \"evidence\": \"Independent cases DF_R01_protected_paths and A05_isolation_kernel: control/auth/config/source .git/other-agent-home descendants, protected ancestors, direct and parent-component symlink aliases rejected; Landlock ABI 8 denied control read and write while declared work read/write succeeded; legitimate /usr and dedicated dependencies passed. 32/32 cases pass; output sha256 4a70517d8c58b190c6101cc12bdfbc81873fddb4a2cd4b48099c683b8eafc35d.\"\n    },\n    {\n      \"id\": \"DF-R02\",\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Durable commit-only delivery, GC survival, receipt-loss recovery, CAS refs, index/branch preservation, and remote races\",\n      \"evidence\": \"Independent cases A12_commit_tree, A12_receipt_loss, A12_ref_competition, A13_gc_and_resume, A13_push_races, A13_push_guards, A13_partial: direct ref refs/devflower/commits/<id> survives reflog expiry plus git gc --prune=now; commit-only ends LOCAL_COMMITTED with remote untouched; ack loss after pin reuses one COMMIT intent and the same SHA; symbolic and competing direct refs are never overwritten; user branch/index/worktree unchanged; lost push response resolves by remote readback; concurrent remote advance preserved; COMPLETED only after readback; source+records partial retry completes without a duplicate source commit.\"\n    },\n    {\n      \"id\": \"DF-R03\",\n      \"severity\": \"P2\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Shipped examples bind {result} and the runnable generator/verifier executes successfully\",\n      \"evidence\": \"Independent case DF_R03_examples: workflow-policy.example.json validates and contains {result}, not {artifacts}/unit.xml; prepare.py generates a config_check-valid task and explicit delivery-off authorization; the generated six-case fixture initially produced tests=6 failures=6 errors=0 skipped=0 exit=1 and, after the clamp correction, tests=6 failures=0 exit=0. Docs contain no unimplemented-feature claim.\"\n    }\n  ],\n  \"prior_findings_status\": {\n    \"DF-R01\": {\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"evidence\": \"reviewer-tests/independent_negatives.py DF_R01_protected_paths, A05_isolation_kernel; independent 32/32 pass.\"\n    },\n    \"DF-R02\": {\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"evidence\": \"reviewer-tests/independent_negatives.py A12_commit_tree, A12_receipt_loss, A12_ref_competition, A13_gc_and_resume, A13_push_races, A13_push_guards, A13_partial; independent 32/32 pass.\"\n    },\n    \"DF-R03\": {\n      \"severity\": \"P2\",\n      \"status\": \"CLOSED\",\n      \"evidence\": \"reviewer-tests/independent_negatives.py DF_R03_examples; generated stdlib example 6/6 failing before correction and 6/0 passing after correction.\"\n    }\n  },\n  \"actual_test_commands\": [\n    {\n      \"command\": \"python3 -I /home/workspace/DevFlower/archives/v0.2-a-final-integration/evidence/review-2/reviewer-tests/independent_negatives.py /home/workspace/DevFlower/archives/v0.2-a-final-integration/evidence/review-2/candidate\",\n      \"exit\": 0\n    },\n    {\n      \"command\": \"sha256sum contract.json integration-request.txt candidate/docs/design/v0.2-a/ACCEPTANCE.md\",\n      \"result\": \"contract.json 68822195..., integration-request 4159cede93f3e37863dd6625225a53e6944fdf6e9bbf6e6332661d528804dd18, acceptance 3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242\"\n    },\n    {\n      \"command\": \"independent stdlib recomputation of manifest entries, controller_hash(), prospective tree, and committed_manifest_hash\",\n      \"result\": \"candidate manifest f426b9fc..., controller hash de9c702e7d0df5fd73e8aeab8c6f47f4fcae018b4304f1a96ed56dc29052515b, prospective Git tree 4eeb835e56a57c31d159f938f95586f49a1574a4, committed manifest match\"\n    },\n    {\n      \"command\": \"independent validation of real-model-evidence-migrated.json (sha256 cdcbff903996ef9c9c9bac96b0265f28576d815eab549736a78e3bd5760fd230)\",\n      \"result\": \"state READY; 2 rounds; controller/candidate/raw-report/candidate-manifest hashes recompute; reviewer session e3f3c295-8c8c-4872-9a1f-813e2edc5e7b model deepseek-flash[1m]; implementer gpt-6.1-sol resolved unknown; no delivery operations\"\n    }\n  ],\n  \"actual_test_counts\": {\n    \"independent_cases\": 32,\n    \"pass\": 32,\n    \"fail\": 0,\n    \"blocked\": 0,\n    \"exit_code\": 0,\n    \"test_output_sha256\": \"4a70517d8c58b190c6101cc12bdfbc81873fddb4a2cd4b48099c683b8eafc35d\"\n  },\n  \"per_contract_A01_A16\": {\n    \"A01\": \"PASS\",\n    \"A02\": \"PASS\",\n    \"A03\": \"PASS\",\n    \"A04\": \"PASS\",\n    \"A05\": \"PASS\",\n    \"A06\": \"PASS\",\n    \"A07\": \"PASS\",\n    \"A08\": \"PASS\",\n    \"A09\": \"PASS\",\n    \"A10\": \"PASS\",\n    \"A11\": \"PASS\",\n    \"A12\": \"PASS\",\n    \"A13\": \"PASS\",\n    \"A14\": \"PASS\",\n    \"A15\": \"PASS\",\n    \"A16\": \"PASS\"\n  },\n  \"limitations\": [\n    \"No GitHub or business remote access, PR write, push, merge, tag, release, or branch deletion was performed. Main merge and temporary-branch cleanup remain human-only gates; actual PR #2/main/remote state was not verified in this offline review.\",\n    \"Delivery backend is limited by design to explicitly bound local bare remotes; real-service remote delivery and PR integration were not exercised.\",\n    \"A15 fixture control SQLite and candidate directories were not retained for replay. The evidence JSON hash was verified, and its controller hash de9c702e7d0df5fd73e8aeab8c6f47f4fcae018b4304f1a96ed56dc29052515b, candidate hash f426b9fcff078fd46b824c8c3824ffc294228de8ae7f3cfd81dec348d373e02e, raw report hashes, candidate manifest hashes, sessions, models, two-round correction, and empty delivery operations were independently checked. The reviewer was the actual DeepSeek-backed CLI session e3f3c295-8c8c-4872-9a1f-813e2edc5e7b, resolved model deepseek-flash[1m]; the implementer requested gpt-6.1-sol with resolved model unknown; no Anthropic Claude claim is made.\",\n    \"Bubblewrap isolation was not independently rerun inside this reviewer sandbox; Landlock ABI 8 kernel denial was independently exercised. host-isolation.txt reports four external tests OK and is not counted as reviewer tests.\",\n    \"The illustrative workflow-policy.example.json uses pytest, which is absent on this host; the shipped runnable stdlib generator (examples/orchestrator/prepare.py) was executed and its verifier produced six failing cases before correction and six passing cases after correction.\",\n    \"Non-blocking hardening observations: config preflight does not reject identical explicit session UUIDs across the two role bindings, although the final gate rejects identical actual session IDs; an isolation-backend setup failure before exec surfaces as SubprocessError rather than a persisted BLOCKED transition (the current host supports ABI 8); cancel on READY only sets cancel_requested and does not by itself block a separately authorized deliver.\",\n    \"The evidence candidate directory contains ignored __pycache__ artifacts absent from manifest.json and the prospective Git tree. Historical evidence retains old absolute paths as instructed and was not rewritten.\",\n    \"selftest.txt reports 83 unit tests OK, host-isolation.txt four tests OK, and structural.txt OK; these are implementation/external evidence, not reviewer test counts. Reviewer independent count is 32/32.\"\n  ],\n  \"test_script_sha256\": \"5573cb64fc0214f1b022b166f7794cd6c2567f4a4e0872287ecd94e45c27578c\"\n}",
+      "raw_final_envelope_sha256": "40c41318333ed42309edc8aa60c55e85e6b948b9e63120c4dcc3ec6b95c8ba94",
+      "requested_model": "deepseek-flash[1m]",
+      "requested_effort": "high",
+      "actual_models": [
+        "deepseek-flash[1m]"
+      ],
+      "resolved_effort": "unknown"
+    },
+    {
+      "attempt": 3,
+      "candidate_sha256": "dcb445f11471f1b3f3ae78e2e7381ba4d4c6ccc351e98729cd7d8f5107661dd7",
+      "session_id": "92ef8354-974f-412f-970c-fda2f5325abf",
+      "process": {
+        "pid": 3323850,
+        "start": "98114405",
+        "exit": 0,
+        "timeout": false,
+        "seconds": 357.82,
+        "stdout_sha256": "2fe88bf762648f128e04a014b31d89d6a478d0f2e4f36d0879f484ba91186ee7",
+        "stderr_sha256": "af2f4f95914df9c684b8c6d9f07bfa793cb3ed8a4c9f15c3022ee6363d84537e"
+      },
+      "raw_process_record_sha256": "a27adde287c07a85e9ca1322b4501cb3fb330f633f7680b5901e267d6e47a32e",
+      "verdict": "ACCEPT",
+      "raw_final_report_text": "{\n  \"candidate_sha256\": \"dcb445f11471f1b3f3ae78e2e7381ba4d4c6ccc351e98729cd7d8f5107661dd7\",\n  \"acceptance_sha256\": \"3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242\",\n  \"integration_contract_sha256\": \"68822195bbd61a9b4d5c80327d12b46720f74a61218d4266ea2c50d4cca85856\",\n  \"verdict\": \"ACCEPT\",\n  \"findings\": [\n    {\n      \"id\": \"DF-R01\",\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Protected-path descendants and physical aliases remain rejected; real Landlock denial re-proven\",\n      \"evidence\": \"Re-ran the unchanged independent cases DF_R01_protected_paths and A05_isolation_kernel against dcb445f1: control/config/authorization/source .git/other-agent-home descendants and protected ancestors rejected; direct and parent-component symlink aliases resolved physically and rejected; legitimate /usr and dedicated dependency read paths accepted; Landlock ABI 8 denied authority read and write while declared work read/write succeeded. Full suite 46/46 pass, output sha256 07b93566453a745bc97e6b8b3bbef5e701d41c0cf22c6c7f4bf9ef21697a19e1. No regression in the six-file delta.\"\n    },\n    {\n      \"id\": \"DF-R02\",\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Durable commit-only delivery, receipt loss, ref competition and partial delivery remain correct\",\n      \"evidence\": \"Re-ran A12_commit_tree, A12_guards, A12_ref_competition, A12_receipt_loss, A13_gc_and_resume, A13_push_races, A13_push_guards and A13_partial on dcb445f1: direct durable ref survives reflog expiry and git gc --prune=now; commit-only ends LOCAL_COMMITTED with remote untouched; lost commit receipt reuses one COMMIT intent and the same SHA; symbolic/competing refs are never overwritten; user branch/index/worktree untouched; lost push response resolved by remote readback; concurrent remote advance preserved; COMPLETED only after readback; two-repo partial retry completes without a duplicate source commit. All pass in the 46-case suite.\"\n    },\n    {\n      \"id\": \"DF-R03\",\n      \"severity\": \"P2\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Shipped configuration example still binds {result} and the runnable fixture still passes\",\n      \"evidence\": \"Re-ran DF_R03_examples on dcb445f1: workflow-policy.example.json validates and binds {result}; the shipped stdlib prepare.py generates a config_check-valid task and explicit delivery-off authorization; the generated six-case fixture produced tests=6 failures=6 before the clamp correction and tests=6 failures=0 after it. Docs contain no unimplemented-feature claim. All pass.\"\n    },\n    {\n      \"id\": \"DF-R04\",\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Cancellation is terminal, blocks resume/delivery, and never fabricates or rolls back delivery effects\",\n      \"evidence\": \"Ten new independent cases passed: CLI cancel on READY and on a real LOCAL_COMMITTED run ends CANCELLED while retaining receipts and the durable ref; resume returns CANCELLED and deliver_run/low-level deliver refuse with no PROCESS/COMMIT/PUSH; a pending cancel_requested stops resume and deliver before any agent; cancellation during tree construction creates no commit/ref; cancellation after commit pin leaves exactly one receipt with pushed=false, the ref intact and no push; source commit followed by cancellation leaves records untouched; successful source push followed by cancellation leaves CANCELLED with pushed=true and the remote at the receipt commit; an already-CANCELLED run gains no operation (only an idempotent terminal CANCELLED audit event); store transactions entering READY or COMMITTING with a pending request record CANCELLED and never record READY/COMMITTING; an active supervisor lease yields request-only with state unchanged and terminalises after release; cancel of COMPLETED and CANCELLED runs is idempotent. All 46/46 cases pass.\"\n    },\n    {\n      \"id\": \"DF-R05\",\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"title\": \"Per-round review baseline copy is readable, hash-bound, write-denied, non-bridging and tamper-detected\",\n      \"evidence\": \"Four independent DF-R05 cases plus raw-evidence cross-checks passed. Controller wiring: every round mounts <control>/<run>/round-N/baseline, prompt contains baseline_path and baseline_sha256 equal to the approved base_hash, changes.diff names that mounted path, and the controller baseline remains hash-verified. Landlock proof: reviewer reads VALUE=0, while writing the baseline, reading or writing a symlink bridge to an authority file, and reading the authority file directly are all denied (denied=4); bytes and authority unchanged. Tampering the copy before diff fails with 'review baseline copy changed'; tampering after review fails with 'review baseline changed after review'; neither reaches delivery. Raw native fixture c7563920 uses <run>/round-N/baseline in its recorded git diff argv; both round baseline copies hash to base_hash 42bea4f8...; the prior blocked fixture 1da2a1b7 remains a distinct BLOCKED run with review_baseline_readable_copy_present=false. No silent pass of a changed baseline was found.\"\n    }\n  ],\n  \"prior_findings_status\": {\n    \"DF-R01\": {\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"prior_evidence_verbatim\": \"Independent cases DF_R01_protected_paths and A05_isolation_kernel: control/auth/config/source .git/other-agent-home descendants, protected ancestors, direct and parent-component symlink aliases rejected; Landlock ABI 8 denied control read and write while declared work read/write succeeded; legitimate /usr and dedicated dependencies passed. 32/32 cases pass; output sha256 4a70517d8c58b190c6101cc12bdfbc81873fddb4a2cd4b48099c683b8eafc35d.\",\n      \"current_round_evidence\": \"Same independent cases re-run unmodified against dcb445f1; pass. Prior conclusion preserved.\"\n    },\n    \"DF-R02\": {\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"prior_evidence_verbatim\": \"Independent cases A12_commit_tree, A12_receipt_loss, A12_ref_competition, A13_gc_and_resume, A13_push_races, A13_push_guards, A13_partial: direct ref refs/devflower/commits/<id> survives reflog expiry plus git gc --prune=now; commit-only ends LOCAL_COMMITTED with remote untouched; ack loss after pin reuses one COMMIT intent and the same SHA; symbolic and competing direct refs are never overwritten; user branch/index/worktree unchanged; lost push response resolves by remote readback; concurrent remote advance preserved; COMPLETED only after readback; source+records partial retry completes without a duplicate source commit.\",\n      \"current_round_evidence\": \"Same independent cases re-run unmodified against dcb445f1, including lost push receipt and two-repo partial delivery; pass. Prior conclusion preserved.\"\n    },\n    \"DF-R03\": {\n      \"severity\": \"P2\",\n      \"status\": \"CLOSED\",\n      \"prior_evidence_verbatim\": \"Independent case DF_R03_examples: workflow-policy.example.json validates and contains {result}, not {artifacts}/unit.xml; prepare.py generates a config_check-valid task and explicit delivery-off authorization; the generated six-case fixture initially produced tests=6 failures=6 errors=0 skipped=0 exit=1 and, after the clamp correction, tests=6 failures=0 exit=0. Docs contain no unimplemented-feature claim.\",\n      \"current_round_evidence\": \"Same independent case re-run unmodified against dcb445f1; pass. Prior conclusion preserved.\"\n    },\n    \"DF-R04\": {\n      \"severity\": \"P1\",\n      \"status\": \"CLOSED\",\n      \"prior_observation_verbatim\": \"cancel on READY only sets cancel_requested and does not by itself block a separately authorized deliver\",\n      \"current_round_evidence\": \"Independent A06 cases now show READY/LOCAL_COMMITTED cancellation terminalises, blocks resume and delivery, preserves truthful receipts, and prevents new PROCESS/COMMIT/PUSH after cancellation; transaction cancellation at READY/COMMITTING holds. Closed with new evidence.\"\n    }\n  },\n  \"actual_test_commands\": [\n    {\n      \"command\": \"python3 -I independent_negatives.py ../candidate\",\n      \"cwd\": \"reviewer-tests\",\n      \"exit\": 0,\n      \"result\": \"cases=46 pass=46 fail=0 blocked=0; output sha256 07b93566453a745bc97e6b8b3bbef5e701d41c0cf22c6c7f4bf9ef21697a19e1\",\n      \"repeat\": \"identical output sha256 on a second run\"\n    },\n    {\n      \"command\": \"python3 -I independent_negatives.py ../candidate (verbatim prior 32-case suite before additions)\",\n      \"cwd\": \"reviewer-tests\",\n      \"exit\": 0,\n      \"result\": \"cases=32 pass=32 fail=0 blocked=0; prior32-output.txt sha256 761a549cac5de6ce036adc93e342e3fdcbc570de240105aca8cfe5b99708c97f\"\n    },\n    {\n      \"command\": \"independent stdlib recomputation of candidate manifest, controller_hash, prospective Git tree and committed_manifest_hash\",\n      \"exit\": 0,\n      \"result\": \"manifest dcb445f1..., controller d48d15d0..., prospective tree d27a9c35..., committed manifest equals candidate manifest\"\n    },\n    {\n      \"command\": \"read-only SQLite and round-artifact inspection (A15_raw_sqlite_and_round_artifacts, immutable=1)\",\n      \"exit\": 0,\n      \"result\": \"sqlite sha256 6fc3d6c9... matches proof; run c7563920 READY round 2; controller d48d15d0...; prior run 82c3ca99 IMPLEMENTING and not successful; no COMMIT/PUSH; 4 bwrap agent processes exit 0; verification exits [0,1]; raw review/verification/candidate/diff artifacts match migrated evidence\"\n    },\n    {\n      \"command\": \"transcript consistency counts: selftest.txt, host-isolation.txt, structural.txt\",\n      \"exit\": 0,\n      \"result\": \"selftest 89 ok / Ran 89 / OK; host-isolation 4 ok / Ran 4 / OK; structural OK. Implementation/external evidence, not counted as reviewer tests.\"\n    }\n  ],\n  \"actual_test_counts\": {\n    \"independent_cases\": 46,\n    \"pass\": 46,\n    \"fail\": 0,\n    \"blocked\": 0,\n    \"exit_code\": 0,\n    \"test_output_sha256\": \"07b93566453a745bc97e6b8b3bbef5e701d41c0cf22c6c7f4bf9ef21697a19e1\",\n    \"prior_suite_subset\": {\n      \"cases\": 32,\n      \"pass\": 32,\n      \"fail\": 0,\n      \"blocked\": 0\n    },\n    \"harness_only_corrections\": 3\n  },\n  \"per_contract_A01_A16\": {\n    \"A01\": \"PASS\",\n    \"A02\": \"PASS\",\n    \"A03\": \"PASS\",\n    \"A04\": \"PASS\",\n    \"A05\": \"PASS\",\n    \"A06\": \"PASS\",\n    \"A07\": \"PASS\",\n    \"A08\": \"PASS\",\n    \"A09\": \"PASS\",\n    \"A10\": \"PASS\",\n    \"A11\": \"PASS\",\n    \"A12\": \"PASS\",\n    \"A13\": \"PASS\",\n    \"A14\": \"PASS\",\n    \"A15\": \"PASS\",\n    \"A16\": \"PASS\"\n  },\n  \"bindings_verified\": {\n    \"candidate_manifest_sha256_recomputed\": \"dcb445f11471f1b3f3ae78e2e7381ba4d4c6ccc351e98729cd7d8f5107661dd7\",\n    \"controller_hash_recomputed\": \"d48d15d0acb315ead91df80e51aa0509258b9f3c1950fa253cf4d1dcf76b7aaf\",\n    \"prospective_git_tree_reconstructed\": \"d27a9c35e4b23a2cf751d4e465b47a13fe150eff\",\n    \"committed_manifest_equals_candidate\": true,\n    \"acceptance_sha256_recomputed\": \"3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242\",\n    \"integration_request_sha256_recomputed\": \"4159cede93f3e37863dd6625225a53e6944fdf6e9bbf6e6332661d528804dd18\",\n    \"delta_from_prior_accepted_f426b9fc\": [\n      \"docs/ORCHESTRATOR.md\",\n      \"tests/test_integration_regressions.py\",\n      \"tools/orchestration/cli.py\",\n      \"tools/orchestration/controller.py\",\n      \"tools/orchestration/delivery.py\",\n      \"tools/orchestration/store.py\"\n    ],\n    \"candidate_manifest_unchanged_after_review\": true,\n    \"previous_raw_verdict_sha256\": \"40c41318333ed42309edc8aa60c55e85e6b948b9e63120c4dcc3ec6b95c8ba94\"\n  },\n  \"limitations\": [\n    \"No GitHub or business remote access, PR write, push, merge, tag, release, branch deletion or main integration was performed. PR #2, remote HEAD and merge readiness remain human-external checks.\",\n    \"Delivery is exercised only against explicitly bound local bare remotes; no real-service delivery or PR integration was available.\",\n    \"A15 is an explicit owned clamp fault-injection fixture, not a claim of a natural model failure. No auth material or native session transcript was provided. The reviewer session fe73f19c-2ae1-4acd-9804-fb6c71316066 resolved to deepseek-flash[1m] with effort unknown; the implementer requested gpt-6.1-sol/xhigh with resolved model and effort unknown. No Anthropic Claude claim is made.\",\n    \"The raw database contains the prior interrupted run 82c3ca99e15c4d10829ff20211f88c39 in IMPLEMENTING with a RUNNING process and no review/candidate; it is not counted as success. The current run is c756392076c94a8285574e96af24600c.\",\n    \"Bubblewrap isolation is evidenced by captured native bwrap process records and isolation proofs, and Landlock ABI 8 was independently exercised; I did not independently rerun bwrap inside this reviewer sandbox. The native fixture ran both agents with bwrap bindings.\",\n    \"Refused delivery on an already-CANCELLED run appends an idempotent terminal CANCELLED audit event (no operation or state change); this is audit noise, not a side effect. Prior non-blocking observations (duplicate explicit session UUIDs are rejected only by the final gate, and an isolation-backend setup error surfaces as SubprocessError rather than a persisted BLOCKED transition) remain unchanged and non-blocking.\",\n    \"The SQLite backup is WAL-backed and required immutable=1 for read-only inspection; its hash was verified before and after inspection. Native absolute paths in the raw DB were preserved; retained round copies were mapped by round and their hashes recomputed.\",\n    \"selftest.txt (89 tests) and host-isolation.txt (4 tests) are implementation/external transcripts verified only for internal count and OK consistency; the reviewer count is the independent 46/46. Three harness corrections were made and preserved in harness-notes.txt before the final run.\"\n  ],\n  \"test_script_sha256\": \"899b43fb595b30477f4bb530534483eca80de9fcbba9ad9bbee8b52f6aa09260\"\n}",
+      "raw_final_envelope_sha256": "e8e516fd2292c2394dc3f12bec3409b5549f197950108a27d1940f17315398be",
+      "requested_model": "deepseek-flash[1m]",
+      "requested_effort": "high",
+      "actual_models": [
+        "deepseek-flash[1m]"
+      ],
+      "resolved_effort": "unknown"
+    }
+  ],
+  "current_real_cli_cycle": {
+    "fixture_kind": "explicit owned clamp lower-bound fault injection, not a natural model failure claim",
+    "run_id": "c756392076c94a8285574e96af24600c",
+    "state": "READY",
+    "controller_sha256": "d48d15d0acb315ead91df80e51aa0509258b9f3c1950fa253cf4d1dcf76b7aaf",
+    "current_framework_candidate_sha256": "dcb445f11471f1b3f3ae78e2e7381ba4d4c6ccc351e98729cd7d8f5107661dd7",
+    "sessions": {
+      "implementer": "01a15445-b678-78c3-9a37-443b0ecaac49",
+      "reviewer": "fe73f19c-2ae1-4acd-9804-fb6c71316066"
+    },
+    "automatic_feedback_without_manual_prompt_between_rounds": true,
+    "delivery": {
+      "commit": false,
+      "force": false,
+      "merge": false,
+      "push": false,
+      "release": false,
+      "tag": false
+    },
+    "delivery_operations": [],
+    "rounds": [
+      {
+        "round": 1,
+        "candidate_sha256": "fde1ecd864fede4e0fbf8d8c19e58007705a30dd269eb491b925ac2543aec671",
+        "verification_counts": {
+          "errors": 0,
+          "failures": 1,
+          "skipped": 0,
+          "tests": 6
+        },
+        "verifier_exit": 1,
+        "review_baseline_readable_copy_present": true,
+        "implementation": {
+          "session_id": "01a15445-b678-78c3-9a37-443b0ecaac49",
+          "requested_model": "gpt-6.1-sol",
+          "requested_effort": "xhigh",
+          "resolved_model": "unknown",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "782f35552df220a1ee6f3d46af672d3fcad4cb3072261d424a684fe57f87ec76",
+          "report": {
+            "status": "IMPLEMENTED",
+            "summary": "Changed only clamp.py to the requested candidate, preserving the negative-input defect. Verification failed as expected (exit 1): 6 tests, 1 failure, 0 errors, 0 skips. Result: /tmp/clamp-verification.7s7qMs.json. IMPLEMENTED means the candidate was written, not PASS."
+          },
+          "pid": 3321867,
+          "exit": 0
+        },
+        "review": {
+          "session_id": "fe73f19c-2ae1-4acd-9804-fb6c71316066",
+          "requested_model": "deepseek-flash[1m]",
+          "requested_effort": "high",
+          "resolved_model": "deepseek-flash[1m]",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "9ef1bf93d1bb30e0215a845513a68b8ce4f1a69e5682da7ac9073e009d01c5c6",
+          "report": {
+            "acceptance_sha256": "0f553397f152c89944add4188844b43b24f12f60e70c62819336216a1819ec7a",
+            "candidate_sha256": "fde1ecd864fede4e0fbf8d8c19e58007705a30dd269eb491b925ac2543aec671",
+            "contracts": [
+              {
+                "evidence_refs": [
+                  "clamp",
+                  "source-inspection"
+                ],
+                "id": "clamp",
+                "status": "FAIL"
+              }
+            ],
+            "findings": [
+              {
+                "contract_ids": [
+                  "clamp"
+                ],
+                "evidence_refs": [
+                  "source-inspection",
+                  "clamp"
+                ],
+                "id": "F-01",
+                "severity": "P1",
+                "status": "OPEN",
+                "title": "clamp returns negative values unchanged instead of clamping them to 0 (candidate implements only min(value, 10), omitting the lower bound max(0, ...))"
+              }
+            ],
+            "limitations": [
+              "Reviewer executed no dynamic tests (read-only review). Determination relies on controller-runner evidence in verification.json (6 tests, 1 failure, 0 errors, 0 skipped, exit 1) plus static source inspection; these are mutually consistent.",
+              "Independent negative cases evaluated analytically against candidate clamp.py: clamp(-5) -> -5 (expected 0), clamp(-1) -> -1 (expected 0), clamp(-100) -> -100 (expected 0), all failures; boundaries clamp(0)=0, clamp(1)=1, clamp(9)=9, clamp(10)=10, clamp(11)=10, clamp(17)=10 all match. No dynamic re-execution was necessary because the defect is deterministic from the two-line source.",
+              "changes.diff and the candidate manifest show only clamp.py differs from baseline (baseline sha256 42bea4f837d2095cb53d22ba3a90880907d12b7c21712327f093e25f139a6203 matches provided value); verify_fixture.py is byte-identical to baseline, so the one observed failure is candidate-caused, not harness-caused.",
+              "Non-integer and type-coercion behavior is not specified by the acceptance text and was not assessed; no evidence either way.",
+              "implementer-summary.json accurately reports IMPLEMENTED (not PASS) and explicitly states the negative-input defect was preserved; no divergence between summary and observed behavior."
+            ],
+            "round": 1,
+            "run_id": "c756392076c94a8285574e96af24600c",
+            "schema_version": 1,
+            "verdict": "NEEDS_CORRECTION"
+          },
+          "pid": 3322554,
+          "exit": 0
+        }
+      },
+      {
+        "round": 2,
+        "candidate_sha256": "9dc6b0ce6ea37026d9846328e185c20a209284f3fd87eafecb0fbe5650775136",
+        "verification_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 6
+        },
+        "verifier_exit": 0,
+        "review_baseline_readable_copy_present": true,
+        "implementation": {
+          "session_id": "01a15445-b678-78c3-9a37-443b0ecaac49",
+          "requested_model": "gpt-6.1-sol",
+          "requested_effort": "xhigh",
+          "resolved_model": "unknown",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "8182fe559791fc09f6e3ceb185dea39500be4eb4871933157ef7de690652b696",
+          "report": {
+            "status": "IMPLEMENTED",
+            "summary": "Fixed F-01 in clamp.py with max(0, min(10, value)). Actual verification passed: 6 tests, 0 failures, 0 errors, 0 skips; exit 0. Result: /tmp/clamp-verification.9RJGlD.json. Only clamp.py changed; no Git delivery."
+          },
+          "pid": 3322799,
+          "exit": 0
+        },
+        "review": {
+          "session_id": "fe73f19c-2ae1-4acd-9804-fb6c71316066",
+          "requested_model": "deepseek-flash[1m]",
+          "requested_effort": "high",
+          "resolved_model": "deepseek-flash[1m]",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "7fe3c903e470ae574f9311980f09cb387a6bf5e4999f0a889f1f37b50928b04f",
+          "report": {
+            "acceptance_sha256": "0f553397f152c89944add4188844b43b24f12f60e70c62819336216a1819ec7a",
+            "candidate_sha256": "9dc6b0ce6ea37026d9846328e185c20a209284f3fd87eafecb0fbe5650775136",
+            "contracts": [
+              {
+                "evidence_refs": [
+                  "clamp",
+                  "source-inspection"
+                ],
+                "id": "clamp",
+                "status": "PASS"
+              }
+            ],
+            "findings": [
+              {
+                "contract_ids": [
+                  "clamp"
+                ],
+                "evidence_refs": [
+                  "source-inspection",
+                  "clamp"
+                ],
+                "id": "F-01",
+                "severity": "P1",
+                "status": "CLOSED",
+                "title": "clamp returned negative values unchanged instead of clamping them to 0; fixed in round 2 by implementing max(0, min(10, value))"
+              }
+            ],
+            "limitations": [
+              "Reviewer executed no dynamic tests (read-only review). Determination relies on controller-runner verification.json (6 tests, 0 failures, 0 errors, 0 skipped, exit 0) and result file verification/d5fde054c7708969.json plus static source inspection; these are mutually consistent.",
+              "F-01 closure verified independently by static evaluation of representative cases against candidate clamp.py: clamp(-5)=0, clamp(-1)=0, clamp(-100)=0 (previously failing), and clamp(0)=0, clamp(1)=1, clamp(9)=9, clamp(10)=10, clamp(11)=10, clamp(17)=10 all match max(0, min(10, value)). No dynamic re-execution was needed because the corrected expression is exhaustive for integer behavior.",
+              "Scope check: changes.diff touches only clamp.py; candidate manifest shows acceptance.txt and verify_fixture.py byte-identical to baseline (verify_fixture.py sha256 2a46a9fae10f37ae94297fef5c427af845c6af2f2a8623574fe1ed1a192a1a35), and the provided baseline sha256 matches. No out-of-scope modifications.",
+              "Non-integer and type-coercion behavior (floats, NaN, bools) is not specified by the acceptance text and was not assessed; integer domain covered by the contract is fully satisfied.",
+              "implementer-summary.json matches observed evidence: it reports F-01 fixed, 6 tests/0 failures/exit 0, only clamp.py changed, and IMPLEMENTED status. No divergence."
+            ],
+            "round": 2,
+            "run_id": "c756392076c94a8285574e96af24600c",
+            "schema_version": 1,
+            "verdict": "ACCEPT"
+          },
+          "pid": 3323278,
+          "exit": 0
+        }
+      }
+    ]
+  },
+  "prior_real_cli_blocked_cycle": {
+    "fixture_kind": "explicit owned clamp lower-bound fault injection, not a natural model failure claim",
+    "run_id": "1da2a1b7729f4f78a31c47907cc56b4a",
+    "state": "BLOCKED",
+    "controller_sha256": "49a79f9a11e1cfa0b73bdbb606e543fe94b0cd81e80a92a37d59c8409c4ba941",
+    "current_framework_candidate_sha256": "7448d13da6108f3c95d94af9a802e7d52cf31614fab5343977aa371b48d7585e",
+    "sessions": {
+      "implementer": "01a1543d-02a1-7a40-b5e4-11c5cf800c98",
+      "reviewer": "e3cbfdc4-38b8-4504-8a00-515c11998323"
+    },
+    "automatic_feedback_without_manual_prompt_between_rounds": true,
+    "delivery": {
+      "commit": false,
+      "force": false,
+      "merge": false,
+      "push": false,
+      "release": false,
+      "tag": false
+    },
+    "delivery_operations": [],
+    "rounds": [
+      {
+        "round": 1,
+        "candidate_sha256": "fde1ecd864fede4e0fbf8d8c19e58007705a30dd269eb491b925ac2543aec671",
+        "verification_counts": {
+          "errors": 0,
+          "failures": 1,
+          "skipped": 0,
+          "tests": 6
+        },
+        "verifier_exit": 1,
+        "review_baseline_readable_copy_present": false,
+        "implementation": {
+          "session_id": "01a1543d-02a1-7a40-b5e4-11c5cf800c98",
+          "requested_model": "gpt-6.1-sol",
+          "requested_effort": "xhigh",
+          "resolved_model": "unknown",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "32b4210fbaca3a2e556235fa738a0847ae97c18e29a06e8b17f047ff67316539",
+          "report": {
+            "status": "IMPLEMENTED",
+            "summary": "Wrote the authorized candidate in clamp.py, preserving the negative-input defect. verify_fixture.py exited 1: 6 tests, 1 failure, 0 errors, 0 skipped. Result: /tmp/clamp-fixture-verification-1da2a1b7729f4f78a31c47907cc56b4a.json. IMPLEMENTED means candidate written, not PASS."
+          },
+          "pid": 3271435,
+          "exit": 0
+        },
+        "review": {
+          "session_id": "e3cbfdc4-38b8-4504-8a00-515c11998323",
+          "requested_model": "deepseek-flash[1m]",
+          "requested_effort": "high",
+          "resolved_model": "deepseek-flash[1m]",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "e9cc716d8be8305855b9bcf4a8d74698f0f45100c6bdf5d7c87fa4885752a90b",
+          "report": {
+            "acceptance_sha256": "0f553397f152c89944add4188844b43b24f12f60e70c62819336216a1819ec7a",
+            "candidate_sha256": "fde1ecd864fede4e0fbf8d8c19e58007705a30dd269eb491b925ac2543aec671",
+            "contracts": [
+              {
+                "evidence_refs": [
+                  "clamp",
+                  "source-inspection"
+                ],
+                "id": "clamp",
+                "status": "FAIL"
+              }
+            ],
+            "findings": [
+              {
+                "contract_ids": [
+                  "clamp"
+                ],
+                "evidence_refs": [
+                  "clamp",
+                  "source-inspection"
+                ],
+                "id": "F-001",
+                "severity": "P1",
+                "status": "OPEN",
+                "title": "clamp() omits the lower bound: min(value, 10) returns negative inputs unchanged instead of 0"
+              }
+            ],
+            "limitations": [
+              "Independently designed negative cases: -1, -5, -100 must return 0; 0 -> 0, 10 -> 10, 11 -> 10. Source inspection proves min(value, 10) returns the negative input for every integer value < 0, and controller-runner verification records exactly 1 failure among the six cases (the -5 case); no additional dynamic execution was required.",
+              "The baseline directory referenced by changes.diff is absent at review time, so the 'only clamp.py may change' constraint was assessed from changes.diff and candidate contents rather than a full tree diff."
+            ],
+            "round": 1,
+            "run_id": "1da2a1b7729f4f78a31c47907cc56b4a",
+            "schema_version": 1,
+            "verdict": "NEEDS_CORRECTION"
+          },
+          "pid": 3275993,
+          "exit": 0
+        }
+      },
+      {
+        "round": 2,
+        "candidate_sha256": "9dc6b0ce6ea37026d9846328e185c20a209284f3fd87eafecb0fbe5650775136",
+        "verification_counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 6
+        },
+        "verifier_exit": 0,
+        "review_baseline_readable_copy_present": false,
+        "implementation": {
+          "session_id": "01a1543d-02a1-7a40-b5e4-11c5cf800c98",
+          "requested_model": "gpt-6.1-sol",
+          "requested_effort": "xhigh",
+          "resolved_model": "unknown",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "f847af0b45607323695afd105aa22139779683030bec66b141a56c6552561a85",
+          "report": {
+            "status": "IMPLEMENTED",
+            "summary": "Corrected clamp.py to return max(0, min(10, value)), resolving F-001. verify_fixture.py passed: 6 tests, 0 failures, 0 errors, 0 skips. All review cases also passed. Result: /tmp/clamp-fixture-corrected-1da2a1b7729f4f78a31c47907cc56b4a.json. Only clamp.py changed; no Git delivery."
+          },
+          "pid": 3277689,
+          "exit": 0
+        },
+        "review": {
+          "session_id": "e3cbfdc4-38b8-4504-8a00-515c11998323",
+          "requested_model": "deepseek-flash[1m]",
+          "requested_effort": "high",
+          "resolved_model": "deepseek-flash[1m]",
+          "resolved_effort": "unknown",
+          "raw_report_sha256": "0835d0a56f93b7630e2a2e0585922523b586763c9716da98dea606c619a4268f",
+          "report": {
+            "acceptance_sha256": "0f553397f152c89944add4188844b43b24f12f60e70c62819336216a1819ec7a",
+            "candidate_sha256": "9dc6b0ce6ea37026d9846328e185c20a209284f3fd87eafecb0fbe5650775136",
+            "contracts": [
+              {
+                "evidence_refs": [
+                  "clamp",
+                  "source-inspection"
+                ],
+                "id": "clamp",
+                "status": "PASS"
+              }
+            ],
+            "findings": [
+              {
+                "contract_ids": [
+                  "clamp"
+                ],
+                "evidence_refs": [
+                  "clamp",
+                  "source-inspection"
+                ],
+                "id": "F-001",
+                "severity": "P1",
+                "status": "CLOSED",
+                "title": "clamp() omits the lower bound: min(value, 10) returns negative inputs unchanged instead of 0"
+              }
+            ],
+            "limitations": [
+              "F-001 is closed: candidate clamp.py now returns max(0, min(10, value)); source inspection shows this equals the acceptance formula for every integer, and controller-runner verification records 6 tests, 0 failures, 0 errors, 0 skipped.",
+              "Independently designed negative and boundary cases (-100 -> 0, -5 -> 0, -1 -> 0, 0 -> 0, 10 -> 10, 11 -> 10) all agree with the implementation by source inspection; no additional dynamic execution was necessary.",
+              "The baseline directory referenced by changes.diff is absent at review time, so the 'only clamp.py may change' constraint was assessed from changes.diff (which touches only clamp.py) rather than a full tree diff."
+            ],
+            "round": 2,
+            "run_id": "1da2a1b7729f4f78a31c47907cc56b4a",
+            "schema_version": 1,
+            "verdict": "ACCEPT_WITH_LIMITATIONS"
+          },
+          "pid": 3281877,
+          "exit": 0
+        }
+      }
+    ]
+  },
+  "user_interrupted_real_cli": {
+    "user_interrupted_turn": true,
+    "observed_state": "IMPLEMENTING",
+    "run": "82c3ca99e15c4d10829ff20211f88c39",
+    "round": 1,
+    "recorded_processes": [
+      {
+        "recorded_identity": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 3302198,
+          "pid": 3302198,
+          "sid": 3302198,
+          "start": "98067863",
+          "state": "R"
+        },
+        "status": "RUNNING",
+        "matching_actual_process_alive": false
+      }
+    ],
+    "terminal_output_present": false,
+    "no_model_verdict_inferred": true
+  },
+  "current_real_evidence_sha256": "22696305a1d50bd50692f871ff7fe6c94ffd06475a4a8d3c5deb45f3c8018cae",
+  "current_readonly_sqlite_proof": {
+    "run_id": "c756392076c94a8285574e96af24600c",
+    "sqlite_sha256": "6fc3d6c927b84f257b4544af81ab62fabdfbb286ae1f9586b6db446300fefac4",
+    "sqlite_uses_readonly_backup_api": true,
+    "native_processes_and_results_in_state_events": true,
+    "round_candidate_and_readonly_baseline_copies": "actual-fixture-rounds/",
+    "credentials_and_native_transcripts_included": false,
+    "previous_interrupted_run_preserved_in_database": true
+  },
+  "per_contract_A01_A16": {
+    "A01": "PASS",
+    "A02": "PASS",
+    "A03": "PASS",
+    "A04": "PASS",
+    "A05": "PASS",
+    "A06": "PASS",
+    "A07": "PASS",
+    "A08": "PASS",
+    "A09": "PASS",
+    "A10": "PASS",
+    "A11": "PASS",
+    "A12": "PASS",
+    "A13": "PASS",
+    "A14": "PASS",
+    "A15": "PASS",
+    "A16": "PASS"
+  },
+  "unclosed_mandatory_findings": [],
+  "authorization_limits": {
+    "source_branch_only": "flow/multi-agent-orchestration",
+    "records_branch_only": "project/devflower",
+    "main_merge": false,
+    "temporary_branch_deletion": false,
+    "business_or_future_task_delivery": false,
+    "force_tag_release": false
+  },
+  "workspace": {
+    "development_repository": "/home/workspace/DevFlower/DevFlower",
+    "own_project_records": "/home/workspace/DevFlower/records/project",
+    "local_raw_evidence": "/home/workspace/DevFlower/archives/v0.2-a-final-integration/evidence",
+    "codeweave_source_and_records_unchanged": true,
+    "codeweave_task_records_preserved": 12
+  },
+  "raw_logs_credentials_native_transcripts_published": false
+}
