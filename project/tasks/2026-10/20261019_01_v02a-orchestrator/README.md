@@ -6,7 +6,7 @@
 
 把既定 v0.2-A 实现为 Linux 本地顺序 Controller；单源码写入实施者、固定候选独立复核，按 A01–A16 验收。本任务仅 DevFlower 框架及 project/devflower 档案。停止于 v0.2-A，不进入 v0.2-B，不修改 CodeWeave/RMC。
 
-源码分支 flow/multi-agent-orchestration，初始 ff55386eeb49a634a9a28bf796b4cf6872800e2b，依赖 218a6e81652d5c6e20dc8909d93dfd1b9395f58a。PR #1 本轮再次核实仍 open，不 merge。原 DevFlower 初检为干净 project/codeweave（39f4ae9）；后续只读复查发现外部已切至干净 flow（ff55386），保留实际状态。另建独立源码与记录 clone，未 stash/reset/clean，未占用或推送 project/codeweave。
+源码分支 flow/multi-agent-orchestration，初始 ff55386eeb49a634a9a28bf796b4cf6872800e2b，依赖 218a6e81652d5c6e20dc8909d93dfd1b9395f58a。实施交付阶段 PR #1 仍 open；后续整理时核实它已于 2026-10-19 19:27（上海）由外部操作合入 main，结果 536a0580b70bffe2cca009fcbd9f4e9d8c5e3459，继承 218a6e8 已核对。本轮仅同步已有结果。原 DevFlower 初检为干净 project/codeweave（39f4ae9）；后续只读复查发现外部已切至干净 flow（ff55386），保留实际状态。另建独立源码与记录 clone，未 stash/reset/clean，未占用或推送 project/codeweave。
 
 ## 2. 做法与证据
 
@@ -20,7 +20,7 @@ A2 已实测：仅自有本地 bare remotes，精确 Git tree、用户 index 保
 
 框架独立复核：外部固定 bootstrap（不导入新 Controller）冻结候选并启动专属审核；审核者先读合同、代码、实际证据，再对照实施说明。第 4 轮 DeepSeek 经 Claude Code 实际执行其独立脚本，231 项负例与证据检查全部通过；其中 A15 的 27 项是对真实过程记录的核对，非重新调用模型。外部断网、无凭据 runner 重跑同一脚本亦 231/231、exit 0；脚本 SHA256 640148b2c4fc03e4fc999194fb13c62bbbd779960976c6421724c15da01fbc2d。必需的“ACCEPT+测试失败”“审后/构树中改源码”“push 成功回执丢失”“两库仅一库成功”均有独立负例。
 
-原始大日志、逐轮原始终态、失败与复现脚本留相邻本地 devflower-v02a-evidence/（受控目录），认证、隐藏推理和完整会话不作为 Controller 日志或公开档案。
+原始大日志、逐轮原始终态、失败与复现脚本现归档于工作区 archives/devflower/v0.2-a/evidence/（受控目录；原目录 devflower-v02a-evidence 的路径映射另存 archives/layout.json），认证、隐藏推理和完整会话不作为 Controller 日志或公开档案。
 
 ## 3. 决策记录
 
@@ -42,6 +42,10 @@ A0/A1/A2 在本轮限定范围内完成，框架第 4 轮原始 verdict 为 ACCE
 
 限制：Linux 本地；测试 runner 要求 Landlock ABI >=6，真实 CLI 可使用经探针核验的 Bubblewrap；网络 egress 不隔离，私有源码外发需独立授权。产品交付仅本地 bare backend，真实业务试点仍未批准。active hooks/filter/submodule/LFS 阻断；C 模式需外部绑定真实 G1–G4。批准的 argv 不应带密钥。非 gpt-/claude- 别名记录 requested/resolved，但精确 resolved-ID 不等校验仅用于 gpt-/claude- 前缀；本地配置变化仍按绑定哈希阻断。审核者实际运行 Landlock 负例；Bubblewrap 三项宿主机测试和 A15 真实过程记录由实施/外部 runner 产生、审核者检查，未冒称审核者亲自重放。
 
+本地整理：工作区顶层仅 CodeWeave/、DevFlower/、archives/。独立源码/档案 checkout 分别迁入 archives/devflower/v0.2-a/checkouts/flow/ 与 records/；CodeWeave 既有 M0/M1 过程目录分类存入 archives/codeweave/m0/、m1/，其源码和云端项目分支未改。11 个目录搬移前后完整文件内容、链接文本和 mode 清单一致，两个关联 worktree 已 repair；原始报告内的历史路径保持不变。旧运行授权绑定旧路径，不能直接作为新地址的恢复许可。
+
+云端整理：PR #2 已面向 main，标题与说明更新为真实实现、验证结果及限制；仍 open，未执行合并。当前源码 210e208、被审候选和合同哈希均未变化。
+
 ## 5. 过程记录
 
 | 日期 | 实际结果、失败及处理 |
@@ -54,3 +58,4 @@ A0/A1/A2 在本轮限定范围内完成，框架第 4 轮原始 verdict 为 ACCE
 | 2026-10-19 | 第 3 轮在用户明确暂停后停止，约 638 秒、exit -15、无终态；属于主动中止，不假称服务自然失败 |
 | 2026-10-19 | 用户调整为 DeepSeek 并恢复；第 4 轮约 653 秒、exit 0、真实 ACCEPT，231 项独立检查及外部重跑均通过，5 个旧 P1 CLOSED |
 | 2026-10-19 | 外部方式核对被审源码/合同/准提交 tree，源码分支正常快进并 fetch 逐 blob 读回；独立 records 分支归档，不进入下一阶段 |
+| 2026-10-19 | 按用户要求同步云端并整理本地：核实 PR #1 已合并，更新 PR #2 实际状态；11 个过程目录迁入 archives/ 并核验字节/mode，修复两个 worktree，更新现行档案路径 |

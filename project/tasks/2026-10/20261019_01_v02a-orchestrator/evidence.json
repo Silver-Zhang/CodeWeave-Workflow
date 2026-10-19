@@ -694,5 +694,36 @@
     "checked_files": 46,
     "known_values_count": 5,
     "matched_files": []
+  },
+  "repository_sync": {
+    "main": "536a0580b70bffe2cca009fcbd9f4e9d8c5e3459",
+    "pr1": {
+      "state": "merged",
+      "merged_at_utc": "2026-10-19T11:27:23Z",
+      "merge_commit": "536a0580b70bffe2cca009fcbd9f4e9d8c5e3459",
+      "baseline_inheritance_verified": true
+    },
+    "pr2": {
+      "state": "open",
+      "base": "main",
+      "head": "210e208b5872507b9ff5c6471b5ef0acdea9518d",
+      "title": "DevFlower v0.2-A：实现可恢复双 Agent 运行器与受控交付",
+      "description_refreshed": true
+    },
+    "local_primary_source_fast_forwarded": true
+  },
+  "local_archive": {
+    "workspace_relative_evidence": "archives/devflower/v0.2-a/evidence",
+    "workspace_relative_records": "archives/devflower/v0.2-a/checkouts/records",
+    "workspace_relative_snapshot_checkout": "archives/devflower/v0.2-a/checkouts/flow",
+    "path_mapping": "archives/layout.json",
+    "integrity_report": "archives/inventory/organization.json",
+    "integrity_report_sha256": "f774990eff7649eb2f568ecd00f312df48928862841663f5cbba04190d9652cf",
+    "directories": 11,
+    "files": 42679,
+    "bytes": 3575445065,
+    "all_original_content_and_modes_preserved": true,
+    "historical_original_reports_rewritten": false,
+    "linked_worktrees_repaired": 2
   }
 }
