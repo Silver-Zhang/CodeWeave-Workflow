@@ -1,0 +1,26 @@
+{
+  "candidate_manifest_sha256": "f0714eb0def67f241fc14a442465202fcbf170e5e224e6bd32837a8d7795998c",
+  "findings": [],
+  "limitations": [
+    "This verdict binds the independently reverified 62-file candidate only, on Linux x86_64 with LLVM/Clang 18, Bubblewrap 0.9.0, Python 3.12.3 and Node 22.23.3.",
+    "The independent neighbors performance run is a warm-cache local baseline with seven samples per case, not a cold-cache, large-production-project, or cross-platform benchmark. It measured linear query/connection growth for synthetic fanout but did not establish a contract-level performance failure.",
+    "Synthetic SQLite scale cases are not Clang semantic evidence; the performance run also included a real public CLI/new-analyzer/Bubblewrap multi-file case for semantic and readonly checks.",
+    "PCH/modules, complex full-program virtual dispatch, M2 incrementality/Git diff, private projects and large-scale performance remain outside M1 scope.",
+    "The first refresh harness was invalid because the two-index fixture could not expose a second page and the harness had route cleanup errors. It was not counted as product evidence; a replacement real 22-index Chromium harness produced the valid refresh result."
+  ],
+  "recommendation": "ACCEPT. The refresh/history/selection race requirements and the prior M1 navigation/Unicode requirements are closed for this candidate. The user may approve freezing M1-Final. Treat the measured neighbors N+1 growth as a documented follow-up optimization candidate, not as a claim that query batching has already been implemented. No commit, push, merge, release or M2 action was performed by this audit.",
+  "test_summary": {
+    "independent_commands": [
+      "Fresh CMake configure/build from the 62-file candidate completed exit 0; analyzer SHA-256 `8562b0369cf35e6affdefe011cc83a8e65cb6e7527fa0a0649de18ab15014e94`.",
+      "`CODEWEAVE_LLVM_PREFIX=... CODEWEAVE_RESOURCE_DIR=.../lib/clang/18 PYTHON=.../.venv/bin/python bash scripts/verify_m1.sh` completed exit 0: 110 backend tests, fixture unittest 1/1, frontend 35 tests, and 7 real Chromium tests; zero failures/errors/skips.",
+      "Independent real catalog Chromium check completed exit 0 after generating 22 real indexes with the fresh analyzer/public CLI/Bubblewrap and one new publication. It verified first-page pagination, a selected historical index, delayed refresh versus manual selection, and publication refresh without changing selection.",
+      "Independent corrected neighbors measurement completed exit 0 with seven samples per case. Fanout 1/5/12/25/50 measured 4/8/15/28/53 persistent readonly connections and 25/53/102/193/368 persistent SQL statements; response facts/page counts, DB hash, write authorizer, and byte budget checks passed. Real multi-file public CLI indexing was also included.",
+      "Final candidate identity check: raw manifest SHA-256 `f0714eb0def67f241fc14a442465202fcbf170e5e224e6bd32837a8d7795998c`; 62/62 file bytes, content hashes and modes matched."
+    ],
+    "not_run": [
+      "No private/RMC analysis, M2 behavior, PCH/modules, full-program virtual dispatch or large-scale production performance benchmark."
+    ],
+    "results": "All M1-Final required contracts passed with fresh-build and real-browser evidence. The documented neighbors N+1 scaling is measurable but not a required-contract failure under the supplied acceptance criteria and local evidence."
+  },
+  "verdict": "ACCEPT"
+}

@@ -1,0 +1,565 @@
+{
+  "environment": {
+    "os": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "logical_cpus": 32,
+    "python": "3.12.3",
+    "sqlite": "3.45.1"
+  },
+  "method": "3 warmups then repeated uninstrumented warm-cache queries; one separate traced call counts persistent vs in-memory validation SQL. Local machine only, no cold-cache/large-project latency claim.",
+  "source_index_py_sha256": "701172995d59c215bb351ef51b25df26816b5e88b98413c8d41a1ce62734ab72",
+  "oversize_guard": {
+    "code": "query_limit",
+    "database_unchanged": true
+  },
+  "cases": [
+    {
+      "name": "small",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 4,
+      "calls": 3,
+      "limit": 12,
+      "nodes": 4,
+      "call_instances": 3,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 12,
+          "returned_count": 0,
+          "total_count": 0,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 12,
+          "returned_count": 3,
+          "total_count": 3,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        }
+      },
+      "json_bytes": 2705,
+      "database_bytes": 77824,
+      "connections": {
+        "persistent": 6,
+        "schema_memory": 6
+      },
+      "sql_statements": {
+        "persistent": 39,
+        "schema_memory": 72
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 2.308787,
+        "median": 2.395077,
+        "p95": 2.447748,
+        "max": 2.458762
+      }
+    },
+    {
+      "name": "shared_targets",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 3,
+      "calls": 120,
+      "limit": 50,
+      "nodes": 3,
+      "call_instances": 50,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 0,
+          "total_count": 0,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": true,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 50,
+          "total_count": 120,
+          "remaining_count": 70,
+          "has_more": true,
+          "next_offset": 50
+        }
+      },
+      "json_bytes": 15686,
+      "database_bytes": 110592,
+      "connections": {
+        "persistent": 5,
+        "schema_memory": 5
+      },
+      "sql_statements": {
+        "persistent": 80,
+        "schema_memory": 60
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 2.361771,
+        "median": 2.402698,
+        "p95": 2.462074,
+        "max": 2.526568
+      }
+    },
+    {
+      "name": "fanout_1",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 2,
+      "calls": 1,
+      "limit": 50,
+      "nodes": 2,
+      "call_instances": 1,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 0,
+          "total_count": 0,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 1,
+          "total_count": 1,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        }
+      },
+      "json_bytes": 1495,
+      "database_bytes": 77824,
+      "connections": {
+        "persistent": 4,
+        "schema_memory": 4
+      },
+      "sql_statements": {
+        "persistent": 25,
+        "schema_memory": 48
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 1.536748,
+        "median": 1.58327,
+        "p95": 1.618629,
+        "max": 1.674389
+      }
+    },
+    {
+      "name": "fanout_5",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 6,
+      "calls": 5,
+      "limit": 50,
+      "nodes": 6,
+      "call_instances": 5,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 0,
+          "total_count": 0,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 5,
+          "total_count": 5,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        }
+      },
+      "json_bytes": 3915,
+      "database_bytes": 77824,
+      "connections": {
+        "persistent": 8,
+        "schema_memory": 8
+      },
+      "sql_statements": {
+        "persistent": 53,
+        "schema_memory": 96
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 3.010684,
+        "median": 3.068715,
+        "p95": 3.178205,
+        "max": 3.186891
+      }
+    },
+    {
+      "name": "fanout_12",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 13,
+      "calls": 12,
+      "limit": 50,
+      "nodes": 13,
+      "call_instances": 12,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 0,
+          "total_count": 0,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 12,
+          "total_count": 12,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        }
+      },
+      "json_bytes": 8175,
+      "database_bytes": 77824,
+      "connections": {
+        "persistent": 15,
+        "schema_memory": 15
+      },
+      "sql_statements": {
+        "persistent": 102,
+        "schema_memory": 180
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 5.64682,
+        "median": 5.772966,
+        "p95": 5.902898,
+        "max": 5.9589
+      }
+    },
+    {
+      "name": "fanout_25",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 26,
+      "calls": 25,
+      "limit": 50,
+      "nodes": 26,
+      "call_instances": 25,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 0,
+          "total_count": 0,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 25,
+          "total_count": 25,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        }
+      },
+      "json_bytes": 16144,
+      "database_bytes": 77824,
+      "connections": {
+        "persistent": 28,
+        "schema_memory": 28
+      },
+      "sql_statements": {
+        "persistent": 193,
+        "schema_memory": 336
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 10.551803,
+        "median": 10.683314,
+        "p95": 10.807162,
+        "max": 10.909819
+      }
+    },
+    {
+      "name": "fanout_50",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 51,
+      "calls": 50,
+      "limit": 50,
+      "nodes": 51,
+      "call_instances": 50,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 0,
+          "total_count": 0,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 50,
+          "total_count": 50,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        }
+      },
+      "json_bytes": 31469,
+      "database_bytes": 90112,
+      "connections": {
+        "persistent": 53,
+        "schema_memory": 53
+      },
+      "sql_statements": {
+        "persistent": 368,
+        "schema_memory": 636
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 19.97658,
+        "median": 20.223568,
+        "p95": 20.410159,
+        "max": 20.444367
+      }
+    },
+    {
+      "name": "cycles_repeats",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 3,
+      "calls": 160,
+      "limit": 50,
+      "nodes": 3,
+      "call_instances": 100,
+      "pages": {
+        "callers": {
+          "truncated": true,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 50,
+          "total_count": 80,
+          "remaining_count": 30,
+          "has_more": true,
+          "next_offset": 50
+        },
+        "callees": {
+          "truncated": true,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 50,
+          "total_count": 80,
+          "remaining_count": 30,
+          "has_more": true,
+          "next_offset": 50
+        }
+      },
+      "json_bytes": 29836,
+      "database_bytes": 114688,
+      "connections": {
+        "persistent": 5,
+        "schema_memory": 5
+      },
+      "sql_statements": {
+        "persistent": 130,
+        "schema_memory": 60
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 2.780063,
+        "median": 2.838418,
+        "p95": 2.873569,
+        "max": 2.909308
+      }
+    },
+    {
+      "name": "moderate_corpus",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 10002,
+      "calls": 50200,
+      "limit": 50,
+      "nodes": 51,
+      "call_instances": 100,
+      "pages": {
+        "callers": {
+          "truncated": true,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 50,
+          "total_count": 100,
+          "remaining_count": 50,
+          "has_more": true,
+          "next_offset": 50
+        },
+        "callees": {
+          "truncated": true,
+          "offset": 0,
+          "limit": 50,
+          "returned_count": 50,
+          "total_count": 100,
+          "remaining_count": 50,
+          "has_more": true,
+          "next_offset": 50
+        }
+      },
+      "json_bytes": 45742,
+      "database_bytes": 16822272,
+      "connections": {
+        "persistent": 53,
+        "schema_memory": 53
+      },
+      "sql_statements": {
+        "persistent": 418,
+        "schema_memory": 636
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 20.846855,
+        "median": 21.102231,
+        "p95": 21.26391,
+        "max": 21.513001
+      }
+    },
+    {
+      "name": "moderate_ui_limit",
+      "origin": "explicitly synthetic SQLite scale rows",
+      "symbols": 10002,
+      "calls": 50200,
+      "limit": 12,
+      "nodes": 13,
+      "call_instances": 24,
+      "pages": {
+        "callers": {
+          "truncated": true,
+          "offset": 0,
+          "limit": 12,
+          "returned_count": 12,
+          "total_count": 100,
+          "remaining_count": 88,
+          "has_more": true,
+          "next_offset": 12
+        },
+        "callees": {
+          "truncated": true,
+          "offset": 0,
+          "limit": 12,
+          "returned_count": 12,
+          "total_count": 100,
+          "remaining_count": 88,
+          "has_more": true,
+          "next_offset": 12
+        }
+      },
+      "json_bytes": 11578,
+      "database_bytes": 16822272,
+      "connections": {
+        "persistent": 15,
+        "schema_memory": 15
+      },
+      "sql_statements": {
+        "persistent": 114,
+        "schema_memory": 180
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 6.071619,
+        "median": 6.205996,
+        "p95": 6.44796,
+        "max": 6.54795
+      }
+    },
+    {
+      "name": "real_clang_multifile",
+      "origin": "actual public CLI / new analyzer / Bubblewrap",
+      "limit": 12,
+      "nodes": 4,
+      "call_instances": 4,
+      "pages": {
+        "callers": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 12,
+          "returned_count": 1,
+          "total_count": 1,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        },
+        "callees": {
+          "truncated": false,
+          "offset": 0,
+          "limit": 12,
+          "returned_count": 3,
+          "total_count": 3,
+          "remaining_count": 0,
+          "has_more": false,
+          "next_offset": null
+        }
+      },
+      "json_bytes": 10061,
+      "database_bytes": 126976,
+      "connections": {
+        "persistent": 6,
+        "schema_memory": 6
+      },
+      "sql_statements": {
+        "persistent": 40,
+        "schema_memory": 72
+      },
+      "write_attempts": [],
+      "database_sha256_unchanged": true,
+      "samples": 31,
+      "latency_ms": {
+        "min": 2.439891,
+        "median": 2.480073,
+        "p95": 2.53564,
+        "max": 2.591366
+      }
+    }
+  ]
+}

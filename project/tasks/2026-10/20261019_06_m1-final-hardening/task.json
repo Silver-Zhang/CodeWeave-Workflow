@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "20261019_06_m1-final-hardening",
+  "date": "2026-10-19",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    "CodeWeave feat/m1-interactive-map; base 2d49db0e0b3d5e17cb95e9b876ffea0077e4ba8b; result 6c3d1b8cf9c2ff3257c92840dd8531dcc1cceed7; tree ffabf3d59a334349126ae2fec9923660d844e597; accepted 62-file manifest SHA256 f0714eb0def67f241fc14a442465202fcbf170e5e224e6bd32837a8d7795998c"
+  ]
+}
