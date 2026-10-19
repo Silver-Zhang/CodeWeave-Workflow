@@ -7,7 +7,7 @@ import sys
 import subprocess
 from .adapters import probe
 from .common import Blocked
-from .controller import deliver_run, resume, start
+from .controller import cancel_run, deliver_run, resume, start
 from .sandbox import abi
 from .store import Store
 
@@ -43,8 +43,7 @@ def main(argv=None):
             elif args.command == 'audit':
                 value = store.audit(args.run, args.after, args.limit)
             elif args.command == 'cancel':
-                store.transition(args.run, None, cancel_requested=True)
-                value = {'id': args.run, 'cancel_requested': True}
+                value = cancel_run(store, args.run)
             elif args.command == 'resume':
                 value = resume(store, args.run)
             else:

@@ -1,6 +1,6 @@
 # DevFlower v0.2-A：可恢复的双 Agent 执行器
 
-状态：实施设计合同；Controller 候选接口见 [运行说明](../../ORCHESTRATOR.md)。本目录不是已发布的 v0.2，也不能证明真实 Agent 或 Git 门禁已经运行通过；实际证据另在 project/devflower 记录。
+状态：现有实现的设计与验收合同；已实现接口见 [运行说明](../../ORCHESTRATOR.md)。文档本身不证明当次真实 Agent/Git 门禁通过，实际候选、测试、复审与主线集成状态另在 project/devflower 记录。
 
 ## 1. 目标、范围与既有规则
 
@@ -38,7 +38,7 @@ Controller 是 Python 程序，不再添加一个负责拍板的 LLM。Codex 提
 
 建议在 tools/ 下增加小型 orchestration 包，保留 tools/devflower.py 的已有 init/new/index/check 合同；路径可按实际实现微调，不先创建空目录树。标准库用于进程、SQLite 和 Git 编排；如使用 JSON Schema 校验依赖，显式固定并解释，不声称仍然零依赖。
 
-拟议命令（尚未实现）：doctor、run、status、resume、cancel、audit、deliver。run 默认停在 READY，无交付授权则不 commit/push；deliver 不能绕过 gate。
+已实现命令：doctor、run、status、resume、cancel、audit、deliver。实际用法见 ../../ORCHESTRATOR.md；run 默认停在 READY，无交付授权则不 commit/push，deliver 重新检查 gate。PR、人工合并批准与远端临时分支清理由外部获准操作完成。
 
 ## 4. 可信配置与权限边界
 
@@ -78,7 +78,8 @@ Controller 的版本、授权、验收规则在启动时固定。开发 DevFlowe
 
 ```text
 CREATED → PREFLIGHT → IMPLEMENTING → SNAPSHOTTING → VERIFYING
-    → REVIEWING → GATING → READY → COMMITTING → PUSHING → COMPLETED
+    → REVIEWING → GATING → READY → COMMITTING → LOCAL_COMMITTED（仅本地提交）
+                                            → PUSHING → COMPLETED（远端全部读回）
 ```
 
 无交付授权时 READY 即本次可交付候选终点，不伪称已推送。

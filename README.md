@@ -39,7 +39,7 @@ python3 tools/devflower.py check --baseline
 
 ## 迁移与许可边界
 
-Linux 本地双 Agent 运行器的候选接口、授权格式及限制见
+Linux 本地双 Agent 运行器的实际接口、最小任务例、授权格式及限制见
 [ORCHESTRATOR](docs/ORCHESTRATOR.md)。实施设计合同与 A01–A16 仍见
 [v0.2-A](docs/design/v0.2-a/README.md)；设计文档不代替实际测试或独立验收。
 

@@ -118,6 +118,7 @@ def commit(store, run, target, tree):
     else:
         data = {'root': root, 'tree': tree, 'parent': git(root, 'rev-parse', 'HEAD'),
                 'branch': target['branch'], 'timestamp': int(time.time()),
+                'local_ref': 'refs/devflower/commits/' + digest(canonical([run, root, target['branch']])),
                 'name': git(root, 'config', 'user.name'), 'email': git(root, 'config', 'user.email')}
         op = store.intent(run, 'COMMIT', data)
     stamp = str(data['timestamp']) + ' +0000'
@@ -130,9 +131,30 @@ def commit(store, run, target, tree):
         raise Blocked('actual commit tree/parent mismatch')
     if git(root, 'rev-parse', 'HEAD') != data['parent']:
         raise Blocked('target changed before delivery')
-    # Do not move local ref: that would make the preserved worktree/index appear
-    # dirty. Receipt identifies the delivered commit; operation SHA is durable.
-    store.finish(op, 'COMMITTED', commit=sha)
+    # Pin before acknowledging. The task branch/index/worktree remain untouched,
+    # while a real ref makes commit-only delivery survive reflog expiry and GC.
+    ref = data['local_ref']
+    def observed():
+        symbolic = subprocess.run(['git', '-C', root, 'symbolic-ref', '--quiet', ref],
+                                  capture_output=True, env=clean_env())
+        if symbolic.returncode == 0:
+            raise Blocked('durable delivery reference must be direct')
+        p = subprocess.run(['git', '-C', root, 'rev-parse', '--verify', '--quiet', ref],
+                           capture_output=True, env=clean_env())
+        if p.returncode not in (0, 1):
+            raise Blocked('cannot inspect durable delivery reference')
+        return p.stdout.decode().strip() if p.returncode == 0 else None
+    current = observed()
+    if current is None:
+        p = subprocess.run(['git', '-C', root, 'update-ref', '--no-deref', ref, sha, '0' * len(sha)],
+                           capture_output=True, env=clean_env())
+        if p.returncode and observed() != sha:
+            raise Blocked('durable delivery reference could not be pinned')
+    elif current != sha:
+        raise Blocked('durable delivery reference changed; never overwrite it')
+    if observed() != sha:
+        raise Blocked('durable delivery reference readback mismatch')
+    store.finish(op, 'COMMITTED', commit=sha, local_ref=ref)
     return sha
 
 
@@ -164,7 +186,8 @@ def push(store, run, target, sha, push_runner=None):
             from .process import execute
             with tempfile.TemporaryDirectory(prefix='devflower-push-') as tmp:
                 execute(argv, target['root'], Path(tmp) / 'home',
-                        read=[target['root'], target['remote']], write=[target['remote']], timeout=30)
+                        read=[target['root'], target['remote']], write=[target['remote']], timeout=30,
+                        store=store, run=run)
     except (OSError, subprocess.TimeoutExpired):
         pass  # Unknown response is resolved by remote readback, never blind retry.
     tip = remote_tip(target['remote'], target['branch'])
@@ -179,8 +202,13 @@ def deliver(store, run, candidate, targets, do_push, expected_candidate=None):
     if not targets or len(targets) > 2 or targets[0]['kind'] != 'source' or len(targets) == 2 and targets[1]['kind'] != 'records':
         raise Blocked('source then optional records required')
     receipts = []
+    def check_cancelled():
+        if store.get(run)['data'].get('cancel_requested'):
+            raise Blocked('run cancelled; further delivery refused')
     for target in targets:
+        pending_receipt = None
         try:
+            check_cancelled()
             checks(target)
             if target['kind'] == 'source':
                 tree = make_tree(target['root'], candidate)
@@ -189,12 +217,24 @@ def deliver(store, run, candidate, targets, do_push, expected_candidate=None):
                     raise Blocked('prospective commit does not match reviewed candidate')
             else:
                 tree = records_tree(target['root'], target['receipt_path'], {'run_id': run, 'source': receipts[0]})
+            check_cancelled()
             sha = commit(store, run, target, tree)
+            operation = next(o for o in reversed(store.operations(run))
+                             if o['kind'] == 'COMMIT' and o['data']['root'] == target['root'])
+            pending_receipt = {'kind': target['kind'], 'commit': sha, 'tree': tree,
+                               'local_ref': operation['data']['local_ref'], 'pushed': False}
+            check_cancelled()
             if do_push:
                 push(store, run, target, sha)
-            receipts.append({'kind': target['kind'], 'commit': sha, 'tree': tree, 'pushed': do_push})
+                pending_receipt['pushed'] = True
+            receipts.append(pending_receipt)
+            pending_receipt = None
+            check_cancelled()
         except Blocked as exc:
-            store.transition(run, 'PARTIAL_DELIVERY' if receipts else 'BLOCKED', receipts=receipts, reason=str(exc))
+            cancelled = store.get(run)['data'].get('cancel_requested', False)
+            if cancelled and pending_receipt is not None:
+                receipts.append(pending_receipt)
+            store.transition(run, 'CANCELLED' if cancelled else 'PARTIAL_DELIVERY' if receipts else 'BLOCKED', receipts=receipts, reason=str(exc))
             raise
-    store.transition(run, 'COMPLETED', receipts=receipts)
+    store.transition(run, 'COMPLETED' if do_push else 'LOCAL_COMMITTED', receipts=receipts)
     return receipts

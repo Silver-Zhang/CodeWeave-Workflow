@@ -12,7 +12,7 @@ import uuid
 from .common import Blocked, canonical
 
 STATES = {'CREATED', 'PREFLIGHT', 'IMPLEMENTING', 'SNAPSHOTTING', 'VERIFYING', 'REVIEWING', 'GATING',
-          'READY', 'COMMITTING', 'PUSHING', 'COMPLETED', 'BLOCKED', 'RECOVERING', 'CANCELLED', 'PARTIAL_DELIVERY'}
+          'READY', 'COMMITTING', 'LOCAL_COMMITTED', 'PUSHING', 'COMPLETED', 'BLOCKED', 'RECOVERING', 'CANCELLED', 'PARTIAL_DELIVERY'}
 
 
 def process_identity(pid):
@@ -93,6 +93,8 @@ class Store:
             if current['state'] in ('CANCELLED', 'COMPLETED') and state != current['state']:
                 raise Blocked('terminal run')
             data = dict(current['data'], **updates)
+            if state in ('READY', 'COMMITTING') and data.get('cancel_requested') and state != current['state']:
+                state = 'CANCELLED'
             self.db.execute('UPDATE runs SET state=?,data=? WHERE id=?', (state, canonical(data).decode(), run))
             self._event(run, state, updates)
 
