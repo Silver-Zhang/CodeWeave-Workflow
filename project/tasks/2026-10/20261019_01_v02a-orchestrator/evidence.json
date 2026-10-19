@@ -1,0 +1,698 @@
+{
+  "schema_version": 1,
+  "task_id": "20261019_01_v02a-orchestrator",
+  "status": "implementation-and-independent-review-complete",
+  "candidate": {
+    "base": "ff55386eeb49a634a9a28bf796b4cf6872800e2b",
+    "entries": [
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "size": 204,
+        "sha256": "1118ee6938acb2eda78950ce0a4a16e2990c1a601812a66fad2a0d6093c24580"
+      },
+      {
+        "path": "AGENTS.md",
+        "mode": "100644",
+        "size": 2195,
+        "sha256": "0b3db972a3cb3de02fed8233f36a7005602709f90411209efcd2229026db9c15"
+      },
+      {
+        "path": "CLAUDE.md",
+        "mode": "100644",
+        "size": 330,
+        "sha256": "1dc6e5b9b0c8d7b0c9a0c7c3f0b355c82437fd1a87080ef3327cfd2c607e5028"
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "size": 2778,
+        "sha256": "db357882e765d834d34338a3095d778dcf80cad14b7b947d16f5bdd02e5ee1d5"
+      },
+      {
+        "path": "WORKFLOW.md",
+        "mode": "100644",
+        "size": 4840,
+        "sha256": "d8c0988ac0238b8e747948ee683f3a3eb492dde152efeaa89a785875dc8d2d63"
+      },
+      {
+        "path": "docs/BRANCHING.md",
+        "mode": "100644",
+        "size": 2276,
+        "sha256": "08876a3d35b9ab52641359467b077fc041aa35e2e89d5046408569a46f76f82a"
+      },
+      {
+        "path": "docs/ORCHESTRATOR.md",
+        "mode": "100644",
+        "size": 8834,
+        "sha256": "41728678a1735557c37a93680517060b25a2fe9aad0226c3432a07765d003fea"
+      },
+      {
+        "path": "docs/REFERENCES.md",
+        "mode": "100644",
+        "size": 1943,
+        "sha256": "678d91543ccbcc3a24f184dbd44901ae9148ff49ffd7f4a087b63f45caf12f46"
+      },
+      {
+        "path": "docs/design/v0.2-a/ACCEPTANCE.md",
+        "mode": "100644",
+        "size": 3761,
+        "sha256": "ac5715b0567ada01b8464ef21a9eb019d945c0406f1e75033da02719e718ac7f"
+      },
+      {
+        "path": "docs/design/v0.2-a/LOCAL_AGENT_PROMPT.md",
+        "mode": "100644",
+        "size": 5542,
+        "sha256": "89b383ccc95a8732e23898b006ba05466fea50f24dfd75a4d7815b8e556c0b9f"
+      },
+      {
+        "path": "docs/design/v0.2-a/README.md",
+        "mode": "100644",
+        "size": 15041,
+        "sha256": "daf3afa6d46549c25e02c953fc13d7182c834a9f86772353f24520b4d43075ec"
+      },
+      {
+        "path": "docs/design/v0.2-a/examples/review-result.example.json",
+        "mode": "100644",
+        "size": 434,
+        "sha256": "f36a1e52aa57f3272d37f426a91a3889185c717db6eca20284151a719a7ee69d"
+      },
+      {
+        "path": "docs/design/v0.2-a/examples/workflow-policy.example.json",
+        "mode": "100644",
+        "size": 742,
+        "sha256": "b48cd9f695e7a189b6f19f65caf73ea210247d29472ede6c16f188c6b9dcfde9"
+      },
+      {
+        "path": "docs/design/v0.2-a/schemas/README.md",
+        "mode": "100644",
+        "size": 1383,
+        "sha256": "2ba2ca5df30f542bb8659e56666b1a931b10d0a023d83a373e2ffb5b97c3f34a"
+      },
+      {
+        "path": "docs/design/v0.2-a/schemas/review-result.schema.json",
+        "mode": "100644",
+        "size": 1529,
+        "sha256": "3b0fc0ddcb965c47a2475a14e67b6628c895cffc5af1242a0549874496b0ed0d"
+      },
+      {
+        "path": "docs/design/v0.2-a/schemas/workflow-policy.schema.json",
+        "mode": "100644",
+        "size": 2484,
+        "sha256": "ea3ce17845870843934489eef154cdd952845b77959dacc6ef59997905cfd190"
+      },
+      {
+        "path": "templates/PROJECT.md",
+        "mode": "100644",
+        "size": 582,
+        "sha256": "3de1d87ca31d533ef95c0ba6f28c9eb370a8a473e9e34b0c18bbf1e69589c629"
+      },
+      {
+        "path": "templates/TASK.md",
+        "mode": "100644",
+        "size": 1155,
+        "sha256": "cf90dd8ca345dca7f048e3295e1e8fd4e478a5edb11fc73e9c034c8a2bf596e8"
+      },
+      {
+        "path": "tests/host_isolation.py",
+        "mode": "100644",
+        "size": 2136,
+        "sha256": "f31fa3432416f86f5435cf4247099c5c37f066f1fdcdb28461f22e07baecd57c"
+      },
+      {
+        "path": "tests/test_devflower.py",
+        "mode": "100644",
+        "size": 6743,
+        "sha256": "5a537eeda8d05051d26529ea6125ae84d2356e1e68c14a8ec7f60b7958a4ca20"
+      },
+      {
+        "path": "tests/test_failure_modes.py",
+        "mode": "100644",
+        "size": 2366,
+        "sha256": "30a792f89f501cddc090f842a7d3a64466f5fc65e2c0dd094e3f3050012d6eb0"
+      },
+      {
+        "path": "tests/test_orchestration.py",
+        "mode": "100644",
+        "size": 36351,
+        "sha256": "7347bebe09bcc6a26a494bfa7262bde9f04945e67dc64524e5a25f109e222fec"
+      },
+      {
+        "path": "tools/devflower.py",
+        "mode": "100644",
+        "size": 11657,
+        "sha256": "29908899d5337f7cef11fbf5f824016d0cf58c90d16aa56782796d16035c2ae9"
+      },
+      {
+        "path": "tools/orchestration/__init__.py",
+        "mode": "100644",
+        "size": 75,
+        "sha256": "19170f5ed48d2a25dfa0621c8521022fa165b11e54afedaddacf35adeca5bcab"
+      },
+      {
+        "path": "tools/orchestration/adapters.py",
+        "mode": "100644",
+        "size": 9303,
+        "sha256": "1c42142eb13fc14551d1ece300828d3e178f5cfdbbd7dc8b3252c6c9b4a38efa"
+      },
+      {
+        "path": "tools/orchestration/cli.py",
+        "mode": "100644",
+        "size": 2843,
+        "sha256": "c88b04b733f593c610864967a3fb70e6d922fcbc28fa12aff633635af1f79f94"
+      },
+      {
+        "path": "tools/orchestration/common.py",
+        "mode": "100644",
+        "size": 6336,
+        "sha256": "c90cbbf5cc344353e2d1ed6b85277d2252922dd57a66b35df864d2b000a02901"
+      },
+      {
+        "path": "tools/orchestration/contracts.py",
+        "mode": "100644",
+        "size": 7294,
+        "sha256": "2f7bf8ef3b1e07b2369025b35033d3995616d0f70cbf3bda67db3ff36fccec1b"
+      },
+      {
+        "path": "tools/orchestration/controller.py",
+        "mode": "100644",
+        "size": 18682,
+        "sha256": "f8cee8018b59ce738b359a709249efc67bfb2716fea33f7072e1cb7b5617dce4"
+      },
+      {
+        "path": "tools/orchestration/delivery.py",
+        "mode": "100644",
+        "size": 10372,
+        "sha256": "26e8f83ec72a743d9559eda33d8dfd5b4f1ee18bba13578f8a2b5dc9bc4e26f9"
+      },
+      {
+        "path": "tools/orchestration/gate.py",
+        "mode": "100644",
+        "size": 3962,
+        "sha256": "c68db38b1d435eabe08f32f9329902b38ae57b4e330153e10a5da3b42d53a1bd"
+      },
+      {
+        "path": "tools/orchestration/privacy.py",
+        "mode": "100644",
+        "size": 2320,
+        "sha256": "81f20cda5e5cf92447f47428ca4e07d3d732e8a9e0347e48eb1b1dfac1c9b871"
+      },
+      {
+        "path": "tools/orchestration/process.py",
+        "mode": "100644",
+        "size": 6555,
+        "sha256": "238005a89afa2c0302783cd34dcb422a839f500df32f297ea9f0e8e2fe63c616"
+      },
+      {
+        "path": "tools/orchestration/sandbox.py",
+        "mode": "100644",
+        "size": 3964,
+        "sha256": "cb01d84d66d31d5929e47dd265ba03050046ceef90424cdd9730dffdf7323492"
+      },
+      {
+        "path": "tools/orchestration/store.py",
+        "mode": "100644",
+        "size": 5214,
+        "sha256": "42449e4a23581ce56eb8e55660bc853eadd5682b2aff54d42abd58594e89f04d"
+      },
+      {
+        "path": "tools/orchestration/verification.py",
+        "mode": "100644",
+        "size": 4080,
+        "sha256": "973a610529609c3b5f507dfe46328796291a4b540a5c937aa23d13c4c8d64d15"
+      }
+    ],
+    "candidate_sha256": "147da481da3b7ad8025541d1be3cc402baf89f88ff97bc97ca045c3e78320ba7",
+    "acceptance_sha256": "ac5715b0567ada01b8464ef21a9eb019d945c0406f1e75033da02719e718ac7f"
+  },
+  "environment": {
+    "python": "3.12.3",
+    "git": "2.43.0",
+    "codex_cli": "0.163.0",
+    "claude_code": "2.1.303",
+    "landlock_abi": 8
+  },
+  "checks": [
+    {
+      "kind": "baseline_regression",
+      "tests": 24,
+      "passed": 24,
+      "skipped": 0,
+      "artifact_sha256": "e411480c511b2cd7671bb91d674b404637e7317e4787748b3d9a5618fe2f1a5f"
+    },
+    {
+      "kind": "current_selftests",
+      "tests": 72,
+      "passed": 72,
+      "skipped": 0,
+      "artifact_sha256": "ce0de8e9f2a318653b35e653397bf6ccd5f7751d34d34294d7365c9c7b6ca746"
+    },
+    {
+      "kind": "host_bwrap_isolation",
+      "tests": 3,
+      "passed": 3,
+      "skipped": 0,
+      "artifact_sha256": "35361d35c3950de1af5b92f455aa21b66e3a0401c246e14641be8cd7a1dbc272"
+    }
+  ],
+  "actual_fixture": {
+    "controller_sha256": "ff6555075c785dc9b91c9c96e4b7df4e417a4a0a641a45329eb1c4be3238eb2c",
+    "run_id": "5c8c6b4386d14817b2a1f5fbf8748d35",
+    "state": "READY",
+    "candidate_sha256": "8b3ac33e0e2ecf6f5b58ce9acb3a57564bed5e147732540fdec284f404bb679c",
+    "acceptance_sha256": "5907325defce9fd7046b665b95f13c616da411f28d6d2b9819d872bb64dbcd62",
+    "tests": [
+      {
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "tests": 8
+      }
+    ],
+    "implementation": {
+      "session_id": "01a1537c-11f2-7fc2-b99c-e8105c7f60f6",
+      "requested_model": "gpt-6.1-sol",
+      "resolved_model": "unknown",
+      "requested_effort": "xhigh",
+      "resolved_effort": "unknown",
+      "permission_mode": "external-bwrap/never",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 4696
+        },
+        "cancelled": false,
+        "duration": 28.445,
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 2360628,
+          "pid": 2360628,
+          "sid": 2360628,
+          "start": "97038840",
+          "state": "R"
+        },
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "b5a8bead0820aff5cfca971d3c276707c13665af7337e360035c71aa77d1fdee"
+        },
+        "timeout": false
+      }
+    },
+    "review": {
+      "session_id": "1ff929d1-38e5-4850-bf97-71c4ec8ba68a",
+      "requested_model": "claude-opus-5-5[1m]",
+      "resolved_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "resolved_effort": "unknown",
+      "permission_mode": "plan/read-tools",
+      "process": {
+        "bytes": {
+          "stderr": 446,
+          "stdout": 3066
+        },
+        "cancelled": false,
+        "duration": 185.906,
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 2361346,
+          "pid": 2361346,
+          "sid": 2361346,
+          "start": "97041745",
+          "state": "R"
+        },
+        "sha256": {
+          "stderr": "cb84d898a2a49e649bfda0e87cff7870fbae03ad32fe3dfe5937b436ead56555",
+          "stdout": "5f737fedbce01f297fb0928afa35ebff833d02d3828b7613bbfb4950a514ab74"
+        },
+        "timeout": false
+      },
+      "report": {
+        "acceptance_sha256": "5907325defce9fd7046b665b95f13c616da411f28d6d2b9819d872bb64dbcd62",
+        "candidate_sha256": "8b3ac33e0e2ecf6f5b58ce9acb3a57564bed5e147732540fdec284f404bb679c",
+        "contracts": [
+          {
+            "evidence_refs": [
+              "unit",
+              "source-inspection"
+            ],
+            "id": "unit",
+            "status": "PASS"
+          }
+        ],
+        "findings": [
+          {
+            "contract_ids": [
+              "unit"
+            ],
+            "evidence_refs": [
+              "unit",
+              "source-inspection"
+            ],
+            "id": "parse-signed-unimplemented",
+            "severity": "P1",
+            "status": "CLOSED",
+            "title": "parse_signed delegates directly to int(text), preserving signed and whitespace input while raising ValueError for representative non-integers"
+          }
+        ],
+        "limitations": [],
+        "round": 1,
+        "run_id": "5c8c6b4386d14817b2a1f5fbf8748d35",
+        "schema_version": 1,
+        "verdict": "ACCEPT"
+      }
+    },
+    "prior_real_rejection": [
+      {
+        "acceptance_sha256": "5907325defce9fd7046b665b95f13c616da411f28d6d2b9819d872bb64dbcd62",
+        "candidate_sha256": "2d1fd640d3ace4e9ae2834c53f1cadadeec86945ebb3a3c6f1c37c369d97a684",
+        "contracts": [
+          {
+            "evidence_refs": [
+              "unit",
+              "source-inspection"
+            ],
+            "id": "unit",
+            "status": "FAIL"
+          }
+        ],
+        "findings": [
+          {
+            "contract_ids": [
+              "unit"
+            ],
+            "evidence_refs": [
+              "unit",
+              "source-inspection"
+            ],
+            "id": "parse-signed-unimplemented",
+            "severity": "P1",
+            "status": "OPEN",
+            "title": "parse_signed is unimplemented and raises NotImplementedError for every input"
+          }
+        ],
+        "limitations": [],
+        "round": 1,
+        "run_id": "0a7565e5af124af18fa0a83d0316b075",
+        "schema_version": 1,
+        "verdict": "NEEDS_CORRECTION"
+      }
+    ],
+    "commit": false,
+    "push": false
+  },
+  "review_history": [
+    {
+      "round": 1,
+      "candidate_sha256": "128647d59c5d09901a467f5e1295f2f719614f19daaa6bbc953fd9d966f88a69",
+      "actual_model": "claude-opus-5-5[1m]",
+      "verdict": "NEEDS_CORRECTION",
+      "phase": "independent-design",
+      "original_report": {
+        "phase": "independent-design",
+        "candidate_sha256": "128647d59c5d09901a467f5e1295f2f719614f19daaa6bbc953fd9d966f88a69",
+        "preliminary_verdict": "NEEDS_CORRECTION",
+        "findings": [
+          {
+            "id": "DF-A05-01",
+            "severity": "P1",
+            "title": "Runtime homes may overlap the original source worktree",
+            "contract_ids": [
+              "A05",
+              "A04"
+            ],
+            "evidence": "controller.py:64-71 checks homes against control, authorization, config, and Git metadata, but not the source root. process.py:47-49 creates the home and process.py:84-87 grants it write access. A home inside the source worktree can therefore receive writes even though that worktree is supposed to remain outside the agent's writable areas. The script includes a negative binding check for this overlap."
+          },
+          {
+            "id": "DF-A12-01",
+            "severity": "P1",
+            "title": "Candidate can change between delivery hash check and commit-tree construction",
+            "contract_ids": [
+              "A04",
+              "A08",
+              "A12"
+            ],
+            "evidence": "controller.py:226 hashes the candidate, then controller.py:233-237 calls delivery. delivery.py:56-67 independently reads the candidate to build a Git tree but does not verify that tree against the reviewed candidate hash. A mutation in that interval can be committed as the reviewed tree. The script injects a mutation at that boundary and asserts that delivery rejects it."
+          },
+          {
+            "id": "DF-A10-01",
+            "severity": "P1",
+            "title": "A new-session policy does not prohibit resuming a supplied session",
+            "contract_ids": [
+              "A10"
+            ],
+            "evidence": "contracts.py:75-86 validates a UUID only for resume-bound policy; it permits session_id with policy new. adapters.py:41-50 then selects the binding's session_id, and adapters.py:65-72 resumes it. Thus the configured policy can silently reuse a prior session rather than start a new one."
+          },
+          {
+            "id": "DF-A16-01",
+            "severity": "P1",
+            "title": "Self-source runs can reach READY; self-source is blocked only at delivery",
+            "contract_ids": [
+              "A16"
+            ],
+            "evidence": "controller.py:start/resume has no self-source rejection before running verification, review, and gate. The self-source check is only in deliver_run at controller.py:228-229. The new controller can therefore gate its own source into READY, contrary to external bootstrap verification."
+          },
+          {
+            "id": "DF-A01-01",
+            "severity": "P1",
+            "title": "The controller integrity hash omits the CLI entrypoint",
+            "contract_ids": [
+              "A01",
+              "A16"
+            ],
+            "evidence": "common.py:37-40 hashes only *.py files under tools/orchestration. tools/devflower.py is the executable command entrypoint but is not included in that hash, so changing the launcher does not change the controller hash bound by authorization."
+          }
+        ],
+        "representative_coverage": [
+          {
+            "id": "A01",
+            "coverage": "Authorization binding reviewed; controller-hash omission finding DF-A01-01. Negative authorization mutation is not dynamically executed by this script."
+          },
+          {
+            "id": "A02",
+            "coverage": "Lease implementation and identity checks inspected; no independent concurrent-controller execution in this script."
+          },
+          {
+            "id": "A03",
+            "coverage": "SQLite transaction and recovery paths inspected; no injected crash test in this script."
+          },
+          {
+            "id": "A04",
+            "coverage": "Snapshot/mode/symlink implementation inspected; delivery-time candidate mutation race tested under A12."
+          },
+          {
+            "id": "A05",
+            "coverage": "Negative runtime-home/source overlap test included; source-root omission is finding DF-A05-01."
+          },
+          {
+            "id": "A06",
+            "coverage": "Process supervision, bounded output, cancellation, and adapter terminal parsing inspected; no subprocess adversarial execution in this script."
+          },
+          {
+            "id": "A07",
+            "coverage": "Gate rejection for failed verification included; zero-test/skip/result-path execution paths inspected but not run here."
+          },
+          {
+            "id": "A08",
+            "coverage": "ACCEPT with failed verification must raise Blocked; candidate mutation after review and during tree construction are tested."
+          },
+          {
+            "id": "A09",
+            "coverage": "Round and retry limits plus identical-blocker handling inspected; no full repair-loop fixture in this script."
+          },
+          {
+            "id": "A10",
+            "coverage": "Session binding and adapter behavior inspected; new-policy session reuse is finding DF-A10-01."
+          },
+          {
+            "id": "A11",
+            "coverage": "Read-only status/audit and bounded audit implementation inspected; no dedicated output-leak test in this script."
+          },
+          {
+            "id": "A12",
+            "coverage": "Local bare delivery race test included; commit-tree construction is not checked against the reviewed candidate hash."
+          },
+          {
+            "id": "A13",
+            "coverage": "Local bare-remote lost-push-receipt readback and source-success/records-failure partial delivery tests included."
+          },
+          {
+            "id": "A14",
+            "coverage": "selftest.txt reports 51 tests passing, but I did not execute them; baseline regression remains independently unverified."
+          },
+          {
+            "id": "A15",
+            "coverage": "Real multi-agent evidence is explicitly separate and remains required for final judgment."
+          },
+          {
+            "id": "A16",
+            "coverage": "External bootstrap requirement reviewed; self-source can reach READY, finding DF-A16-01. Must be validated by a fixed old controller or external supervised runner."
+          }
+        ],
+        "required_additional_evidence": [
+          "External supervised execution output for the complete negative_test_script; this reviewer did not execute commands.",
+          "Revised candidate and rerun of the script, especially the source-home and delivery-time candidate mutation cases.",
+          "A15 evidence from actual Codex and actual Claude processes, including the independent candidate, real verification commands, and at least one rejection-fix-re-review cycle; preserve the configured relay/model/effort.",
+          "A16 external bootstrap verification of this exact candidate SHA by a fixed trusted older tool or external supervised process, not by this controller.",
+          "Independent baseline regression and local bare-remote recovery results bound to the exact revised candidate; no Git delivery is evidenced in this review phase."
+        ]
+      },
+      "independent_runner_tests": {
+        "total": 6,
+        "passed": 4,
+        "failed": 2,
+        "executor": "external-controlled-runner"
+      }
+    },
+    {
+      "round": 2,
+      "candidate_sha256": "7fda4668ae68d2fea4484483adcf7b2d80886c8595541738fe3c85daa1d7badd",
+      "verdict": null,
+      "supervision": "900-second timeout; no model terminal verdict"
+    },
+    {
+      "round": 3,
+      "candidate_sha256": "147da481da3b7ad8025541d1be3cc402baf89f88ff97bc97ca045c3e78320ba7",
+      "verdict": null,
+      "supervision": "explicit user pause; SIGTERM own group; no model terminal verdict"
+    },
+    {
+      "round": 4,
+      "candidate_sha256": "147da481da3b7ad8025541d1be3cc402baf89f88ff97bc97ca045c3e78320ba7",
+      "binding": {
+        "project": "DevFlower",
+        "role": "independent-framework-reviewer",
+        "session_id": "b0cd3d48-a1d1-4388-8c3e-0e5c00edb51f",
+        "session_policy": "new",
+        "requested_model": "deepseek-flash[1m]",
+        "requested_effort": "high",
+        "reason": "User paused to reconfigure DeepSeek in Claude Code, then explicitly resumed. Old Claude results remain unchanged.",
+        "candidate_sha256": "147da481da3b7ad8025541d1be3cc402baf89f88ff97bc97ca045c3e78320ba7"
+      },
+      "verdict": "ACCEPT",
+      "supervision": "actual exit 0; no timeout; explicit new bound session",
+      "original_report": {
+        "candidate_sha256": "147da481da3b7ad8025541d1be3cc402baf89f88ff97bc97ca045c3e78320ba7",
+        "acceptance_sha256": "ac5715b0567ada01b8464ef21a9eb019d945c0406f1e75033da02719e718ac7f",
+        "verdict": "ACCEPT",
+        "findings": [],
+        "prior_findings_status": {
+          "DF-A05-01": "CLOSED - A05 independently rejects runtime home inside source, home/home overlap, and read allowlists exposing control/source; Landlock ABI 8 probe denies control/auth read and write.",
+          "DF-A12-01": "CLOSED - A12 rejects mutation injected during Git tree construction and candidate change after review; committed tree is compared with the reviewed manifest.",
+          "DF-A10-01": "CLOSED - A10 new-session policy rejects an operator-supplied UUID; explicit --resume/--session-id behavior, no --last/--continue, and session mismatch are tested.",
+          "DF-A16-01": "CLOSED - A16 framework source is rejected before any run store or READY path; self-source delivery is separately blocked.",
+          "DF-A01-01": "CLOSED - A01 controller hash changes when tools/devflower.py or a shipped schema changes; manifest-derived controller hash equals the live hash.",
+          "round_2_timeout": "No terminal verdict was produced; the timeout was not treated as ACCEPT."
+        },
+        "actual_test_commands": [
+          "cd reviewer-tests && PYTHONDONTWRITEBYTECODE=1 python3 independent_negatives.py (output saved to independent-output.txt)",
+          "PYTHONDONTWRITEBYTECODE=1 python3 verification via candidate/tools orchestration.common.controller_hash(), common.tree_hash(), and manifest entry SHA-256 recomputation",
+          "sha256sum reviewer-tests/independent_negatives.py reviewer-tests/independent-output.txt"
+        ],
+        "actual_test_counts": {
+          "independent_suite": {
+            "cases": 231,
+            "passed": 231,
+            "failed": 0,
+            "exit_code": 0,
+            "output_sha256": "cd430627c2c3ba71a431e449eab1e654e54bc946b999ab93a178bac5e46c3df7"
+          },
+          "implementation_selftest_inspected_only": 72,
+          "host_isolation_inspected_only": 3
+        },
+        "per_contract_A01_A16": {
+          "A01": "PASS 12/12 - missing/wrong authorization, wrong branch/HEAD, tampered hashes, absent external-source approval, out-of-scope changes, protected branch, and controller-hash coverage.",
+          "A02": "PASS 6/6 - live lease contention, PID-reuse start identity, stale stop refusal, and pgid ownership.",
+          "A03": "PASS 10/10 - transition rollback, terminal-state immutability, and interrupted-stage recovery recorded as BLOCKED, never COMPLETED.",
+          "A04": "PASS 15/15 - staged/unstaged/untracked inclusion, deleted paths, modes, symlink text without tree escape, snapshot race, and post-review byte change.",
+          "A05": "PASS 7/7 - home/source/control overlap and read-allowlist exposure rejected; real Landlock probe denies authority; absent isolation disables delivery.",
+          "A06": "PASS 17/17 - malformed/truncated Claude and Codex terminals, timeout, output flood, cancel, real exit, and unrelated-process-group survival.",
+          "A07": "PASS 15/15 - zero tests, Skip, typed counters, contradictory JUnit summaries, failed verification, stale evidence, and changed evidence after review.",
+          "A08": "PASS 23/23 - stale/cross-run identity, ACCEPT+P1/FAIL/BLOCKED, missing/duplicate contracts and findings, unknown refs, truncated output, session reuse, historical closure, and full fake-CLI ACCEPT+failed-tests run blocked.",
+          "A09": "PASS 16/16 - pre-spawn retry bound (3 attempts, 1 at zero budget), no retry after spawn, identical-candidate/blocker stop, round-budget stop, and full fake-CLI honest run reaching READY.",
+          "A10": "PASS 15/15 - explicit UUID policy, project/role binding, config/runtime drift, exact session matching, resolved-model drift, and explicit new/resume argv without --last/--continue.",
+          "A11": "PASS 12/12 - read-only status with no agent start, bounded audit pagination, credential extraction/redaction, credential candidate refusal, and hashed rather than persisted raw output.",
+          "A12": "PASS 16/16 - exact Git tree, modes, user index/worktree preservation, deterministic commit retry, hooks/filters/dirty/wrong remote blocks, tree-construction mutation, and post-review candidate change.",
+          "A13": "PASS 18/18 - lost push receipt readback, remote competition without force, unconfirmed push recorded unknown, source-success/records-failure PARTIAL_DELIVERY, and retry without repeating source push.",
+          "A14": "PASS 17/17 - baseline absence of project, init/new/index/check compatibility, five-section task records, no overwrite, and symlink-record rejection; author selftest inspected only.",
+          "A15": "PASS 27/27 inspection - supplied evidence controller hash equals the manifest source files; candidate/acceptance/run identities, real Codex+Claude process records, distinct sessions, 8 passing tests, NEEDS_CORRECTION-to-ACCEPT history, and READY with no delivery claim; current gate accepts the evidence. Not independently replayed.",
+          "A16": "PASS 5/5 - framework source rejected before run-store creation or READY, and self-source delivery is blocked; external review was performed by this independent suite, not by the controller."
+        },
+        "limitations": [
+          "A15 is supplied real-process evidence inspected and cross-checked, not independently replayed; raw stdout/stderr bytes, session IDs, and model identity cannot be recomputed from the supplied JSON. Its candidate 8b3ac33e... and acceptance 5907325d... belong to the pilot fixture, not this framework candidate/ACCEPTANCE.",
+          "This round's review model is deepseek-flash[1m] (DeepSeek via Claude Code), requested effort high, not an Anthropic Claude model. A15 evidence records a Claude reviewer; no claim is made that DeepSeek executed A15.",
+          "selftest.txt (72) and host-isolation.txt (3) are implementation-authored logs, inspected for internal consistency only and excluded from independent test counts.",
+          "No Git delivery, commit, push, merge, tag, or release was performed or authorized; A12/A13 used self-owned local bare remotes.",
+          "Isolation was dynamically exercised with Landlock ABI 8; Bubblewrap/external_sandbox behavior was not independently run and was only inspected in supplied host-isolation evidence.",
+          "Controller-approved argv is persisted as recovery evidence; operators must ensure approved commands contain no secrets. Non-Claude model aliases are recorded as requested/resolved but exact resolved-ID mismatch is enforced only for gpt-/claude- prefixes.",
+          "Implementation-authored tests were not run or imported into the independent suite, per the review instruction."
+        ],
+        "test_script_sha256": "640148b2c4fc03e4fc999194fb13c62bbbd779960976c6421724c15da01fbc2d"
+      },
+      "process": {
+        "executor": "external-bootstrap-v4",
+        "pid": 2374572,
+        "start": "97126900",
+        "session_id": "b0cd3d48-a1d1-4388-8c3e-0e5c00edb51f",
+        "monitor_sha256": "f0fcefc7ea8361c012e77752431d5b824aa4d1ebab90c7b140e157b5d82eab0f",
+        "candidate_manifest_sha256": "6b53132529b8ef4d1889cf4b18b564362249aee4b2923be506e915dc43b32979",
+        "exit": 0,
+        "timeout": false,
+        "seconds": 652.72,
+        "stdout_sha256": "9fa1ba2de4717e424f6b9906c4c5f78bd0f234f1c6d641c03e4c46447d5408ba",
+        "stderr_sha256": "af2f4f95914df9c684b8c6d9f07bfa793cb3ed8a4c9f15c3022ee6363d84537e",
+        "bytes": [
+          8500,
+          85
+        ]
+      },
+      "resolved_model": "deepseek-flash[1m]",
+      "resolved_effort": "unknown"
+    }
+  ],
+  "delivery": {
+    "source": {
+      "branch": "flow/multi-agent-orchestration",
+      "commit": "210e208b5872507b9ff5c6471b5ef0acdea9518d",
+      "parent": "ff55386eeb49a634a9a28bf796b4cf6872800e2b",
+      "tree": "0a9a8027c072d01153778627a427e75a2fd0bca0",
+      "candidate_sha256": "147da481da3b7ad8025541d1be3cc402baf89f88ff97bc97ca045c3e78320ba7",
+      "remote_readback": true,
+      "readback_method": "git-fetch-exact-branch",
+      "all_blob_bytes_match_reviewed": true,
+      "worktree_clean": true,
+      "transport": "connected-github-api-normal-fast-forward",
+      "force": false,
+      "time_utc": "2026-10-19T10:37:13Z"
+    },
+    "records": "Own final commit/ref receipt is external, avoiding a self-referential commit hash.",
+    "transport": "connected GitHub API normal fast-forward with expected parent/ref; followed by native Git fetch and full tree readback",
+    "new_controller_used_for_self_delivery": false
+  },
+  "independent_external_rerun": {
+    "executor": "external-controlled-runner",
+    "exit": 0,
+    "timeout": false,
+    "seconds": 2.273,
+    "script_sha256_before": "640148b2c4fc03e4fc999194fb13c62bbbd779960976c6421724c15da01fbc2d",
+    "script_sha256_after": "640148b2c4fc03e4fc999194fb13c62bbbd779960976c6421724c15da01fbc2d",
+    "script_unchanged": true,
+    "stdout_sha256": "7f821590c135524fac9dc98a98d2ecf0f985218a7bf1bbf5e3ba91052c8d2fd6",
+    "argv": [
+      "/usr/bin/python3",
+      "/home/workspace/CodeWeave_dev/devflower-v02a-evidence/bootstrap-round-4/reviewer-tests/independent_negatives.py"
+    ],
+    "kernel_boundary": "bwrap-empty-root-readonly-candidate-no-network-no-credentials"
+  },
+  "privacy_check": {
+    "method": "external-known-credential-byte-scan",
+    "checked_files": 46,
+    "known_values_count": 5,
+    "matched_files": []
+  }
+}
