@@ -89,7 +89,7 @@ function field(parent,label,key,value,type='text',choices=null) {
   const labelNode=text('label',label); const input=document.createElement(choices?'select':type==='textarea'?'textarea':'input');
   if(choices)options(input,choices,value);else if(type==='checkbox'){input.type='checkbox';input.checked=value;}else{if(input.tagName==='INPUT')input.type=type;input.value=value;}
   input.dataset.field=key;labelNode.append(input);parent.append(labelNode);
-  input.addEventListener('change',()=>{
+  input.addEventListener(choices||type==='checkbox'?'change':'input',()=>{
     const n=state.document.nodes.find(n=>n.id===nodeId);if(!n||state.selected!==nodeId)return;
     const result=type==='checkbox'?input.checked:type==='number'?Number(input.value):input.value;
     if(key==='label')n.label=result;else n.config[key]=result;

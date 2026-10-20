@@ -266,6 +266,14 @@ async function dragFirstNode(){
    await page.keyboard.press('Escape');assert(!(await page.locator('#inspector').isVisible()),'Escape did not close panel');
    assert(await page.evaluate(()=>document.activeElement.closest('#canvas')!==null),'Escape lost keyboard focus');
  });
+ await check('in-focus node input immediately updates draft and invalidates authorization',async()=>{
+   await page.locator('#canvas [data-node="developer"] .node-body').dblclick();
+   await page.locator('[data-field="label"]').fill('输入立即生效');
+   assert((await page.locator('#canvas [data-node="developer"]').textContent()).includes('输入立即生效'),'in-focus input did not update source document');
+   const request=page.waitForRequest(r=>r.url().endsWith('/api/draft'));await page.click('#save');
+   assert((await request).postDataJSON().document.nodes.find(n=>n.id==='developer').label==='输入立即生效','save missed latest focused input');
+   await page.keyboard.press('Escape');
+ });
  await check('Agent configuration saves and reopens from selected canvas node',async()=>{
    await page.locator('#canvas [data-node="developer"] .node-body').dblclick();
    await page.locator('.agent-advanced summary').click();await page.locator('[data-field="responsibility"]').fill('明确的画布实施职责');await page.locator('[data-field="timeout_seconds"]').fill('240');
