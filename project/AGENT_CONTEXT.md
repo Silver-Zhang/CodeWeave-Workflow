@@ -1,13 +1,13 @@
-# 接手入口
+# DevFlower 开发上下文
 
-当前Issue #4已完成：[PR #5](https://github.com/Silver-Zhang/DevFlower/pull/5)，未合并。任务20261020_03_workspace-session-m0，先读STATUS及任务README。代码DevFlower/（flow/workspace-session-m0），记录records/project/，过程archives/workspace-session-m0-20261020/。
+源码DevFlower/；记录records/project/（project/devflower）；原始证据archives/devflower-usable-v1-20261020/。不向源码根目录写过程文档，不进入CodeWeave/RMC。
 
-基线main=f7307f1（PR #2/#3由外部合并）；源码结果e339c5ef62866f35de89da54011d18c88d3fc2d7，与远端读回一致。R1/R2原始NEEDS_CORRECTION均保留；R3 ACCEPT，F1–F5关闭，候选059dcdee10dd/tree4b61d1e6。164单元+host4+Chromium9/17/7、baseline/语法全部通过。
+当前任务tasks/2026-10/20261020_04_devflower-usable-v1，Issue6/B，已完成技术验收。网页画布优先，CLI产品及桌面/VSCode后续。单个PR7到main，Ready for review且CLEAN、未合并。不得自动开始下一阶段。
 
-真实Claude Code2.1.303，native modelUsage=deepseek-flash[1m]，requested effort=max，resolved=unknown。专属审核UUID85567117-650e-42a6-8734-e52212615bf6；cwd=/home/workspace/DevFlower；持久HOME=archives/workspace-session-m0-20261020/runtime/independent-reviewer。三轮已退出，R2/R3显式--resume成功；默认HOME历史不包含它。准确恢复命令见任务README，原生记录不复制到默认HOME。
+源码c9fc36d8c7a3892e97a7e439eb682a0ca9b52990已推送且干净，treeb6733f39b9d13dcabc6a1c089242d55800120825，候选5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821。255+6+66外部宿主回归全过。原review5代码ACCEPT但整体false保持；同候选closure最终ACCEPT、issue6_complete=true，关闭G1–G3，真实PNG/原生/PR证据已审，未开第6轮代码审核。
 
-产品只读聚合仍保守标恢复未验证，不因登记而声称原生CLI可恢复。原始用户会话及认证未修改/外发。固定外部监督完成本轮自举，不使用待审Controller自批。
+产品run9c2ee39b5bb0489abede911e8f9319f4用旧Stable1d2a4fa9完成真实开发/受控故障/自动修复复审/PR创建，原始负面意见和超时保留。新图run4180b07d383c433ebef1b930d34f0acf用Stable5816证明六节点/7+6验证/真实Agent映射；其原始AWL/BLOCKED不变，可选P3 F-R1保留，不混称该run交付成功。
 
-临时只读观察页http://127.0.0.1:8766/，代码/进程回执在本任务archives/observer；不是Controller权威状态。仅保留主开发checkout和records worktree，历史档案完整保留。
+完整外部审核的HOME/config/cwd/UUID和原生恢复文件只留本地。先用档案根resume-deepseek-review.py --round 5 --describe，再按输出恢复，不用--last；两个实际run的native-session-locations.json保存各自精确身份。Codex请求gpt-6.1-sol/xhigh，Claude实际deepseek-flash[1m]请求max，未知resolved保持unknown。云端仅保存结论摘要和必要证据哈希，不含原始会话。
 
-Issue授权的任务分支commit/ref发布/PR已执行；Git本地HTTPS无凭据，采用GitHub连接并正常本地fast-forward，禁止force/reset/main合并。项目记录在独立project/devflower；发布回执在archives/delivery.json。下一步用户决定PR合并，不自动进入M1。
+正式已审Stable标准服务及打开入口在usable-v1-local-deployment/，保存历史存储与会话。旧studio-final-run验证服务44415已替换，历史证据不覆写。用户委托仅限本Issue的Codex GUI操作，不假称人工点击/独立人类体验验收；未来任务仍需具体授权。当前停止代码开发，下一步人工PR评审/合并决定。

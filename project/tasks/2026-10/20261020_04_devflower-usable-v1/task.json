@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "20261020_04_devflower-usable-v1",
+  "date": "2026-10-20",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/devflower-usable-v1",
+      "base": "28cced14f5733dae293c237dbeb7bf9a842af71b",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/6"
+    }
+  ]
+}

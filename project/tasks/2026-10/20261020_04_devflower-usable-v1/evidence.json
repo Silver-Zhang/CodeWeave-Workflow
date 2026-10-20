@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "task": "20261020_04_devflower-usable-v1",
+  "issue": 6,
+  "state": "已完成",
+  "technical_acceptance": true,
+  "human_usability_acceptance": false,
+  "source": {
+    "branch": "flow/devflower-usable-v1",
+    "base": "28cced14f5733dae293c237dbeb7bf9a842af71b",
+    "head": "c9fc36d8c7a3892e97a7e439eb682a0ca9b52990",
+    "tree": "b6733f39b9d13dcabc6a1c089242d55800120825",
+    "candidate_sha256": "5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821",
+    "clean": true
+  },
+  "tests": {
+    "python": 255,
+    "host_isolation": 6,
+    "chromium": 66,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "exit": 0,
+    "executor": "fixed external host runner",
+    "evidence": "studio-functional-run/canvas-run2/full-regression/final-canvas-pr-compatibility-2"
+  },
+  "delivery": {
+    "baseRefName": "main",
+    "headRefName": "flow/devflower-usable-v1",
+    "headRefOid": "c9fc36d8c7a3892e97a7e439eb682a0ca9b52990",
+    "isDraft": false,
+    "mergeStateStatus": "CLEAN",
+    "mergedAt": null,
+    "state": "OPEN",
+    "url": "https://github.com/Silver-Zhang/DevFlower/pull/7"
+  },
+  "final_review": {
+    "verdict": "ACCEPT",
+    "issue6_complete": true,
+    "candidate_sha256": "5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821",
+    "contract_sha256": "a000fcc373b93d449606f7ad0ee7c825a1842664437385d0d7df73423ea6cbcb",
+    "model": "deepseek-flash[1m]",
+    "requested_effort": "max",
+    "resolved_effort": "unknown",
+    "receipt": "independent-review-5/closure/session.json",
+    "original_verdict": "independent-review-5/closure/verdict.json",
+    "review_round": 5,
+    "supplement": "same-candidate evidence closure; original verdict preserved"
+  },
+  "actual_product_run": {
+    "run_id": "9c2ee39b5bb0489abede911e8f9319f4",
+    "state": "COMPLETED",
+    "reviews": [
+      "NEEDS_CORRECTION",
+      "ACCEPT_WITH_LIMITATIONS",
+      "Codex timeout; no verdict",
+      "ACCEPT"
+    ],
+    "directory": "studio-functional-run/canvas-run2"
+  },
+  "final_graph_validation": {
+    "actual_models": [
+      {
+        "role": "implementer",
+        "requested_model": "gpt-6.1-sol",
+        "requested_effort": "xhigh",
+        "resolved_model": "unknown",
+        "resolved_effort": "unknown",
+        "process_exit": 0,
+        "duration_seconds": 211.777,
+        "timeout": false
+      },
+      {
+        "role": "reviewer",
+        "requested_model": "deepseek-flash[1m]",
+        "requested_effort": "max",
+        "resolved_model": "deepseek-flash[1m]",
+        "resolved_effort": "unknown",
+        "process_exit": 0,
+        "duration_seconds": 473.044,
+        "timeout": false
+      }
+    ],
+    "candidate_sha256": "5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821",
+    "contract_sha256": "7dec1042e9d395f1e3f7061c86d5f51cf394790d8675c74a16241280569be930",
+    "executor": "fixed external observer; no authoritative state mutations",
+    "git_delivery_authorized": false,
+    "identity_checks_passed": true,
+    "nodes": [
+      {
+        "counts": null,
+        "id": "human-1",
+        "label": "Human Gate",
+        "status": "passed"
+      },
+      {
+        "counts": null,
+        "id": "developer",
+        "label": "Codex · 同候选核验",
+        "status": "passed"
+      },
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 7
+        },
+        "id": "verifier",
+        "label": "工作流身份 · 7 项",
+        "status": "passed"
+      },
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 6
+        },
+        "id": "verifier-afa0183c",
+        "label": "进程与审核回执 · 6 项",
+        "status": "passed"
+      },
+      {
+        "counts": null,
+        "id": "reviewer",
+        "label": "Claude · 独立核验",
+        "status": "blocked"
+      },
+      {
+        "counts": null,
+        "id": "delivery",
+        "label": "Delivery",
+        "status": "blocked"
+      }
+    ],
+    "raw_verdict_preserved": true,
+    "round": 1,
+    "run_accepted": false,
+    "run_id": "4180b07d383c433ebef1b930d34f0acf",
+    "scope": "same-candidate real model and saved user graph proof; prior product run separately proves development, repair loop and PR creation",
+    "source_commit": "c9fc36d8c7a3892e97a7e439eb682a0ca9b52990",
+    "source_unchanged": true,
+    "state": "BLOCKED",
+    "supervisor_sha256": "da17bfa1f4d5f8328b324221fc546b6a4eef9b41980d6e696cc12fa752607746",
+    "verdict": "ACCEPT_WITH_LIMITATIONS",
+    "verification": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 13
+    },
+    "workflow_sha256": "fd2c7b30ec62519a83a3000b6f29ee41fc4f9d170bb9bb5d60791d9cb0002f1f"
+  },
+  "residual_findings": [
+    {
+      "id": "F-R1",
+      "severity": "P3",
+      "required": false,
+      "status": "OPEN",
+      "title": "Strict integer type checks for malformed round records"
+    }
+  ],
+  "required_findings_open": [],
+  "next_action": "Human PR disposition; no automatic merge or next feature phase",
+  "archive_policy": {
+    "repository_content": "summary and hash index only",
+    "workspace_relative_archive": "archives/devflower-usable-v1-20261020",
+    "raw_logs_screenshots_native_sessions": "local only",
+    "session_recovery": "native-session-locations.json in each local run directory; exact session only, never --last"
+  },
+  "local_artifacts": [
+    {
+      "path": "independent-review-5/verdict.json",
+      "sha256": "8f26c32299fe06e03c3703f2503fd229f314167faa794e5bcae4aadd871f5bc8",
+      "description": "original code verdict, overall acceptance still false",
+      "uploaded": false
+    },
+    {
+      "path": "independent-review-5/closure/verdict.json",
+      "sha256": "306ad62e4a453747bf6bf1298946c2824b4d695c49458337694581c56981294c",
+      "description": "final independent evidence-closure verdict",
+      "uploaded": false
+    },
+    {
+      "path": "independent-review-5/closure/session.json",
+      "sha256": "be6558220a00d0145a31467a80c4d831752a61feb58426119db87c011652423b",
+      "description": "local native process receipt",
+      "uploaded": false
+    },
+    {
+      "path": "studio-functional-run/canvas-run2/full-regression/final-canvas-pr-compatibility-2/results.json",
+      "sha256": "d8b68783fd2567628b0f5b879122354fb20967d0b82ea71b0f2a1cc04a9a0ce1",
+      "description": "full external regression",
+      "uploaded": false
+    },
+    {
+      "path": "studio-functional-run/canvas-run2/full-regression/final-canvas-pr-compatibility-2/binding.json",
+      "sha256": "05dade1622b3803a777cf40caec89337badd6049725bf7b2bf257aefa1d9123a",
+      "description": "regression candidate binding",
+      "uploaded": false
+    },
+    {
+      "path": "studio-final-run/final-proof.json",
+      "sha256": "2c9f824805c4d203f9e41bac3ccf97820679bca226bea92551c311624dff3dc4",
+      "description": "actual saved-node and process identity proof",
+      "uploaded": false
+    },
+    {
+      "path": "studio-final-run/gui-evidence.json",
+      "sha256": "eb51a7a05eaa63badbc93eaf1f139d6a62f3f5cf1e9cd77e1474258669963fa4",
+      "description": "local screenshot index",
+      "uploaded": false
+    },
+    {
+      "path": "studio-final-run/native-session-locations.json",
+      "sha256": "d6db58b9eab1ad691a829371fbda995c19b2f8c2dfbb66f3ba74cfeacbaf9ea9",
+      "description": "local native session recovery index",
+      "uploaded": false
+    },
+    {
+      "path": "studio-functional-run/canvas-run2/native-session-locations.json",
+      "sha256": "a58d95eea79619cc5f81fd443719c39b7c7bfdb2710f9ed9c6c02870ff1a1ff8",
+      "description": "local product-run session recovery index",
+      "uploaded": false
+    },
+    {
+      "path": "final-delivery.json",
+      "sha256": "8a5fc7e1dcb5edeb44b651d54adbaffd1efcd19ba595e220f9c63f9bf6f20208",
+      "description": "source commit/push readback",
+      "uploaded": false
+    },
+    {
+      "path": "pr7-final-readback.json",
+      "sha256": "8f078ce7631c697c6a888c68f029e22e3574e89c1809699182e00e299b59f91b",
+      "description": "PR readback",
+      "uploaded": false
+    },
+    {
+      "path": "usable-v1-local-deployment/activation.json",
+      "sha256": "5bb20a55e04e72a0b8d73e55dc43be131d48dbd85f97bc8bac54f66cde294144",
+      "description": "local reviewed Stable activation",
+      "uploaded": false
+    }
+  ]
+}
