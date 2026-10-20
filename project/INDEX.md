@@ -4,6 +4,7 @@
 
 | 日期 | 任务 | 模式 | 状态 |
 |---|---|---|---|
+| 2026-10-20 | [20261020_01_m2-workspace-architecture](tasks/2026-10/20261020_01_m2-workspace-architecture/README.md) | B | 已完成 |
 | 2026-10-19 | [20261019_06_m1-final-hardening](tasks/2026-10/20261019_06_m1-final-hardening/README.md) | B | 已完成 |
 | 2026-10-19 | [20261019_05_m1-interactive-map](tasks/2026-10/20261019_05_m1-interactive-map/README.md) | B | 已完成 |
 | 2026-10-19 | [20261019_04_m0-final-independent-review](tasks/2026-10/20261019_04_m0-final-independent-review/README.md) | B | 已完成 |

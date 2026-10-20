@@ -1,0 +1,53 @@
+{
+  "source_head": "6c3d1b8cf9c2ff3257c92840dd8531dcc1cceed7",
+  "baseline_regression": {
+    "m0": {
+      "argv": [
+        "bash",
+        "scripts/verify_m0.sh"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 21.337854623794556,
+      "source_head": "0e9c093a5a2456814c5543ec1e52089035b4bc2e"
+    },
+    "m1": {
+      "argv": [
+        "bash",
+        "scripts/verify_m1.sh"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 40.853307485580444,
+      "source_head": "6c3d1b8cf9c2ff3257c92840dd8531dcc1cceed7"
+    }
+  },
+  "counts": {
+    "m0_backend": 87,
+    "m1_backend": 110,
+    "m1_frontend": 35,
+    "m1_chromium": 7,
+    "fixture_unittest": 1,
+    "skipped": 0
+  },
+  "research": {
+    "predefined_assertions_passed": 5,
+    "optional_header_target_before": [
+      "one",
+      "shared",
+      "hidden"
+    ],
+    "optional_header_target_after": [
+      "two",
+      "shared",
+      "hidden"
+    ],
+    "position_only_instance_ids_disjoint": true,
+    "internal_identity_root_dependent": true,
+    "mount_shadow_view_probe_passed": true,
+    "scope": "current primitives and owned mount experiment; NOT M2 implementation acceptance or complete system/toolchain capture proof",
+    "generic_repro_fresh_run_passed": true,
+    "minimal_system_view_standard_headers_exit": 0,
+    "minimal_system_view_owned_escape_exit": 1,
+    "minimal_system_view_scope": "Owned trusted prototype only; no broad live /usr input bind, vector/cstddef positive and owned unmounted absolute include negative. Runtime-file freezing, alias validation and descriptor-safe capture are not yet implemented."
+  },
+  "analyzer_sha256": "8562b0369cf35e6affdefe011cc83a8e65cb6e7527fa0a0649de18ab15014e94"
+}

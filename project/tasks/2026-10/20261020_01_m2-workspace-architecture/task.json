@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "20261020_01_m2-workspace-architecture",
+  "date": "2026-10-20",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    "CodeWeave feat/m0-code-index 0e9c093a5a2456814c5543ec1e52089035b4bc2e; feat/m1-interactive-map 6c3d1b8cf9c2ff3257c92840dd8531dcc1cceed7; main 676f63d4c8d14f23e263f43e828deae566a9b9ec; source read-only, no production change",
+    "DevFlower project/codeweave base 39f4ae9de970106adf060a5af54ac0f850a99394",
+    "Accepted M2-R0 v2 design manifest SHA256 3e546ddd151ba17df2500ed930e0e2149f1ea314680651efc7124b7d075deb1b; Claude Opus5/high round2 ACCEPT and implementation_ready=true; source unchanged"
+  ]
+}
