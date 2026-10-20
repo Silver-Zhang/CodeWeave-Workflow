@@ -223,7 +223,8 @@ class RuntimeTests(unittest.TestCase):
         request = self.request();request["workflow"] = template("C")
         value = self.runtime.prepare(request)
         self.assertEqual(len(value["data"]["human_questions"]), 3)
-        self.assertEqual(value["data"]["config"]["human_gate_policy"]["mode"], "deferred-G4")
+        self.assertEqual(value["data"]["config"]["human_gate_policy"]["mode"], "node-results")
+        self.assertEqual(value["data"]["config"]["policy"]["mode"], "B")
 
     def test_changed_source_invalidates_preview(self):
         value = self.runtime.prepare(self.request())

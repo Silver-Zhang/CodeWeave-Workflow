@@ -8,7 +8,8 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function check(name,fn){try{await fn();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error),notice:await page.textContent('#notice')});console.log('FAIL '+name+': '+error+' · '+await page.textContent('#notice'));await page.screenshot({path:path.join(output,'failure-'+results.length+'.png')});}}
 function assert(value,message){if(!value)throw Error(message);}
 async function load(){await page.goto(access.url+'#token='+access.token);await page.waitForFunction(()=>document.querySelector('#studio').dataset.ready==='true');}
-async function fresh(name){await page.click('[data-tab="workflow"]');const response=page.waitForResponse(r=>r.url().includes('/api/template?'));await page.click('#new-draft');await response;await page.waitForFunction(()=>document.querySelector('#save-state').textContent==='新草稿未保存');await page.fill('#workflow-name',name);}
+async function chooseTemplate(kind){if(!(await page.locator('#template-library').evaluate(e=>e.open)))await page.locator('#template-library summary').click();await page.selectOption('#template',kind);}
+async function fresh(name){await chooseTemplate(await page.inputValue('#template'));await page.click('[data-tab="workflow"]');const response=page.waitForResponse(r=>r.url().includes('/api/template?'));await page.click('#new-draft');await response;await page.waitForFunction(()=>document.querySelector('#save-state').textContent==='新草稿未保存');await page.fill('#workflow-name',name);}
 async function interceptOnce(pattern){
   let release, seen, used=false;
   const reached=new Promise(r=>seen=r), hold=new Promise(r=>release=r);
@@ -37,6 +38,8 @@ async function dragFirstNode(){
  page=await browser.newPage({viewport:{width:1440,height:1000}});
  page.on('pageerror',e=>pageErrors.push(String(e)));
  await load();
+ await check('blank canvas is immediately editable without choosing a mode',async()=>{assert(await page.locator('#canvas .node').count()===0,'default is not blank');assert(await page.locator('#template').inputValue()==='blank','mandatory template entry');assert(!(await page.locator('#template-library').evaluate(e=>e.open)),'template chooser forces entry');});
+ await chooseTemplate('B');await fresh('legacy interaction fixture');
  if(process.env.DRAG_BASELINE==='1'){
    await check('real pointer drag and live edge geometry',dragFirstNode);return;
  }
@@ -50,14 +53,14 @@ async function dragFirstNode(){
  });
  await check('A C blank templates editable and blank execution refused',async()=>{
    for(const mode of ['A','C','blank']){
-     await page.selectOption('#template',mode);await fresh('edited '+mode);
+     await chooseTemplate(mode);await fresh('edited '+mode);
      await page.click('#save');await page.waitForFunction(()=>document.querySelector('#save-state').textContent==='该快照已保存');
    }
    await page.click('#flow-options');await page.click('#compile');await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('sequential'));
-   await page.keyboard.press('Escape');await page.selectOption('#template','B');
+   await page.keyboard.press('Escape');await chooseTemplate('B');
  });
  await check('authorization preview displays bound PR tip repository and fixed assertion contract',async()=>{
-   await page.selectOption('#template','A');await fresh('preview boundary');
+   await chooseTemplate('A');await fresh('preview boundary');
    await page.locator('#canvas [data-node="human-1"] .node-body').dblclick();
    await page.fill('#task-title','Preview fixture');await page.fill('#task-body','Change README');
    await page.click('#task-next');await page.fill('#task-scope','README.md');await page.fill('#task-acceptance','README is correct');await page.check('#delivery');
@@ -68,7 +71,7 @@ async function dragFirstNode(){
    assert(await page.locator('#preview textarea').count()===1,'human response missing');
    // No authorization is sent; this is a display regression only.
    await page.click('[data-task-step="2"]');await page.uncheck('#delivery');assert(await page.locator('#preview button').count()===0,'stale authorization remained');assert(!(await page.locator('[data-task-step="3"]').isEnabled()),'expired confirmation step is still enabled');
-   await page.click('[data-tab="workflow"]');await page.keyboard.press('Escape');await page.selectOption('#template','B');
+   await page.click('[data-tab="workflow"]');await page.keyboard.press('Escape');await chooseTemplate('B');
  });
  await check('late save A cannot assign identity to new B',async()=>{
    await fresh('race A');const delay=await interceptOnce('**/api/draft');await page.click('#save');await delay.reached;
@@ -100,7 +103,7 @@ async function dragFirstNode(){
    assert(await page.locator('#canvas .node').count()===count-1,'node did not delete');
  });
  await check('node plus inserts into the real chain with one undo and redo',async()=>{
-   await page.selectOption('#template','A');await fresh('inline insertion');
+   await chooseTemplate('A');await fresh('inline insertion');
    const old=await page.locator('#canvas .node').count();
    await page.locator('[data-node="developer"]').hover();await page.locator('[data-node="developer"] .node-add').click();
    assert((await page.textContent('#palette-hint')).includes('Developer'),'picker lost source context');
@@ -132,7 +135,7 @@ async function dragFirstNode(){
    assert(await page.inputValue('#workflow-name')==='new insertion draft','late insertion rewrote draft');
  });
  await check('blank canvas entry and direct port-to-empty creation preserve graph coordinates',async()=>{
-   await page.selectOption('#template','blank');await fresh('direct creation');await page.getByRole('button',{name:'创建任务入口',exact:true}).click();
+   await chooseTemplate('blank');await fresh('direct creation');await page.getByRole('button',{name:'创建任务入口',exact:true}).click();
    await page.locator('#panel-task').waitFor();await page.keyboard.press('Escape');
    const human=page.locator('#canvas .node').first(),source=await human.getAttribute('data-node');
    const start=await human.locator('.out').boundingBox(),svg=await page.locator('#canvas').boundingBox();
@@ -157,7 +160,7 @@ async function dragFirstNode(){
    assert(await page.locator('#canvas .node.verifier').count()===2,'duplicate missing');
    await page.locator('#canvas .node.verifier').last().locator('.node-body').click({button:'right'});await page.getByRole('menuitem',{name:'删除节点',exact:true}).click();
    assert(await page.locator('#canvas .node.verifier').count()===1,'context delete removed wrong selection');await page.click('#undo');assert(await page.locator('#canvas .node.verifier').count()===2,'context undo failed');
-   await page.selectOption('#template','A');await fresh('restore complete graph');
+   await chooseTemplate('A');await fresh('restore complete graph');
  });
  await check('real pointer drag and live edge geometry',async()=>{await dragFirstNode();assert(!(await page.locator('#panel-task').isVisible())&&!(await page.locator('#inspector').isVisible()),'drag opened an inspector');});
  await check('selected node textarea configuration is usable',async()=>{
@@ -177,7 +180,7 @@ async function dragFirstNode(){
    await page.click('#fit');
  });
  await check('output port drag creates curved directional connection',async()=>{
-   await page.selectOption('#template','A');await fresh('port connection');
+   await chooseTemplate('A');await fresh('port connection');
    await page.click('#flow-options');if(await page.locator('.connections-panel').getAttribute('open')===null)await page.locator('.connections-panel summary').click();
    await page.locator('#edges li').first().locator('button').click();await page.keyboard.press('Escape');
    await page.locator('#canvas').scrollIntoViewIfNeeded();
@@ -242,7 +245,7 @@ async function dragFirstNode(){
    await page.waitForFunction(id=>document.querySelector('#run-title').textContent.includes(id+' · BLOCKED'),access.b);
  });
  await check('canvas is primary and Human Gate imports task with empty confirmation blocked before HTTP',async()=>{
-   await page.click('[data-tab="workflow"]');await page.selectOption('#template','A');await fresh('canvas task');
+   await page.click('[data-tab="workflow"]');await chooseTemplate('A');await fresh('canvas task');
    const canvasBox=await page.locator('#canvas').boundingBox();assert(canvasBox.height>800,'canvas does not occupy available workspace');
    await page.locator('#canvas [data-node="human-1"] .node-body').dblclick();
    await page.fill('#issue-url','https://github.com/fixture/project/issues/6');await page.click('#import-issue');

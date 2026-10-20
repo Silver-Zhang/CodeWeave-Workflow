@@ -66,9 +66,27 @@ def config_check(config, *, execution=False):
         raise Blocked('unknown verification isolation backend')
     if 'human_gate_policy' in config:
         rule = config['human_gate_policy']
-        require_keys(rule, ('mode', 'question'))
-        if config['policy'].get('mode') != 'C' or rule['mode'] != 'deferred-G4' or not isinstance(rule['question'], str) or not rule['question'].strip():
-            raise Blocked('invalid staged C human gate policy')
+        if isinstance(rule, dict) and rule.get('mode') == 'node-results':
+            require_keys(rule, ('mode', 'gates'))
+            if config.get('studio_workflow', {}).get('document', {}).get('version') != 2:
+                raise Blocked('Node result gates require a v2 Studio graph')
+            gates = rule['gates']
+            if not isinstance(gates, list) or not 1 <= len(gates) <= 24:
+                raise Blocked('Nonempty bound result gates required')
+            ids = []
+            for item in gates:
+                require_keys(item, ('id', 'question'))
+                if not isinstance(item['id'], str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]{0,63}', item['id']):
+                    raise Blocked('Invalid result node identity')
+                if not isinstance(item['question'], str) or not item['question'].strip() or len(item['question']) > 2000:
+                    raise Blocked('Actual result question required')
+                ids.append(item['id'])
+            if len(ids) != len(set(ids)):
+                raise Blocked('Duplicate result node identity')
+        else:
+            require_keys(rule, ('mode', 'question'))
+            if config['policy'].get('mode') != 'C' or rule['mode'] != 'deferred-G4' or not isinstance(rule['question'], str) or not rule['question'].strip():
+                raise Blocked('invalid staged C human gate policy')
     if not isinstance(config.get('prior_reviews', []), list):
         raise Blocked('prior_reviews must be an operator-bound list')
     for report in config.get('prior_reviews', []):
@@ -176,7 +194,7 @@ def studio_workflow_check(config):
     The document never supplies executable commands, permissions or gate decisions.
     Operator-approved policy/bindings remain the sole execution authority.
     """
-    from studio.usable_graph import compile_plan
+    from studio.usable_graph import compile_plan, governance
     from studio.graph import Invalid
     from studio.usable_verification import specification
     value = config['studio_workflow']
@@ -222,9 +240,11 @@ def studio_workflow_check(config):
                 raise Blocked('invalid studio verifier profile') from None
             if bound != [expected]:
                 raise Blocked('studio verifier profile differs from policy')
-    mode = plan['document']['template']
-    if config['policy']['mode'] != ('B' if mode == 'blank' else mode) or config['policy']['limits']['max_review_rounds'] != plan['max_rounds']:
+    rules = governance(plan)
+    if config['policy']['mode'] != rules['mode'] or config['policy']['limits']['max_review_rounds'] != plan['max_rounds']:
         raise Blocked('studio workflow limits differ from policy')
+    if plan['document']['version'] == 2 and config.get('human_gate_policy') != rules['result_policy']:
+        raise Blocked('Result approval policy differs from the actual workflow nodes')
     roles = {'implementer' if n['type'] == 'developer' else n['type'] for n in nodes.values()
              if n['type'] in ('developer', 'planner', 'reviewer')}
     if roles != set(config['bindings']):
@@ -237,7 +257,16 @@ def authorized(config, authorization):
     auth = load(authorization)
     require_keys(auth, ('config_sha256', 'acceptance_sha256', 'controller_sha256', 'source', 'head', 'branch',
                         'approval_ref', 'external_source_approved', 'commit', 'push'), ('human_events',))
-    if config['policy']['mode'] == 'C':
+    if config.get('studio_workflow', {}).get('document', {}).get('version') == 2:
+        plan = studio_workflow_check(config)
+        events = auth.get('human_events', [])
+        if (not isinstance(events, list) or len(events) != len(plan['initial_gates'])
+                or any(not isinstance(e, dict) for e in events)
+                or [e.get('gate') for e in events] != ['node:' + key for key in plan['initial_gates']]
+                or any(e.get('actor') != 'user' or not isinstance(e.get('evidence_ref'), str)
+                       or not e['evidence_ref'].strip() for e in events)):
+            raise Blocked('Every initial workflow approval node requires actual user evidence')
+    elif config['policy']['mode'] == 'C':
         events = auth.get('human_events', [])
         expected = {'G1', 'G2', 'G3'} if config.get('human_gate_policy') else {'G1', 'G2', 'G3', 'G4'}
         if len(events) != len(expected) or {x.get('gate') for x in events} != expected or any(

@@ -5,11 +5,13 @@ on:
     paths:
       - 'tools/**'
       - 'tests/**'
-      - 'docs/design/**'
+      - 'docs/**'
+      - 'AGENTS.md'
+      - 'WORKFLOW.md'
       - 'examples/**'
       - '.github/workflows/usable.yml'
   push:
-    branches: ['main', 'flow/template-governance-ci']
+    branches: ['main', 'flow/devflower-usable-v1', 'flow/template-governance-ci']
   workflow_dispatch:
 
 permissions:
@@ -75,5 +77,49 @@ jobs:
         with:
           name: usable-contract-evidence-${{ github.run_id }}
           path: ${{ runner.temp }}/usable-evidence/
+          retention-days: 7
+          if-no-files-found: error
+
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install pinned browser test driver outside the source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/pw" --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+          echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/pw/node_modules/playwright" >> "$GITHUB_ENV"
+          echo "CHROMIUM=$(node -e "process.stdout.write(require('$RUNNER_TEMP/pw/node_modules/playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
+      - name: Real HTTP and Chromium regression (no models or user credentials)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for suite in studio_races studio_identity_races workspace_browser usable_browser template_browser; do
+            python3 "tests/$suite.py" --chromium "$CHROMIUM" --playwright-module "$PLAYWRIGHT_MODULE" --artifacts "$RUNNER_TEMP/$suite"
+          done
+      - name: Preserve synthetic browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: usable-browser-evidence-${{ github.run_id }}
+          # Only results/screenshots, never generated auth/config or native records.
+          path: |
+            ${{ runner.temp }}/studio_races/*results.json
+            ${{ runner.temp }}/studio_races/*.png
+            ${{ runner.temp }}/studio_identity_races/*results.json
+            ${{ runner.temp }}/studio_identity_races/*.png
+            ${{ runner.temp }}/workspace_browser/*results.json
+            ${{ runner.temp }}/workspace_browser/*.png
+            ${{ runner.temp }}/usable_browser/*results.json
+            ${{ runner.temp }}/usable_browser/*.png
+            ${{ runner.temp }}/template_browser/*results.json
+            ${{ runner.temp }}/template_browser/*.png
           retention-days: 7
           if-no-files-found: error
