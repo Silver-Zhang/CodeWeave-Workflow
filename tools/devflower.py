@@ -220,6 +220,9 @@ def check(root: Path, baseline: bool = False) -> list[str]:
 
 
 def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] in {'doctor', 'run', 'status', 'resume', 'cancel', 'audit', 'deliver'}:
+        from orchestration.cli import main as orchestrate
+        return orchestrate()
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='cmd', required=True)
     init = sub.add_parser('init'); init.add_argument('slug')

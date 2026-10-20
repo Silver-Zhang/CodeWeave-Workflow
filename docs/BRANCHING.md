@@ -1,5 +1,13 @@
 # 分支、同步与历史保留
 
+## 生命周期与人工 Gate
+
+main 是唯一正式通用基线；长期分支仅 main 与 project/<slug>（包括 project/devflower、project/codeweave）。flow/work/refactor 分支可用于开发和 PR，不作为额外正式主线。项目分支整体不能合入 main。
+
+PR 的远端 HEAD/tree 必须对应当前通过必需验证、独立 ACCEPT、旧阻断项关闭的候选。先审查相对 main 的全部差异，确认仅通用框架、无 project 实例/原始日志/凭据/未审代码，报告 READY_TO_MERGE；该状态不是合并授权。人明确批准后才按批准方式合并，读回 main 实际 HEAD，在正式 main 重跑基础回归与 check --baseline，并记录历史继承关系。
+
+临时远端分支仅在合并/历史保留确认且另获明确删除授权后清理，不删除 project 分支、不 force-push。主线合并、源码推送与分支清理是不同权限；已有任务许可不是未来所有任务的永久许可。
+
 ## 文件边界
 
 通用主线保留根规则、`docs/`、`templates/`、`tools/`、`tests/`。项目分支仅增加 `project/`：PROJECT.md、project.json、STATUS.md、AGENT_CONTEXT.md、INDEX.md、plans/、tasks/。项目专属规则不要改写根 AGENTS/WORKFLOW；确需试验共同规则时使用独立提交便于提炼。
