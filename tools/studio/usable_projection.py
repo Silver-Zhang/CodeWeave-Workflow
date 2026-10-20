@@ -4,6 +4,21 @@ from orchestration.controller import human_result_bound
 from .projection import counts, liveness, sha, token
 
 
+def _verification_result(info, *, final_report=False):
+    counter = counts(info.get('counts'))
+    if counter is not None and set(info['counts']) != set(counter):
+        counter = None
+    passed = (info.get('passed') is True and counter is not None and counter['tests'] > 0
+              and not any(counter[k] for k in ('failures', 'errors', 'skipped')))
+    if final_report:
+        # VALIDATED operations already attest Controller validation. A retained
+        # final report must also contain the actual successful process receipt.
+        process = info.get('process')
+        passed = (passed and isinstance(process, dict) and process.get('exit') == 0
+                  and not any(process.get(k, True) for k in ('timeout', 'overflow', 'cancelled')))
+    return counter, 'passed' if passed else 'failed'
+
+
 def workflow_graph(run, snapshot, data, operations):
     config = data['config']
     plan = studio_workflow_check(config)
@@ -46,8 +61,7 @@ def workflow_graph(run, snapshot, data, operations):
                     info = op['data']
                     item['operation_id'] = op['id']
                     if op['status'] == 'VALIDATED':
-                        item['counts'] = counts(info.get('counts'))
-                        item['status'] = 'passed' if info.get('passed') is True and item['counts'] and item['counts']['tests'] > 0 and not any(item['counts'][k] for k in ('failures', 'errors', 'skipped')) else 'failed'
+                        item['counts'], item['status'] = _verification_result(info)
                     elif op['status'] == 'VERIFICATION_BLOCKED':
                         item['status'] = 'blocked'
                     else:
@@ -58,8 +72,7 @@ def workflow_graph(run, snapshot, data, operations):
                         elif stopped or proc or op['status'] == 'EXECUTED':
                             item['status'] = 'blocked'
                 elif report:
-                    item['counts'] = counts(report.get('counts'))
-                    item['status'] = 'passed' if report.get('passed') is True and item['counts'] and item['counts']['tests'] > 0 and not any(item['counts'][k] for k in ('failures', 'errors', 'skipped')) else 'failed'
+                    item['counts'], item['status'] = _verification_result(report, final_report=True)
                 n['results'].append(item)
             statuses = [v['status'] for v in n['results']]
             n['status'] = next((s for s in ('failed', 'blocked', 'running', 'pending') if s in statuses), 'passed')
@@ -95,7 +108,11 @@ def workflow_graph(run, snapshot, data, operations):
                     n['verdict'] = verdict if verdict in ('ACCEPT', 'ACCEPT_WITH_LIMITATIONS', 'NEEDS_CORRECTION', 'BLOCKED') else None
                     n['findings'] = [{k: f.get(k) for k in ('id', 'status', 'severity', 'title')} for f in report.get('findings', [])]
                     n['open_findings'] = sum(f['status'] != 'CLOSED' for f in n['findings'])
-                    n['status'] = 'failed' if verdict == 'NEEDS_CORRECTION' else 'passed' if verdict == 'ACCEPT' and not n['open_findings'] else 'blocked'
+                    required = set(config['policy']['required_contracts'])
+                    open_required = any(f.get('status') != 'CLOSED' and
+                        (f.get('severity') in ('P0', 'P1') or f.get('severity') == 'P2' and
+                         bool(set(f.get('contract_ids', [])) & required)) for f in report.get('findings', []))
+                    n['status'] = 'failed' if verdict == 'NEEDS_CORRECTION' else 'passed' if verdict == 'ACCEPT' and not open_required else 'blocked'
                 else:
                     n['status'] = 'passed' if report.get('status') == 'IMPLEMENTED' else 'blocked'
             elif state == phase or snapshot.get('recorded_state') == phase:

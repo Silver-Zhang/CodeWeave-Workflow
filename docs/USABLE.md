@@ -125,6 +125,12 @@ Stable 自举的 C 模式必须使用结果产生后的 deferred G4；旧 CLI �
 
 每个 Verifier 仅聚合映射中的本轮合同，证据同时绑定 run、round、当前候选和验收 hash；旧轮、其他候选或其他合同不能提供当前 PASS。实际进程退出只代表执行结束，必须由 Controller 验证结果后才可 passed。当前 Agent 活性还需匹配当前阶段、当前轮的进程身份与活 worker；历史裁决、未确认进程和网络故障不能显示为当前 ACCEPT/RUNNING。Planner 的已完成计划属于本 run，其余实施、验证、审核与 G4 均有本轮边界。
 
-新增合同与 HTTP 用例：`python3 -m unittest discover -s tests -p test_studio_workflow.py -v`。`tests/usable_browser.py` 继续保留原竞态，并增加画布任务导入、空确认发送前阻止/改正、发送异常锁定、配置保存、同画布快照隔离、各节点结果入口、旧轮/失败/死 worker 负例。它们使用显式 SQLite/HTTP 夹具，不能当成真实模型、真实 Stable 任务或独立人工可用性证据。长私有路径下 Chromium socket 可用 `BROWSER_TMPDIR` 指向操作者自己持有的短目录别名，产物仍留在指定的本地证据目录。
+`VALIDATED` operation、最终验证报告和审核报告的 round 都须精确等于当前轮次；不能用“历史轮次不大于当前轮次”代替。round 缺失、为空或不匹配时，按未绑定证据处理，不补填当前轮次，不据此显示 PASS/ACCEPT，也不应导致整个快照读取失败。自验和独立复审只证明各自实际检查的完整候选，源码改变后须重新验证，旧验收不能批准新候选。
+
+Verifier 的计数必须恰含 tests/failures/errors/skipped 四个非负整数，tests 非零且失败、错误、Skip 均为零，才能显示 passed。Studio 的父进程断言每项实际计 1 用例、零 Skip，不提供候选自行上报计数或扩展验证配置的入口。已绑定当前身份的 `VALIDATED` operation 表示 Controller 已验证，最终报告尚未落盘也可据此显示结果；不能为它伪造进程回执。没有匹配 operation 时，最终报告还须自带实际进程回执：exit 为 0 且 timeout/overflow/cancelled 均明确无异常。回执缺失、字段不全、退出失败、超时、输出溢出或取消，即使报告声称 passed 且计数全绿，最终报告回退也显示 failed；连报告都没有时保持 pending。
+
+审核节点保留所有 findings 的安全显示字段及全部未 CLOSED 的 open_findings 计数，阻断判断另按机械 gate 的必需缺陷定义：P0/P1，或关联 `required_contracts` 的 P2。P3 与未关联必需合同的 P2 建议可以保持 OPEN，不使当前 ACCEPT 误显 blocked；必需缺陷未关闭仍阻断。只有当前身份绑定的 ACCEPT 可显示 passed，ACCEPT_WITH_LIMITATIONS 仍为 blocked，NEEDS_CORRECTION 为 failed。投影仅显示证据，不能授权交付或代替 Controller gate。
+
+合同与 Python/Store/HTTP 反例：`python3 -m unittest discover -s tests -p test_studio_workflow.py -v`，覆盖真实 Python 父进程报告、矛盾 PASS、缺失/失败/超时/溢出/取消回执、非法计数与可选/必需意见。`tests/usable_browser.py` 继续保留原竞态，并覆盖画布任务导入、空确认发送前阻止/改正、发送异常锁定、配置保存、同画布快照隔离、各节点结果入口、旧轮/失败/死 worker 负例。它们使用显式 SQLite/HTTP 夹具，不能当成真实模型、真实 Stable 任务或独立人工可用性证据；固定外部断言、候选绑定的完整回归和独立 Claude 审核须另行记录，小范围修复自验不代表整个 Issue #6 完成。长私有路径下 Chromium socket 可用 `BROWSER_TMPDIR` 指向操作者自己持有的短目录别名，产物仍留在指定的本地证据目录。
 
 本轮允许 Codex 代理填写并点击指定任务的 GUI 启动，仅代表用户授权下的代操作。若实际执行，原始回执及验收证据须分别记录授权来源为用户、实际操作者为 Codex；不能把它称为用户亲自点击、独立人工可用性验证，也不能推广到其他任务。候选不能自行更新 Stable pin 或制造此类审批记录。

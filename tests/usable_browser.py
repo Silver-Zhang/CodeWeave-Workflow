@@ -37,8 +37,12 @@ def canvas_runs(runtime, fixture):
             report_round = 1
             verdict = 'NEEDS_CORRECTION' if case == 'failed' else 'ACCEPT'
             review = dict(report=dict(run_id=run, round=report_round, candidate_sha256=candidate_hash,
-                acceptance_sha256='d' * 64, verdict=verdict,
-                findings=[dict(id='F-canvas', status='OPEN', title='实际审核展示夹具')] if case == 'failed' else []))
+                schema_version=1, acceptance_sha256='d' * 64, verdict=verdict, limitations=[],
+                contracts=[dict(id=identity, status='PASS', evidence_refs=['source-inspection'])
+                           for identity in config['policy']['required_contracts']],
+                findings=[dict(id='F-canvas', status='OPEN', severity='P1', title='实际审核展示夹具',
+                               contract_ids=config['policy']['required_contracts'][:1],
+                               evidence_refs=['source-inspection'])] if case == 'failed' else []))
             store.transition(run, 'IMPLEMENTING' if case == 'dead' else 'COMPLETED' if case == 'delivered' else 'BLOCKED',
                 round=number, candidate={'sha256': candidate_hash}, candidate_round=report_round,
                 candidate_path=str(candidate), review=review)
@@ -88,12 +92,16 @@ def main():
     data["config"]["bindings"] = {}
     data["sessions"] = {}
     data["round"] = data["candidate_round"] = 1
-    data["review"] = {"report": {"round": 1, "verdict": "ACCEPT", "findings": []}}
+    data["review"] = {"report": dict(schema_version=1, run_id=run_a, round=1,
+        candidate_sha256=data['candidate']['sha256'], acceptance_sha256=data['acceptance_sha256'],
+        verdict='ACCEPT', findings=[], limitations=[],
+        contracts=[dict(id=identity, status='PASS', evidence_refs=['source-inspection'])
+                   for identity in data['config']['policy']['required_contracts']])}
     db.execute("UPDATE runs SET data=? WHERE id=?", (json.dumps(data), run_a))
     run_b = "b" * 32
     other = json.loads(json.dumps(data))
     other["round"] = other["candidate_round"] = 2
-    other["review"]["report"].update(round=2, verdict="BLOCKED")
+    other["review"]["report"].update(run_id=run_b, round=2, verdict="BLOCKED")
     db.execute("INSERT INTO runs VALUES(?,?,?)", (run_b, "BLOCKED", json.dumps(other)))
     db.commit();db.close()
     canvas = canvas_runs(runtime, fixture)

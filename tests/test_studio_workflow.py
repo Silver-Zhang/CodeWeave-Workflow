@@ -10,8 +10,10 @@ from urllib.error import HTTPError
 
 import test_usable
 from orchestration.common import Blocked
-from orchestration.contracts import config_check
+from orchestration.contracts import config_check, schema, validate
+from orchestration.gate import gate
 from orchestration.store import Store, process_identity
+from orchestration.verification import verify
 from studio.usable_graph import template, node, compile_plan
 from studio.usable_server import handler
 
@@ -62,6 +64,224 @@ class WorkflowTests(unittest.TestCase):
 
     def graph(self, run):
         return self.runtime.snapshot(run)['workflow_graph']
+
+    def http_snapshot(self, run):
+        if not hasattr(self, '_workflow_http'):
+            capability = 'workflow-regression-only'
+            server = ThreadingHTTPServer(('127.0.0.1', 0), handler(self.runtime, capability))
+            thread = threading.Thread(target=server.serve_forever, daemon=True);thread.start()
+            self.addCleanup(thread.join);self.addCleanup(server.server_close);self.addCleanup(server.shutdown)
+            self._workflow_http = ('http://127.0.0.1:' + str(server.server_port), capability)
+        url, capability = self._workflow_http
+        request = Request(url + '/api/run?id=' + run, headers={'Authorization': 'Bearer ' + capability})
+        with urlopen(request) as response:
+            return json.load(response)
+
+    def final_report(self, run, data, **updates):
+        report = dict(id='custom-verifier', run_id=run, round=data['round'],
+                      candidate_sha256=data['candidate']['sha256'], acceptance_sha256=data['acceptance_sha256'],
+                      passed=True, counts=dict(tests=1, failures=0, errors=0, skipped=0),
+                      process=dict(exit=0, timeout=False, overflow=False, cancelled=False))
+        return dict(report, **updates)
+
+    def review_report(self, run, data, findings, verdict='ACCEPT'):
+        return dict(schema_version=1, run_id=run, round=data['round'],
+                    candidate_sha256=data['candidate']['sha256'], acceptance_sha256=data['acceptance_sha256'],
+                    verdict=verdict, findings=findings, limitations=[],
+                    contracts=[dict(id=identity, status='PASS', evidence_refs=['source-inspection'])
+                               for identity in data['config']['policy']['required_contracts']])
+
+    def assert_verifier_status(self, run, status):
+        for snapshot in (self.runtime.snapshot(run), self.http_snapshot(run)):
+            node = next(n for n in snapshot['workflow_graph']['nodes'] if n['id'] == 'custom-verifier')
+            self.assertEqual(node['status'], status)
+            self.assertEqual(node['results'][0]['status'], status)
+            legacy = next(n for n in snapshot['graph']['nodes'] if n['id'] == 'verify-0')
+            self.assertEqual(legacy['status'], status)
+
+    def test_final_report_requires_successful_actual_process_receipt(self):
+        store, run, data = self.record()
+        good = self.final_report(run, data)
+        store.transition(run, 'VERIFYING', verification=[good])
+        self.assert_verifier_status(run, 'passed')
+        bad_receipts = [None, {}, [], dict(good['process'], exit=1), dict(good['process'], exit=-15)]
+        for field in ('exit', 'timeout', 'overflow', 'cancelled'):
+            missing = dict(good['process']);del missing[field]
+            bad_receipts.append(missing)
+        for field in ('timeout', 'overflow', 'cancelled'):
+            bad_receipts.append(dict(good['process'], **{field: True}))
+        for receipt in bad_receipts:
+            with self.subTest(process=receipt):
+                store.transition(run, 'VERIFYING', verification=[dict(good, process=receipt)])
+                self.assert_verifier_status(run, 'failed')
+        missing = dict(good);del missing['process']
+        store.transition(run, 'VERIFYING', verification=[missing])
+        self.assert_verifier_status(run, 'failed')
+
+    def test_actual_python_parent_reports_use_process_receipts_in_fallback(self):
+        from orchestration.common import tree_hash
+        store, run, data = self.record()
+        for label, code, expected in (('success', 'VALUE = 42\n', 'passed'),
+                                      ('failure', 'raise SystemExit(7)\n', 'failed')):
+            (self.source / 'value.py').write_text(code)
+            reports = verify(data['config'], self.source, self.root / ('actual-' + label),
+                             run, data['round'], tree_hash(self.source), data['acceptance_sha256'])
+            self.assertEqual([r['counts']['tests'] for r in reports], [1, 1])
+            self.assertTrue(all(r['process']['process']['pid'] for r in reports))
+            self.assertEqual(reports[0]['process']['exit'], 0 if label == 'success' else 7)
+            data['candidate']['sha256'] = tree_hash(self.source)
+            store.transition(run, 'VERIFYING', candidate=data['candidate'], verification=reports)
+            self.assert_verifier_status(run, expected)
+            if label == 'failure':
+                # A contradictory PASS claim cannot override an observed Python exit.
+                claimed = [dict(r, passed=True, counts=dict(tests=1, failures=0, errors=0, skipped=0)) for r in reports]
+                store.transition(run, 'VERIFYING', verification=claimed)
+                self.assert_verifier_status(run, 'failed')
+
+    def test_invalid_counts_cannot_pass_validated_operation_or_final_report(self):
+        store, run, data = self.record()
+        good = self.final_report(run, data)
+        c = good['counts']
+        invalid = [None, {}, dict(c, tests=0), dict(c, tests=True), dict(c, tests=1.5),
+                   dict(c, tests='1'), dict(c, failures=-1), dict(c, failures=1), dict(c, errors=1),
+                   dict(c, skipped=1), dict(c, failures=1, errors=1), dict(c, fabricated=1)]
+        for field in c:
+            missing = dict(c);del missing[field]
+            invalid.append(missing)
+        for counters in invalid:
+            with self.subTest(path='report', counts=counters):
+                store.transition(run, 'VERIFYING', verification=[dict(good, counts=counters)])
+                self.assert_verifier_status(run, 'failed')
+        op = store.intent(run, 'VERIFICATION', dict(run_id=run, round=data['round'],
+            verification_id=good['id'], candidate_sha256=good['candidate_sha256'], acceptance_sha256=good['acceptance_sha256']))
+        for counters in invalid:
+            with self.subTest(path='validated', counts=counters):
+                store.finish(op, 'VALIDATED', passed=True, counts=counters)
+                self.assert_verifier_status(run, 'failed')
+
+    def test_validated_operation_does_not_require_a_fabricated_final_report(self):
+        store, run, data = self.record()
+        good = self.final_report(run, data)
+        op = store.intent(run, 'VERIFICATION', dict(run_id=run, round=data['round'],
+            verification_id=good['id'], candidate_sha256=good['candidate_sha256'], acceptance_sha256=good['acceptance_sha256']))
+        store.finish(op, 'VALIDATED', passed=True, counts=good['counts'])
+        self.assert_verifier_status(run, 'passed')
+        self.assertNotIn('verification', store.get(run)['data'])
+        store.finish(op, 'VERIFICATION_BLOCKED')
+        store.transition(run, 'VERIFYING', verification=[good])
+        self.assert_verifier_status(run, 'blocked')
+        store.finish(op, 'VALIDATED', passed=False, counts=good['counts'])
+        self.assert_verifier_status(run, 'failed')
+
+    def test_review_optional_and_required_findings_follow_mechanical_gate(self):
+        store, run, data = self.record(state='GATING')
+        required = data['config']['policy']['required_contracts']
+        process = dict(exit=0, timeout=False, overflow=False, cancelled=False)
+        implementation = dict(report={'status': 'IMPLEMENTED'}, process=process, session_id='implementer-fixture')
+        verification = [self.final_report(run, data, id=identity) for identity in
+                        data['config']['studio_workflow']['verification_ids']]
+        # Keep optional findings visible and count every non-CLOSED status.
+        for severity, contracts, mandatory in (('P3', required, False), ('P2', ['optional'], False),
+                                               ('P2', required[:1], True), ('P1', [], True), ('P0', [], True)):
+            for status in ('OPEN', 'BLOCKED', 'NOT_REPRODUCED', 'CLOSED'):
+                finding = dict(id='F-original', severity=severity, status=status, title='保留原始意见',
+                               contract_ids=contracts, evidence_refs=['source-inspection'])
+                report = self.review_report(run, data, [finding])
+                review = dict(report=report, process=process, session_id='reviewer-fixture')
+                blocked = mandatory and status != 'CLOSED'
+                with self.subTest(severity=severity, contracts=contracts, status=status):
+                    args = (run, data['round'], data['candidate']['sha256'], data['acceptance_sha256'],
+                            required, verification, implementation, review)
+                    if blocked:
+                        with self.assertRaisesRegex(Blocked, 'open required finding'):
+                            gate(*args, expected_verification=data['config']['policy']['verification'])
+                    else:
+                        self.assertTrue(gate(*args, expected_verification=data['config']['policy']['verification']))
+                    store.transition(run, 'GATING', review=review)
+                    for snapshot in (self.runtime.snapshot(run), self.http_snapshot(run)):
+                        node = next(n for n in snapshot['workflow_graph']['nodes'] if n['type'] == 'reviewer')
+                        self.assertEqual(node['status'], 'blocked' if blocked else 'passed')
+                        self.assertEqual(node['open_findings'], int(status != 'CLOSED'))
+                        self.assertEqual(node['findings'], [{k: finding[k] for k in ('id', 'status', 'severity', 'title')}])
+                        self.assertEqual(snapshot['findings'], node['findings'])
+        findings = [dict(id='suggestion', severity='P3', status='OPEN', title='可选建议', contract_ids=[], evidence_refs=[]),
+                    dict(id='required', severity='P2', status='OPEN', title='必需修复', contract_ids=required[:1], evidence_refs=['source-inspection'])]
+        store.transition(run, 'GATING', review={'report': self.review_report(run, data, findings)})
+        node = next(n for n in self.http_snapshot(run)['workflow_graph']['nodes'] if n['type'] == 'reviewer')
+        self.assertEqual(node['status'], 'blocked');self.assertEqual(node['open_findings'], 2)
+        self.assertEqual([f['id'] for f in node['findings']], ['suggestion', 'required'])
+
+    def test_review_verdict_and_four_bindings_remain_required(self):
+        store, run, data = self.record(state='GATING')
+        for verdict, status in (('ACCEPT', 'passed'), ('ACCEPT_WITH_LIMITATIONS', 'blocked'),
+                                ('NEEDS_CORRECTION', 'failed'), ('BLOCKED', 'blocked')):
+            report = self.review_report(run, data, [], verdict)
+            store.transition(run, 'GATING', review={'report': report})
+            node = next(n for n in self.http_snapshot(run)['workflow_graph']['nodes'] if n['type'] == 'reviewer')
+            self.assertEqual(node['status'], status)
+            self.assertEqual(node['verdict'], verdict)
+        for field in ('run_id', 'round', 'candidate_sha256', 'acceptance_sha256'):
+            report = self.review_report(run, data, [])
+            report[field] = 1 if field == 'round' else 'wrong'
+            store.transition(run, 'GATING', review={'report': report})
+            node = next(n for n in self.http_snapshot(run)['workflow_graph']['nodes'] if n['type'] == 'reviewer')
+            self.assertNotEqual(node['status'], 'passed');self.assertNotIn('verdict', node)
+
+    def test_retained_evidence_requires_exact_present_round_on_all_paths(self):
+        missing = object()
+        for path in ('validated_operation', 'final_verification_report', 'review_report'):
+            store, run, data = self.record(state='GATING')
+            for label, number in (('old', 1), ('future', 3), ('missing', missing),
+                                  ('null', None), ('wrong-type', '2'), ('current', 2)):
+                report = (self.review_report(run, data, []) if path == 'review_report'
+                          else self.final_report(run, data))
+                if number is missing:
+                    del report['round']
+                else:
+                    report['round'] = number
+                if path == 'validated_operation':
+                    info = {k: v for k, v in report.items() if k not in ('id', 'process')}
+                    info['verification_id'] = report['id']
+                    operation = store.intent(run, 'VERIFICATION', info)
+                    store.finish(operation, 'VALIDATED')
+                elif path == 'final_verification_report':
+                    store.transition(run, 'GATING', verification=[report])
+                else:
+                    store.transition(run, 'GATING', review={'report': report})
+                for read in (self.runtime.snapshot, self.http_snapshot):
+                    with self.subTest(path=path, round=label, reader=read.__name__):
+                        snapshot = read(run)
+                        kind = 'reviewer' if path == 'review_report' else 'verifier'
+                        node = next(n for n in snapshot['workflow_graph']['nodes'] if n['type'] == kind)
+                        self.assertEqual(node['status'], 'passed' if label == 'current' else 'pending')
+                        if label != 'current':
+                            if kind == 'reviewer':
+                                self.assertIsNone(snapshot['verdict']);self.assertNotIn('verdict', node)
+                            else:
+                                self.assertIsNone(node['counts'])
+
+    def test_browser_canvas_fixtures_keep_complete_reports_and_negative_states(self):
+        from usable_browser import canvas_runs
+        runs = canvas_runs(self.runtime, self)
+        store = Store(self.runtime.control, readonly=True);self.addCleanup(store.db.close)
+        for case, run in runs.items():
+            with self.subTest(case=case):
+                data = store.get(run)['data']
+                validate(data['review']['report'], schema('review-result'))
+                snapshot = self.http_snapshot(run)
+                nodes = {n['id']: n for n in snapshot['workflow_graph']['nodes']}
+                self.assertEqual(nodes['separate-check']['status'],
+                                 'failed' if case == 'failed' else 'pending' if case == 'stale' else 'passed')
+                self.assertEqual(nodes['custom-reviewer']['status'],
+                                 'failed' if case == 'failed' else 'pending' if case == 'stale' else 'passed')
+                if case == 'failed':
+                    self.assertEqual(nodes['custom-reviewer']['open_findings'], 1)
+                    self.assertEqual(nodes['separate-check']['counts']['failures'], 1)
+                if case == 'dead':
+                    self.assertEqual(snapshot['state'], 'RECOVERY_REQUIRED')
+                    self.assertFalse(any(n['status'] == 'running' for n in nodes.values()))
+                if case == 'delivered':
+                    self.assertEqual(nodes['custom-delivery']['delivery']['pr']['number'], 42)
 
     def test_capture_full_snapshot_compiled_identity_and_contract_ids(self):
         preview = self.prepare();config = preview['data']['config'];value = config['studio_workflow']
@@ -117,8 +337,7 @@ class WorkflowTests(unittest.TestCase):
     def test_stale_round_run_candidate_and_contract_never_pass(self):
         store, run, data = self.record();self.reports(store, run, data, number=1)
         for alteration in ('round', 'run_id', 'candidate_sha256', 'acceptance_sha256'):
-            report = dict(id='custom-verifier', run_id=run, round=2, candidate_sha256='a' * 64,
-                          acceptance_sha256='b' * 64, passed=True, counts=dict(tests=9, failures=0, errors=0, skipped=0))
+            report = self.final_report(run, data)
             report[alteration] = 1 if alteration == 'round' else 'wrong'
             store.transition(run, 'VERIFYING', verification=[report])
             for n in self.graph(run)['nodes']:
