@@ -1,8 +1,8 @@
 """Loopback-only optional web app. Canvas storage is NOT controller run state.
 
 APIs require a per-start bearer token, exact Host, and same-origin requests.
-The only filesystem writes are immutable Studio revisions in an explicitly
-selected workspace. Starting an agent requires CLI-bound task + authorization;
+Filesystem writes are Studio revisions and a minimal session metadata index in
+an explicitly selected Studio storage directory. Native sessions remain read-only. Starting an agent requires CLI-bound task + authorization;
 there is no browser API for authorization, shell commands, cancel, or delivery.
 """
 from __future__ import annotations
@@ -24,6 +24,7 @@ from urllib.parse import parse_qs, urlsplit
 import uuid
 from .graph import Invalid, canonical, compile_task, digest, from_task, template, validate
 from .projection import Reader, Unavailable
+from .workspace_sessions import WorkspaceSessions
 
 ROOT = Path(__file__).resolve().parents[2]
 STATIC = Path(__file__).parent / 'static'
@@ -140,7 +141,7 @@ class Launcher:
 
 
 class App:
-    def __init__(self, workspace, control=None, task=None, authorization=None):
+    def __init__(self, workspace, control=None, task=None, authorization=None, project_roots=(), session_profiles=None, session_environ=None):
         workspace = Path(workspace).resolve()
         if overlap(workspace, ROOT) or control and overlap(workspace, control):
             raise Invalid('Studio workspace must be disjoint from the engine and control tree')
@@ -149,11 +150,13 @@ class App:
                 raise Invalid('Studio drafts must not contain operator configuration or authorization')
         if workspace.exists() and not (workspace / '.devflower-studio').is_file():
             raise Invalid('Choose a NEW Studio workspace; existing unrelated directories are never adopted')
+        self.sessions = WorkspaceSessions(workspace, project_roots, session_profiles, session_environ, persist=False)
         workspace.mkdir(parents=True, exist_ok=True, mode=0o700)
         marker = workspace / '.devflower-studio'
         if marker.is_symlink():
             raise Invalid('Invalid workspace marker')
         marker.touch(mode=0o600, exist_ok=True)
+        self.sessions.initialize_storage()
         self.drafts = Drafts(workspace)
         self.reader = Reader(control)
         self.launcher = Launcher(control, task, authorization)
@@ -215,11 +218,15 @@ def handler(app):
                     body = json.loads(self.rfile.read(size))
                     if not isinstance(body, dict):
                         raise Invalid('Expected JSON object')
-                if not post and path in ('/', '/app.js', '/style.css'):
-                    name, mime = {'/': ('index.html', 'text/html; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/style.css': ('style.css', 'text/css; charset=utf-8')}[path]
+                if not post and path in ('/', '/app.js', '/workspace.js', '/style.css'):
+                    name, mime = {'/': ('index.html', 'text/html; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/workspace.js': ('workspace.js', 'text/javascript; charset=utf-8'), '/style.css': ('style.css', 'text/css; charset=utf-8')}[path]
                     self.response(200, (STATIC / name).read_bytes(), mime); return
                 if not post and path == '/api/meta':
                     self.response(200, {'version': '0.1', 'profile': 'b-dual-review-v1', 'template': template(), 'launcher': app.launcher.status(), 'control_configured': app.reader.control is not None}); return
+                if not post and path == '/api/workspaces':
+                    self.response(200, app.sessions.listing()); return
+                if not post and re.fullmatch(r'/api/workspaces/[a-f0-9]{32}/sessions', path):
+                    self.response(200, app.sessions.snapshot(path.split('/')[3])); return
                 if not post and path == '/api/workflows':
                     self.response(200, app.drafts.listing()); return
                 if not post and re.fullmatch(r'/api/workflows/[a-f0-9]{32}', path):
@@ -273,6 +280,8 @@ def handler(app):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--workspace', required=True, help='New private Studio draft directory, outside the repository/control')
+    parser.add_argument('--project-root', action='append', default=[], help='Explicit business project root (repeatable); separate from Studio drafts')
+    parser.add_argument('--session-profiles', help='Operator-owned JSON: explicit native storage profiles and scan budgets')
     parser.add_argument('--control', help='Existing Controller control directory to observe')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--launch-task', help='Optional pre-approved task: enables one exact browser launch')
@@ -283,7 +292,7 @@ def main(argv=None):
     if not 0 <= args.port <= 65535:
         parser.error('Invalid port')
     try:
-        app = App(args.workspace, args.control, args.launch_task, args.authorization)
+        app = App(args.workspace, args.control, args.launch_task, args.authorization, args.project_root, args.session_profiles)
         server = ThreadingHTTPServer(('127.0.0.1', args.port), handler(app))
         print(f'DevFlower Studio: http://127.0.0.1:{server.server_port}/#token={app.token}', flush=True)
         print('Local access only. No automatic authorization, delivery, or main merge. Ctrl+C closes Studio, not an explicitly launched Controller.', flush=True)
