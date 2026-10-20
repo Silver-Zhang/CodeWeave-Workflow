@@ -1,7 +1,9 @@
 # 当前状态
 
-Studio v0.1最终稳定化20261020_02_studio-v01-final-stability已完成，结论ACCEPT。ST-R04/ST-R05及全部必需复查项CLOSED；一次真实DeepSeek/max独立审核exit0，当前候选af66e5c0。源码flow/studio-mvp已交付4636083073b39b6e1f42f4544f7b3d35d4f32140。
+Issue #4 / 20261020_03_workspace-session-m0，B模式，已完成技术验收及PR交付。源码flow/workspace-session-m0：e339c5ef62866f35de89da54011d18c88d3fc2d7；[PR #5](https://github.com/Silver-Zhang/DevFlower/pull/5)，base=main，未合并。
 
-全量132/132、host4/4、既有Chromium竞态9/9、新身份竞态17/17；独立反例23/23，均0 Skip。源码Controller/backend未改。先读本任务README和evidence.json；原始日志archives/studio-v01-final-stability-20261020/。上一任务及全部失败保留。
+R1/R2 NEEDS_CORRECTION；R3 ACCEPT，F1–F5全部CLOSED。164单元、host4、Chromium9/17/7、baseline及语法全部通过，0 Skip。候选059dcdee10dd，tree4b61d1e6，与发布源码一致。
 
-技术READY_TO_MERGE条件满足；PR #3仍Draft，依赖未合并PR #2。下一步仅用户决定评审/依赖顺序及人工合并授权。本轮结束，不进入下一代，不修改CodeWeave/RMC。
+任务卡足以自主实施、测试、复审和PR交付；实际依赖本地已批准CLI/Profile/外部监督。真实Codex1/Claude2元数据只读发现，6个原生/认证文件哈希不变；产品恢复标识均未验证，只有本任务审核会话有真实续接证明。
+
+下一步：用户决定PR合并；不启动M1。源码和records两个worktree；过程及原生审核记录留archives，未污染源码根目录。只读观察页：http://127.0.0.1:8766/。

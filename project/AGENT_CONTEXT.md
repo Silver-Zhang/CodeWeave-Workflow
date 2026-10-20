@@ -1,7 +1,13 @@
 # 接手入口
 
-最新任务20261020_02_studio-v01-final-stability已完成，最终ACCEPT；ST-R04保存身份和ST-R05监控身份修复。先读STATUS和任务README。源码Studio-stabilization/（flow/studio-mvp，4636083），自身记录records/project/，原始证据archives/studio-v01-final-stability-20261020/。其他DevFlower工作树与旧任务完整保留。
+当前Issue #4已完成：[PR #5](https://github.com/Silver-Zhang/DevFlower/pull/5)，未合并。任务20261020_03_workspace-session-m0，先读STATUS及任务README。代码DevFlower/（flow/workspace-session-m0），记录records/project/，过程archives/workspace-session-m0-20261020/。
 
-真实Claude Code通过DeepSeek路由审核，model deepseek-flash[1m]、请求max、resolved effort unknown；cwd=/home/workspace/DevFlower，同项目专用UUID ed0a5ce5-2478-4577-bf8b-ee05413a7f31明确resume。本轮1次正式审核ACCEPT、exit0。持久HOME仍为archives/studio-v01-stabilization-20261020/runtime/independent-reviewer，不能按临时目录清理；配置根、原生记录和准确恢复命令见最新任务README/session-binding记录。没有复制全部全局配置或其他项目会话。
+基线main=f7307f1（PR #2/#3由外部合并）；源码结果e339c5ef62866f35de89da54011d18c88d3fc2d7，与远端读回一致。R1/R2原始NEEDS_CORRECTION均保留；R3 ACCEPT，F1–F5关闭，候选059dcdee10dd/tree4b61d1e6。164单元+host4+Chromium9/17/7、baseline/语法全部通过。
 
-技术冻结条件已满足；PR #3保持Draft和#2依赖。任何main合并、删除分支、release及真实业务交付仍需独立授权；PR #2不得随Studio审核自动合并。后续仅按用户新指示处理评审/合并顺序，不自动开发下一代，不修改CodeWeave/RMC或project/codeweave。
+真实Claude Code2.1.303，native modelUsage=deepseek-flash[1m]，requested effort=max，resolved=unknown。专属审核UUID85567117-650e-42a6-8734-e52212615bf6；cwd=/home/workspace/DevFlower；持久HOME=archives/workspace-session-m0-20261020/runtime/independent-reviewer。三轮已退出，R2/R3显式--resume成功；默认HOME历史不包含它。准确恢复命令见任务README，原生记录不复制到默认HOME。
+
+产品只读聚合仍保守标恢复未验证，不因登记而声称原生CLI可恢复。原始用户会话及认证未修改/外发。固定外部监督完成本轮自举，不使用待审Controller自批。
+
+临时只读观察页http://127.0.0.1:8766/，代码/进程回执在本任务archives/observer；不是Controller权威状态。仅保留主开发checkout和records worktree，历史档案完整保留。
+
+Issue授权的任务分支commit/ref发布/PR已执行；Git本地HTTPS无凭据，采用GitHub连接并正常本地fast-forward，禁止force/reset/main合并。项目记录在独立project/devflower；发布回执在archives/delivery.json。下一步用户决定PR合并，不自动进入M1。

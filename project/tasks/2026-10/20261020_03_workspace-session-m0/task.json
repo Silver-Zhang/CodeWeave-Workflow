@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "20261020_03_workspace-session-m0",
+  "date": "2026-10-20",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/workspace-session-m0",
+      "base": "f7307f10d3fac01dfd6ed24f41cb4d2bec2d4912",
+      "result": "e339c5ef62866f35de89da54011d18c88d3fc2d7",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/5"
+    }
+  ]
+}

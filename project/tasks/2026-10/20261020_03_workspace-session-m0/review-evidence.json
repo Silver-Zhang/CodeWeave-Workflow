@@ -1,0 +1,210 @@
+{
+  "rounds": [
+    {
+      "round": 1,
+      "verdict": "NEEDS_CORRECTION",
+      "candidate_sha256": "83ff6a44b6ca89b070d20fd9caa59572e9dc228576a57b080afeb8297355fd5a",
+      "git_tree": "64b8b72f847f0a35df54160ea690b6b32dd16ab9",
+      "contract_sha256": "79d286b0eb5b9e717efe5e992029646a769330f76d83a37810c782bcdae1b0cd",
+      "session_id": "85567117-650e-42a6-8734-e52212615bf6",
+      "pid": 556351,
+      "exit": 0,
+      "timeout": false,
+      "seconds": 870.1,
+      "requested_effort": "max",
+      "effective_effort": "unknown",
+      "native_model_usage": [
+        "deepseek-flash[1m]"
+      ],
+      "raw_verdict_sha256": "11d853693e6c6240a423e5e4ddf9e5c85ef360cea375abe4538aed205fdecfcd",
+      "findings": [
+        {
+          "id": "F1",
+          "severity": "P3",
+          "status": "OPEN",
+          "file": "tools/studio/session_sources.py",
+          "line": 174
+        },
+        {
+          "id": "F2",
+          "severity": "P2",
+          "status": "OPEN",
+          "file": "tests/test_workspace_sessions.py",
+          "line": 191
+        },
+        {
+          "id": "F3",
+          "severity": "P3",
+          "status": "OPEN",
+          "file": "tools/studio/session_sources.py",
+          "line": 26
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "verdict": "NEEDS_CORRECTION",
+      "candidate_sha256": "4c47cfcca4aa86968f1c52feed20c621b3374fb39d44fb17098448848bbdcc97",
+      "git_tree": "965780564b33f2dc0400fe56bb6851cf2019b453",
+      "contract_sha256": "79d286b0eb5b9e717efe5e992029646a769330f76d83a37810c782bcdae1b0cd",
+      "session_id": "85567117-650e-42a6-8734-e52212615bf6",
+      "pid": 577643,
+      "exit": 0,
+      "timeout": false,
+      "seconds": 768.57,
+      "requested_effort": "max",
+      "effective_effort": "unknown",
+      "native_model_usage": [
+        "deepseek-flash[1m]"
+      ],
+      "raw_verdict_sha256": "bfa0b32a0d307659dad18736edf8099afc33eefdcc662555305f256fc592b39a",
+      "findings": [
+        {
+          "id": "F1",
+          "severity": "P3",
+          "status": "CLOSED",
+          "file": "tools/studio/session_sources.py",
+          "line": 174
+        },
+        {
+          "id": "F2",
+          "severity": "P2",
+          "status": "CLOSED",
+          "file": "tests/test_workspace_sessions.py",
+          "line": 191
+        },
+        {
+          "id": "F3",
+          "severity": "P3",
+          "status": "CLOSED",
+          "file": "tools/studio/session_sources.py",
+          "line": 26
+        },
+        {
+          "id": "F4",
+          "severity": "P2",
+          "status": "OPEN",
+          "file": "tools/studio/session_sources.py",
+          "line": 172
+        },
+        {
+          "id": "F5",
+          "severity": "P3",
+          "status": "OPEN",
+          "file": "tools/studio/session_sources.py",
+          "line": 164
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "verdict": "ACCEPT",
+      "candidate_sha256": "059dcdee10ddf5175f32f01e512cd05f16a1109afc228099caf76bbfac98d8d6",
+      "git_tree": "4b61d1e62ab9dfbc4a1501d3d0b8da931666a74b",
+      "contract_sha256": "79d286b0eb5b9e717efe5e992029646a769330f76d83a37810c782bcdae1b0cd",
+      "session_id": "85567117-650e-42a6-8734-e52212615bf6",
+      "pid": 601117,
+      "exit": 0,
+      "timeout": false,
+      "seconds": 1257.74,
+      "requested_effort": "max",
+      "effective_effort": "unknown",
+      "native_model_usage": [
+        "deepseek-flash[1m]"
+      ],
+      "raw_verdict_sha256": "29d1ff11240bfd01374738dc96c1d4c2cd83200f0b3753ab7ba51ec548ae73ca",
+      "findings": [
+        {
+          "id": "F1",
+          "severity": "P3",
+          "status": "CLOSED",
+          "file": "tools/studio/session_sources.py",
+          "line": 174
+        },
+        {
+          "id": "F2",
+          "severity": "P2",
+          "status": "CLOSED",
+          "file": "tests/test_workspace_sessions.py",
+          "line": 191
+        },
+        {
+          "id": "F3",
+          "severity": "P3",
+          "status": "CLOSED",
+          "file": "tools/studio/session_sources.py",
+          "line": 26
+        },
+        {
+          "id": "F4",
+          "severity": "P2",
+          "status": "CLOSED",
+          "file": "tools/studio/session_sources.py",
+          "line": 172
+        },
+        {
+          "id": "F5",
+          "severity": "P3",
+          "status": "CLOSED",
+          "file": "tools/studio/session_sources.py",
+          "line": 164
+        }
+      ],
+      "independent_suites": {
+        "new_fix_cases": 17,
+        "closure_cases": 13,
+        "scope_cases": 25,
+        "browser_cases": 9
+      }
+    }
+  ],
+  "current_candidate": {
+    "candidate_sha256": "059dcdee10ddf5175f32f01e512cd05f16a1109afc228099caf76bbfac98d8d6",
+    "git_tree": "4b61d1e62ab9dfbc4a1501d3d0b8da931666a74b",
+    "contract_sha256": "79d286b0eb5b9e717efe5e992029646a769330f76d83a37810c782bcdae1b0cd"
+  },
+  "round_3_status": "ACCEPT",
+  "native_review_resume": "confirmed for this task-owned Claude session only; product rows unverified",
+  "archive": "/home/workspace/DevFlower/archives/workspace-session-m0-20261020",
+  "delivery": {
+    "source_branch": "flow/workspace-session-m0",
+    "source_commit": "e339c5ef62866f35de89da54011d18c88d3fc2d7",
+    "source_tree": "4b61d1e62ab9dfbc4a1501d3d0b8da931666a74b",
+    "source_remote_readback": true,
+    "pr": "https://github.com/Silver-Zhang/DevFlower/pull/5",
+    "main_merged": false,
+    "transport": "GitHub Git-data API; exact reviewed tree; normal local fast-forward",
+    "records_branch": "project/devflower",
+    "records_delivery_receipt": "/home/workspace/DevFlower/archives/workspace-session-m0-20261020/delivery.json"
+  },
+  "selftest": {
+    "unit": 164,
+    "host": 4,
+    "browser": [
+      9,
+      17,
+      7
+    ],
+    "commands": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "results_sha256": "ee9a21210ed4228b70ed8c8d5372470700e7de4dfc3d33e360343b852b37df98"
+  },
+  "ci": [
+    {
+      "event": "push",
+      "run": 39386769828,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "e339c5ef62866f35de89da54011d18c88d3fc2d7"
+    },
+    {
+      "event": "pull_request",
+      "run": 39386863737,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "e339c5ef62866f35de89da54011d18c88d3fc2d7"
+    }
+  ]
+}
