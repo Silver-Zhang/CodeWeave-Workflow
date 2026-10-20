@@ -111,6 +111,18 @@ class Reader:
             # Explicit identities only. Equal argv is legal and cannot identify a verifier.
             rows = db.execute("SELECT id,kind,status,data FROM operations WHERE run=? AND kind IN ('PROCESS','VERIFICATION','WORKER','AGENT_REQUEST') AND length(data)<8388608 ORDER BY rowid DESC LIMIT 1000", (run,)).fetchall()
             operations = [{**dict(r), 'data': json.loads(r['data'])} for r in rows]
+            if _detail:
+                event_round = None
+                op_rounds = {}
+                for event in events:
+                    if event['kind'] == 'PLANNING':
+                        event_round = 0
+                    elif type(event['data'].get('round')) is int:
+                        event_round = event['data']['round']
+                    if event['kind'] == 'INTENT':
+                        op_rounds[event['data'].get('operation')] = event_round
+                for operation in operations:
+                    operation['_round'] = op_rounds.get(operation['id'])
             value = project(run, state, data, events, live, operations=operations)
             return (value, data, operations) if _detail else value
         finally:

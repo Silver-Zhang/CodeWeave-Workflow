@@ -2,18 +2,38 @@
 const $ = id => document.getElementById(id);
 const text = (tag, value, cls) => { const e = document.createElement(tag); e.textContent = value; if(cls)e.className=cls; return e; };
 const state = {workspace:null, document:null, identity:crypto.randomUUID(), version:0, saved:null, selected:null,
-  profiles:[], verificationProfiles:[], owned:[], drafts:[], run:null, runEpoch:0, workspaceEpoch:0, preview:null, history:[], historyIndex:0, loadEpoch:0, statusEpoch:0, runRequest:0, pollPending:null};
+  mode:'design', snapshot:null, runSelected:null, profiles:[], verificationProfiles:[], owned:[], drafts:[], run:null, runEpoch:0, workspaceEpoch:0, preview:null, history:[], historyIndex:0, loadEpoch:0, statusEpoch:0, runRequest:0, pollPending:null};
 const fragment = new URLSearchParams(location.hash.slice(1));
 if(fragment.has('token')) { sessionStorage.setItem('devflower-stable-token',fragment.get('token')); history.replaceState(null,'',location.pathname); }
 const token = sessionStorage.getItem('devflower-stable-token') || '';
+$('studio').inert=true;
 function notice(message) { $('notice').textContent=message; }
+let panelOrigin=null;
+function closePanels() { for(const e of document.querySelectorAll('.floating-panel'))e.hidden=true; $('node-menu').hidden=true; }
+function openPanel(id) {
+  closePanels();panelOrigin=document.activeElement;const panel=$(id);panel.hidden=false;
+  const node=canvas.svg.querySelector(`[data-node="${state.mode==='run'?state.runSelected:state.selected}"]`);
+  const right=node?.getBoundingClientRect().x>innerWidth/2;
+  panel.style.left=right?'14px':'';panel.style.right=right?'auto':'14px';
+  if(panelOrigin?.matches('[data-node]'))[...panel.querySelectorAll('input,textarea,select,button')].find(e=>!e.matches('.close-panel')&&e.getClientRects().length&&!e.disabled)?.focus({preventScroll:true});
+}
+for(const button of document.querySelectorAll('[data-close]'))button.addEventListener('click',()=>{
+  $(button.dataset.close).hidden=true;(panelOrigin?.isConnected?panelOrigin:$('canvas')).focus();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const inside=e.target.closest('.floating-panel');closePanels();state.addContext=null;$('palette').hidden=true;$('toggle-palette').setAttribute('aria-expanded','false');if(inside)(panelOrigin?.isConnected?panelOrigin:$('canvas')).focus();}});
+
 async function api(path,data) {
   const response=await fetch(path,{method:data===undefined?'GET':'POST',headers:{Authorization:'Bearer '+token,...(data===undefined?{}:{'Content-Type':'application/json'})},body:data===undefined?undefined:JSON.stringify(data)});
   const value=await response.json(); if(!response.ok)throw new Error(value.error||'请求失败'); return value;
 }
 function act(id, fn) { $(id).addEventListener('click',async()=>{try{await fn();}catch(e){notice(e.message);}}); }
+function invalidatePreview() {
+  state.preview=null;$('preview').replaceChildren();
+  if(!$('task-confirm-step').hidden)taskStep(2);
+  document.querySelector('[data-task-step="3"]').disabled=true;
+}
 function changed(record=true) {
-  state.version++;state.preview=null;$('preview').replaceChildren();$('save-state').textContent='当前改动未保存';
+  state.version++;invalidatePreview();$('save-state').textContent='当前改动未保存';
   $('graph-status').textContent='编辑已改变，需重新校验';
   if(record&&JSON.stringify(state.history[state.historyIndex])!==JSON.stringify(state.document)) {
     state.history=state.history.slice(0,state.historyIndex+1);state.history.push(structuredClone(state.document));
@@ -26,8 +46,9 @@ function options(select, values, selected) {
   if(selected!==undefined)select.value=selected;
 }
 function loadDocument(document,saved=null) {
+  state.addContext=null;closePanels();$('palette').hidden=true;$('toggle-palette').setAttribute('aria-expanded','false');
   state.document=structuredClone(document);state.identity=crypto.randomUUID();state.version=0;state.saved=saved;state.selected=null;
-  state.history=[structuredClone(document)];state.historyIndex=0;state.loadEpoch++;state.preview=null;$('preview').replaceChildren();$('graph-status').textContent='尚未校验当前编辑版本';$('workflow-name').value=document.name;$('max-rounds').value=document.max_rounds;
+  state.history=[structuredClone(document)];state.historyIndex=0;state.loadEpoch++;invalidatePreview();$('graph-status').textContent='尚未校验当前编辑版本';$('workflow-name').value=document.name;$('max-rounds').value=document.max_rounds;
   $('save-state').textContent=saved?'已加载保存版本':'新草稿未保存';draw();canvas.fit();
 }
 async function newDraft() {
@@ -44,9 +65,9 @@ async function status() {
   state.workspaces=value.workspaces;
 }
 function setWorkspace(workspace) {
-  state.workspace=workspace;state.workspaceEpoch++;state.owned=[];state.preview=null;state.run=null;state.runEpoch++;
+  state.workspace=workspace;state.snapshot=null;state.runSelected=null;state.workspaceEpoch++;state.owned=[];invalidatePreview();state.run=null;state.runEpoch++;
   $('workspace-path').value=workspace.path;$('workspace-info').textContent=`${workspace.path} · ${workspace.branch} · ${workspace.head}`;
-  $('sessions').replaceChildren();$('preview').replaceChildren();$('monitor').replaceChildren();$('run-title').textContent='未选择运行';sessionStorage.setItem('devflower-workspace',workspace.id);status().catch(e=>notice(e.message));sessions().catch(e=>notice(e.message));
+  $('sessions').replaceChildren();$('preview').replaceChildren();$('monitor').replaceChildren();if(state.mode==='run')canvas.render({nodes:[],edges:[]});$('run-title').textContent='未选择运行';sessionStorage.setItem('devflower-workspace',workspace.id);status().catch(e=>notice(e.message));sessions().catch(e=>notice(e.message));
 }
 async function saveDraft() {
   const identity=state.identity, version=state.version, document=structuredClone(state.document), saved=state.saved?{...state.saved}:null;
@@ -54,7 +75,12 @@ async function saveDraft() {
   if(identity===state.identity) {
     // A concurrent response must not replace a newer confirmed revision.
     const stillExpected=state.saved?.revision===(saved?.revision);
-    if(stillExpected||!state.saved&&!saved){state.saved={id:result.id,revision:result.revision};$('save-state').textContent=version===state.version?'该快照已保存':'请求发出时的快照已保存；当前仍有未保存改动';}
+    if(stillExpected||!state.saved&&!saved){
+      state.saved={id:result.id,revision:result.revision};
+      state.drafts=[result,...state.drafts.filter(d=>d.id!==result.id)];
+      options($('drafts'),[['','已保存流程'],...state.drafts.map(d=>[d.id,d.document.name])],result.id);
+      $('save-state').textContent=version===state.version?'该快照已保存':'请求发出时的快照已保存；当前仍有未保存改动';
+    }
   }
   await status();
 }
@@ -76,7 +102,9 @@ function field(parent,label,key,value,type='text',choices=null) {
   });return input;
 }
 function configure() {
-  const parent=$('node-config');parent.replaceChildren();
+  const parent=$('node-config');
+  if(parent.contains($('delivery')))$('task-delivery').append($('delivery').closest('label'));
+  parent.replaceChildren();
   const n=state.document.nodes.find(n=>n.id===state.selected);if(!n){parent.append(text('p','选择节点以编辑。'));return;}
   parent.append(text('strong',n.type+' · '+n.id));field(parent,'显示名称','label',n.label);
   const c=n.config;
@@ -86,15 +114,16 @@ function configure() {
     field(parent,'运行配置','profile',c.profile,'text',state.profiles.filter(p=>providers.includes(p.provider)).map(p=>[p.id,`${p.provider} · ${p.model} / ${p.effort}`]));
     const role=n.type==='developer'?'implementer':n.type;
     field(parent,'原生会话','session',c.session,'text',[['new','新建独立原生会话'],...state.owned.filter(s=>s.role===role&&s.provider===c.provider&&s.resume).map(s=>[s.id,s.id])]);
-    field(parent,'请求模型（unknown 使用已批准配置）','model',c.model);
-    field(parent,'请求 effort（unknown 使用已批准配置）','effort',c.effort);
     field(parent,'系统职责','responsibility',c.responsibility,'textarea');
     field(parent,'项目背景','background',c.background,'textarea');
-    field(parent,'步骤预算（秒，30–3600）','timeout_seconds',c.timeout_seconds,'number');
-    field(parent,'子 Agent（当前执行器不支持）','subagents',c.subagents,'checkbox').disabled=true;
-    parent.append(text('p','允许工具'));
+    const advanced=document.createElement('details');advanced.className='agent-advanced';advanced.append(text('summary','高级：模型覆盖、工具与预算'));parent.append(advanced);
+    field(advanced,'请求模型（unknown 使用已批准配置）','model',c.model);
+    field(advanced,'请求 effort（unknown 使用已批准配置）','effort',c.effort);
+    field(advanced,'步骤预算（秒，30–3600）','timeout_seconds',c.timeout_seconds,'number');
+    field(advanced,'子 Agent（当前执行器不支持）','subagents',c.subagents,'checkbox').disabled=true;
+    advanced.append(text('p','允许工具'));
     for(const tool of c.provider==='codex'?['native']:['Read','Glob','Grep','Bash','Write','Edit']) {
-      const label=text('label',tool),input=document.createElement('input');input.type='checkbox';input.checked=c.tools.includes(tool);label.prepend(input);parent.append(label);
+      const label=text('label',tool),input=document.createElement('input');input.type='checkbox';input.checked=c.tools.includes(tool);label.prepend(input);advanced.append(label);
       input.addEventListener('change',()=>{c.tools=input.checked?[...new Set([...c.tools,tool])]:c.tools.filter(t=>t!==tool);changed();});
     }
     parent.append(text('p','实际模型和 effort 在运行结果中展示；服务未返回的字段为 unknown。'));
@@ -104,18 +133,65 @@ function configure() {
     else field(parent,'源码相对路径','target',c.target);
     parent.append(text('p','用例由可信父进程计数；不接受候选自报 unittest 计数。'));
     field(parent,'最低实际测试数','min_cases',c.min_cases,'number');field(parent,'最多 Skip','max_skipped',c.max_skipped,'number');
-  } else if(n.type==='human_gate')field(parent,'实际人工确认问题','question',c.question,'textarea');
-  else parent.append(text('p','交付权限在当次授权预览中确认；改连线不能绕过测试与独立审核。'));
+  } else if(n.type==='human_gate')field(parent,'实际人工确认问题（请说明需要用户确认的范围）','question',c.question,'textarea');
+  else {parent.append(text('p','交付权限在当次授权预览中确认；改连线不能绕过测试与独立审核。'));parent.append($('delivery').closest('label'));}
 }
 const canvas = new WorkflowCanvas($('canvas'), {
-  select:id=>{state.selected=id;configure();}, change:()=>changed(), connect:addEdge,
+  select:(id,port=false)=>{
+    if(state.mode==='run'){state.runSelected=id;renderNodeEvidence();return;}
+    if(port){closePanels();state.selected=id;configure();return;}
+    state.selected=id;configure();
+    const n=state.document.nodes.find(n=>n.id===id);
+    if(n.type==='human_gate'){
+      $('task-context').append($('node-config'));
+      $('task-delivery').append($('delivery').closest('label'));taskStep(state.preview?3:1);
+      openPanel('panel-task');
+    }else{$('inspector').append($('node-config'));openPanel('inspector');}
+  }, change:()=>changed(), connect:addEdge, addAfter:openNodePicker,
+  drop:(kind,point)=>addNode(kind,point).catch(e=>notice(e.message)),
+  menu:(id,x,y)=>{
+    closePanels();const menu=$('node-menu');menu.replaceChildren();
+    for(const[label,action]of [['编辑节点',()=>canvas.callbacks.select(id)],['复制节点',()=>{
+      const node=state.document.nodes.find(n=>n.id===id);if(!node)return;
+      const copy=structuredClone(node);copy.id=node.type+'-'+crypto.randomUUID().slice(0,8);copy.label=node.label+' 副本';
+      copy.x=Math.min(10000,node.x+35);copy.y=Math.min(10000,node.y+120);state.document.nodes.push(copy);state.selected=copy.id;changed();draw();
+    }],['删除节点',()=>removeSelection()]]){
+      const button=text('button',label);button.setAttribute('role','menuitem');button.addEventListener('click',()=>{menu.hidden=true;action();});menu.append(button);
+    }
+    const bounds=$('studio').getBoundingClientRect();menu.style.left=Math.max(8,Math.min(x-bounds.x,bounds.width-168))+'px';menu.style.top=Math.max(8,Math.min(y-bounds.y,bounds.height-140))+'px';menu.hidden=false;menu.querySelector('button').focus();
+  },
   remove:edge=>removeSelection(edge), message:notice, viewport:percent=>$('zoom-level').textContent=percent+'%'
 });
 function tab(name) {
-  for(const e of document.querySelectorAll('.tab-panel'))e.hidden=e.id!=='panel-'+name;
+  if(name==='task'){
+    const n=state.document.nodes.find(n=>n.type==='human_gate');if(n){state.selected=n.id;configure();$('task-context').append($('node-config'));}taskStep(state.preview?3:1);openPanel('panel-task');return;
+  }
+  if(name==='sessions'){openPanel('panel-sessions');return;}
+  canvas.cancel();closePanels();state.mode=name==='runs'?'run':'design';canvas.readonly=state.mode==='run';
+  state.addContext=null;$('canvas-run').hidden=state.mode==='run';
+  if(state.mode==='run')$('empty-canvas').hidden=true;
+  $('panel-runs').hidden=state.mode!=='run';$('palette').hidden=true;
   for(const e of document.querySelectorAll('[data-tab]'))e.setAttribute('aria-selected',String(e.dataset.tab===name));
+  for(const id of ['undo','redo','delete-node','save','new-draft','drafts','template','workflow-name','flow-options','toggle-palette'])$(id).disabled=state.mode==='run';
+  if(state.mode==='run'){
+    renderRunCanvas(true);if(!state.run)notice('请选择运行。运行画布使用当次固定快照，与设计草稿隔离。');
+  }else{draw();canvas.fit();notice('设计草稿：双击人工确认节点填写任务，双击 Agent 节点配置，再保存并授权运行。');}
 }
 for(const e of document.querySelectorAll('[data-tab],[data-go]'))e.addEventListener('click',()=>tab(e.dataset.tab||e.dataset.go));
+function openNodePicker(source=null,edgeIndex=null,point=null) {
+  if(state.mode!=='design')return;
+  const node=state.document.nodes.find(n=>n.id===source);
+  if(source&&!node)return;
+  if(source&&edgeIndex===null)edgeIndex=state.document.edges.findIndex(e=>e.source===source&&e.on==='next');
+  const edge=edgeIndex!==null&&edgeIndex>=0?state.document.edges[edgeIndex]:null;
+  state.addContext=source||point?{identity:state.identity,source,edge:edge?{...edge}:null,point}:null;
+  closePanels();$('palette').hidden=false;$('toggle-palette').setAttribute('aria-expanded','true');
+  $('palette-title').textContent=source?'选择下一步':'添加节点';
+  $('palette-hint').textContent=source?`接在「${node.label}」之后，现有连线会自动接续。`:'选择一个角色，放入画布。';
+  if(document.activeElement?.matches('[data-canvas-action]'))$('palette').querySelector('[data-kind]')?.focus();
+}
+act('toggle-palette',()=>{if($('palette').hidden)openNodePicker();else{$('palette').hidden=true;state.addContext=null;$('toggle-palette').setAttribute('aria-expanded','false');}});
+act('flow-options',()=>openPanel('flow-panel'));
 function addEdge(source,target,on) {
   if(source===target)throw new Error('不能连接到自身');
   if(on==='repair'&&(state.document.nodes.find(n=>n.id===source)?.type!=='reviewer'||state.document.nodes.find(n=>n.id===target)?.type!=='developer')){
@@ -129,15 +205,28 @@ function removeSelection(edge=null) {
   else {state.document.nodes=state.document.nodes.filter(n=>n.id!==state.selected);state.document.edges=state.document.edges.filter(e=>e.source!==state.selected&&e.target!==state.selected);state.selected=null;}
   changed();draw();
 }
-async function addNode(kind) {
-  const identity=state.identity,n=await api('/api/node?kind='+encodeURIComponent(kind));if(identity!==state.identity)return;
+async function addNode(kind,point=null) {
+  if(state.mode!=='design')return;
+  const identity=state.identity,context=state.addContext,n=await api('/api/node?kind='+encodeURIComponent(kind));if(identity!==state.identity||state.mode!=='design')return;
+  if(context!==state.addContext)return;
+  const source=context&&state.document.nodes.find(x=>x.id===context.source);
+  const edgeIndex=context?.edge?state.document.edges.findIndex(e=>JSON.stringify(e)===JSON.stringify(context.edge)):-1;
+  if(context&&(context.source&&!source||context.edge&&edgeIndex<0)){notice('连接已改变，请重新选择添加位置。');return;}
+  point=point||context?.point;
   n.id=n.type+'-'+crypto.randomUUID().slice(0,8);
-  n.x=Math.round(Math.max(0,Math.min(10000,canvas.view.x+canvas.view.w/2-105)));
-  n.y=Math.round(Math.max(0,Math.min(10000,canvas.view.y+canvas.view.h/2-41)));
-  state.document.nodes.push(n);state.selected=n.id;changed();draw();
+  n.x=Math.round(Math.max(0,Math.min(10000,point?point.x-105:source?source.x+280:canvas.view.x+canvas.view.w/2-105)));
+  n.y=Math.round(Math.max(0,Math.min(10000,point?point.y-41:source?source.y+(context.edge?140:0):canvas.view.y+canvas.view.h/2-41)));
+  state.document.nodes.push(n);
+  if(source){
+    const connection={source:source.id,target:n.id,on:'next'};
+    if(context.edge)state.document.edges.splice(edgeIndex,1,connection,{source:n.id,target:context.edge.target,on:'next'});
+    else state.document.edges.push(connection);
+  }
+  state.addContext=null;state.selected=n.id;changed();draw();canvas.callbacks.select(n.id);$('palette').hidden=true;$('toggle-palette').setAttribute('aria-expanded','false');
 }
 function draw(config=true) {
-  if(!state.document)return;canvas.render(state.document,state.selected);
+  if(!state.document||state.mode==='run')return;canvas.render(state.document,state.selected);
+  $('empty-canvas').hidden=state.document.nodes.length>0;
   const choices=state.document.nodes.map(n=>[n.id,n.label+' ('+n.id+')']);
   options($('edge-source'),choices);options($('edge-target'),choices);
   $('edges').replaceChildren(...state.document.edges.map((e,i)=>{const li=text('li',`${e.source} → ${e.target} · ${e.on}`),button=text('button','删除连线');button.addEventListener('click',()=>removeSelection(i));li.append(button);return li;}));
@@ -151,8 +240,12 @@ function undo(delta) {
 }
 act('undo',()=>undo(-1));act('redo',()=>undo(1));act('zoom-in',()=>canvas.zoom(1.2));act('zoom-out',()=>canvas.zoom(1/1.2));act('fit',()=>canvas.fit());
 for(const button of document.querySelectorAll('[data-kind]'))button.addEventListener('click',()=>addNode(button.dataset.kind).catch(e=>notice(e.message)));
+for(const button of document.querySelectorAll('#palette [data-kind]')){
+  button.draggable=true;button.addEventListener('dragstart',e=>{e.dataTransfer.setData('application/x-devflower-node',button.dataset.kind);e.dataTransfer.effectAllowed='copy';$('palette').classList.add('dragging');});
+  button.addEventListener('dragend',()=>$('palette').classList.remove('dragging'));
+}
 document.addEventListener('keydown',e=>{
-  if(e.target.closest('input,textarea,select')||$('panel-workflow').hidden)return;
+  if(e.target.closest('input,textarea,select')||state.mode!=='design')return;
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo(e.shiftKey?1:-1);}
 });
 async function sessions() {
@@ -167,18 +260,32 @@ async function sessions() {
   const discovered=value.discovery.sessions||[];
   for(const row of discovered)$('sessions').append(text('div',`${row.provider||row.tool||'native'} · ${row.session_id||row.id} · 外部发现，运行未确认`,'card'));
   if(!value.owned.length&&!discovered.length)$('sessions').append(text('p','此工作区尚无可显示会话。首次运行将创建持久原生会话。'));
-  configure();
+  if(!$('node-config').contains(document.activeElement))configure();
 }
 function taskInput() {
   return {title:$('task-title').value,body:$('task-body').value,scope:$('task-scope').value.split('\n').map(x=>x.trim()).filter(Boolean),
     acceptance:$('task-acceptance').value,issue_url:$('issue-url').value};
 }
+function taskStep(step) {
+  if(step===3&&!state.preview)return;
+  $('task-input-step').hidden=step!==1;$('task-scope-step').hidden=step!==2;$('task-confirm-step').hidden=step!==3;
+  for(const button of document.querySelectorAll('[data-task-step]')){
+    button.setAttribute('aria-current',Number(button.dataset.taskStep)===step?'step':'false');
+    if(button.dataset.taskStep==='3')button.disabled=!state.preview;
+  }
+}
+for(const button of document.querySelectorAll('[data-task-step]'))button.addEventListener('click',()=>taskStep(Number(button.dataset.taskStep)));
+act('task-next',()=>{
+  const missing=['task-title','task-body'].find(id=>!$(id).value.trim());
+  if(missing){notice('先填写任务名称和目标，再确认范围。');$(missing).focus();return;}
+  taskStep(2);
+});
 async function prepare() {
   if(!state.workspace)throw new Error('先打开工作区');
   const identity=state.identity,version=state.version,epoch=state.workspaceEpoch,input=taskInput(),delivery=$('delivery').checked;
   const value=await api('/api/prepare',{workspace:state.workspace.id,workflow:state.document,task:input,delivery:{commit:delivery,push:delivery,pr:delivery}});
   if(identity!==state.identity||version!==state.version||epoch!==state.workspaceEpoch||JSON.stringify(taskInput())!==JSON.stringify(input)||$('delivery').checked!==delivery)return;
-  state.preview=value;const parent=$('preview');parent.replaceChildren();
+  state.preview=value;taskStep(3);const parent=$('preview');parent.replaceChildren();
   parent.append(text('h3','确认本次合同与权限'),text('p',`工作区 ${value.data.source.root} · ${value.data.source.branch} · ${value.data.source.head}`),
     text('p',`源码 ${value.data.source_sha256}`),text('p',`合同预览 SHA ${value.sha256}`),
     text('p',`允许路径：${input.scope.join(', ')}；外部模型将接收这些源码。`),
@@ -189,10 +296,13 @@ async function prepare() {
   parent.append(text('p',`测试隔离：${value.data.config.verification_isolation||'landlock'}`));
   for(const[role,b]of Object.entries(value.data.config.bindings))parent.append(text('p',`${role}: ${b.provider} · ${b.model}/${b.effort} · ${b.session_id||'新会话'} · ${b.timeout_seconds} 秒`));
   const tests=document.createElement('details');tests.append(text('summary','查看绑定的测试断言与执行配置'),text('pre',JSON.stringify(value.data.config.policy.verification,null,2)));parent.append(tests);
-  const answers=value.data.human_questions.map(question=>{const label=text('label',question),answer=document.createElement('textarea');answer.rows=2;label.append(answer);parent.append(label);return answer;});
+  const answers=value.data.human_questions.map(question=>{const label=text('label','必填：请说明你确认的任务范围、允许路径、外部模型使用与本次交付权限。'),answer=document.createElement('textarea');answer.rows=3;answer.required=true;answer.maxLength=4000;answer.placeholder='例如：我确认上述任务和允许路径，同意本次外部模型执行；交付权限以预览为准。';const detail=text('details',''),summary=text('summary','查看此关口的具体问题');detail.append(summary,text('p',question));label.append(detail,answer);parent.append(label);return answer;});
   const button=text('button','人工确认并运行');
   button.addEventListener('click',async()=>{
-    if(state.preview!==value)return;button.disabled=true;
+    if(state.preview!==value||button.disabled)return;
+    const missing=answers.find(a=>!a.value.trim()||a.value.length>4000);
+    if(missing){notice('请填写每个人工确认回复（1–4000 字）：说明确认的范围与授权后再启动。');missing.setAttribute('aria-invalid','true');missing.focus();return;}
+    button.disabled=true;
     try{
       const result=await api('/api/authorize-run',{permit:value.id,sha256:value.sha256,answers:answers.map(a=>a.value)});
       state.preview=null;parent.replaceChildren(text('p','已使用本次授权，运行 '+result.run_id));tab('runs');selectRun(result.run_id);await status();
@@ -200,10 +310,64 @@ async function prepare() {
   });parent.append(button);
 }
 function selectRun(run) {
-  state.run=run||null;state.runEpoch++;state.pollPending=null;if(run)sessionStorage.setItem('devflower-run',run);$('monitor').replaceChildren();$('run-title').textContent=run?'读取 '+run+'…':'未选择运行';poll();
+  state.run=run||null;state.snapshot=null;state.runSelected=null;state.runEpoch++;closePanels();if(state.mode==='run')canvas.render({nodes:[],edges:[]});state.pollPending=null;if(run)sessionStorage.setItem('devflower-run',run);$('monitor').replaceChildren();$('run-title').textContent=run?'读取 '+run+'…':'未选择运行';poll();
+}
+function runGraph() { return state.snapshot?.workflow_graph||state.snapshot?.graph; }
+function renderRunCanvas(fit=false) {
+  if(state.mode!=='run')return;
+  const graph=runGraph(), previous=canvas.runIdentity;
+  const identity=state.run+':'+(graph?.sha256||'legacy');
+  canvas.render(graph||{nodes:[],edges:[]},state.runSelected);canvas.runIdentity=identity;
+  if(fit||previous!==identity)canvas.fit();
+  if(graph&&!state.snapshot.workflow_graph)notice('历史运行：没有保存用户工作流身份，显示原执行图。');
+  if(state.runSelected&&!$('evidence-panel').hidden)renderNodeEvidence(false);
+}
+function renderNodeEvidence(open=true) {
+  const snapshot=state.snapshot, run=state.run, epoch=state.runEpoch;
+  const n=runGraph()?.nodes.find(n=>n.id===state.runSelected);if(!snapshot||!n)return;
+  const evidenceKey=JSON.stringify([run,epoch,n,snapshot.state,snapshot.candidate]);
+  if(!open&&state.evidenceKey===evidenceKey)return;state.evidenceKey=evidenceKey;
+  $('evidence-title').textContent=n.label+' · '+n.id;
+  const parent=$('node-evidence');parent.replaceChildren();
+  parent.append(text('p',`固定运行 ${run} · 当前轮次 ${snapshot.round} · ${n.status}`));
+  parent.append(text('p',state.snapshot.workflow_graph?'本次授权的固定工作流快照':'历史执行图；用户画布身份未记录'));
+  if(n.agent){
+    const a=n.agent, rows=[['原生会话',a.session_id],['请求模型',a.requested_model],['请求强度',a.requested_effort],['实际模型',a.resolved_model],['实际强度',a.resolved_effort],['进程 PID',a.pid??a.process?.pid??a.process?.process?.pid]];
+    const list=text('dl','','evidence-facts');for(const[label,value]of rows)list.append(text('dt',label),text('dd',String(value??'unknown')));parent.append(list);
+    const details=document.createElement('details');details.append(text('summary','进程与会话原始证据'),text('pre',JSON.stringify(a,null,2)));parent.append(details);
+  }
+  if(n.type==='verifier'||n.type==='verification'){
+    parent.append(text('h3','此节点的本轮测试'),text('p',n.counts?`${n.counts.tests} 项实际测试 / ${n.counts.failures} 失败 / ${n.counts.errors} 错误 / ${n.counts.skipped} Skip`:'本轮尚无已验证测试计数'));
+    for(const r of n.results||[])parent.append(text('pre',JSON.stringify(r,null,2)));
+  }
+  if(n.type==='reviewer'){
+    parent.append(text('p','本轮实际裁决：'+(n.verdict||snapshot.verdict||'未确认')));
+    for(const f of n.findings||snapshot.findings||[])parent.append(text('p',`${f.id} · ${f.status} · ${f.title}`));
+    parent.append(text('p','未关闭缺陷：'+(n.open_findings??(snapshot.findings||[]).filter(f=>f.status!=='CLOSED').length)));
+  }
+  if(n.type==='human_gate'||n.type==='authorization'){
+    parent.append(text('p',n.confirmation||'人工确认状态见 Controller 证据'));
+    if(snapshot.human_gate){const button=text('button','填写本轮 G4 结果确认');button.addEventListener('click',()=>{$('monitor').closest('details').open=true;$('g4-answer')?.focus();});parent.append(button);}
+  }
+  if(n.type==='delivery'){
+    parent.append(text('h3','交付权限与门禁'),text('pre',JSON.stringify(n.delivery||snapshot.delivery,null,2)),text('p',`Controller 阶段 ${snapshot.state} · 当前审核 ${snapshot.verdict||'未确认'}；仅固定 gate 可以允许交付。`));
+    const url=n.delivery?.pr?.url;
+    if(url){const a=text('a','打开真实开发 PR');a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}
+    else parent.append(text('p','尚无已读回确认的 PR 入口。'));
+  }
+  if(['developer','implementer','reviewer','planner'].includes(n.type)){
+    const sessionsButton=text('button','原生会话与发现');sessionsButton.addEventListener('click',()=>{tab('sessions');sessions().catch(e=>notice(e.message));});parent.append(sessionsButton);
+    if(snapshot.candidate){const button=text('button','查看本轮固定候选 diff'),area=text('pre','');parent.append(button,area);button.addEventListener('click',async()=>{try{
+      const value=await api('/api/diff?id='+encodeURIComponent(run));
+      if(state.run!==run||state.runEpoch!==epoch||state.snapshot?.candidate!==snapshot.candidate||value.run_id!==run||value.candidate!==snapshot.candidate||value.round!==snapshot.round||!area.isConnected)return;
+      area.textContent=(value.truncated?'仅显示前 200 KB。\n':'')+value.text;
+    }catch(e){if(area.isConnected&&state.run===run&&state.runEpoch===epoch)area.textContent=e.message;}});}
+  }
+  if(open)openPanel('evidence-panel');
 }
 function renderSnapshot(run,snapshot) {
-  $('run-title').textContent=`${run} · ${snapshot.state||'UNKNOWN'} · round ${snapshot.round??'unknown'}`;
+  state.snapshot=snapshot;renderRunCanvas();
+  $('run-title').textContent=`${run} · ${snapshot.state||'UNKNOWN'} · 当前轮次 ${snapshot.round??'未确认'}`;
   const renderKey=[run,snapshot.state,snapshot.round,snapshot.candidate].join(':');
   if(snapshot.human_gate&&state.renderKey===renderKey&&$('g4-answer'))return;
   state.renderKey=renderKey;
@@ -214,7 +378,7 @@ function renderSnapshot(run,snapshot) {
     parent.append(text('p',`${a.role} · ${a.provider} · 会话 ${a.session_id} · 请求 ${a.requested_model}/${a.requested_effort} · PID ${a.process?.pid??'unknown'} · ${a.alive?'实际进程存活':'进程已结束或活性未确认'}`));
   }
   const stages=text('div','','row');
-  for(const n of snapshot.graph?.nodes||[]) {
+  for(const n of (snapshot.workflow_graph||snapshot.graph)?.nodes||[]) {
     const c=n.counts;
     stages.append(text('div',`${n.label}: ${n.status}${c?` · ${c.tests} tests / ${c.failures} failures / ${c.errors} errors / ${c.skipped} skipped`:''}`,'card'));
   }
@@ -225,11 +389,11 @@ function renderSnapshot(run,snapshot) {
     const link=text('a','打开开发 PR');link.href=snapshot.github_receipt.pr.url;link.target='_blank';link.rel='noopener noreferrer';parent.append(link);
   }
   if(snapshot.human_gate) {
-    const label=text('label',snapshot.human_gate.question),answer=document.createElement('textarea'),approve=text('button','确认当前候选的 G4 结果解释');answer.id='g4-answer';
+    const label=text('label','必填：请解释本轮候选的实际结果、适用边界，并确认此候选。'+snapshot.human_gate.question),answer=document.createElement('textarea'),approve=text('button','确认当前候选的 G4 结果解释');answer.id='g4-answer';
     label.append(answer);parent.append(label,approve);
-    approve.addEventListener('click',async()=>{if(state.run!==run)return;approve.disabled=true;try{
+    approve.addEventListener('click',async()=>{if(state.run!==run||approve.disabled)return;if(!answer.value.trim()||answer.value.length>4000){notice('请先填写本轮结果解释与确认（1–4000 字）。');answer.focus();return;}approve.disabled=true;try{
       await api('/api/approve-result',{run_id:run,answer:answer.value});await poll();
-    }catch(e){notice(e.message);approve.disabled=false;}});
+    }catch(e){notice(e.message);parent.append(text('p','结果确认可能已消费，请刷新核对；不要盲目重发。'));}});
   }
   if(snapshot.candidate) {
     const diffButton=text('button','查看固定候选差异'),diffArea=document.createElement('pre');parent.append(diffButton,diffArea);
@@ -251,7 +415,7 @@ async function poll() {
   if(state.pollPending===key)return;state.pollPending=key;const request=++state.runRequest;
   try{const snapshot=await api('/api/run?id='+encodeURIComponent(run));if(state.run!==run||epoch!==state.runEpoch||request!==state.runRequest)return;
     if((snapshot.run_id||snapshot.id)!==run)throw new Error('运行快照身份不匹配');renderSnapshot(run,snapshot);
-  }catch(e){if(state.run!==run||epoch!==state.runEpoch||request!==state.runRequest)return;$('run-title').textContent=run+' · 状态未确认';$('monitor').replaceChildren(text('p',e.message,'error'));}
+  }catch(e){if(state.run!==run||epoch!==state.runEpoch||request!==state.runRequest)return;$('run-title').textContent=run+' · 状态未确认';$('monitor').replaceChildren(text('p',e.message,'error'));state.snapshot=null;state.runSelected=null;if(state.mode==='run'){canvas.render({nodes:[],edges:[]});closePanels();}}
   finally{if(request===state.runRequest)state.pollPending=null;}
 }
 act('open-workspace',async()=>{const epoch=++state.workspaceEpoch;const w=await api('/api/workspace',{path:$('workspace-path').value});if(epoch===state.workspaceEpoch)setWorkspace(w);});
@@ -268,10 +432,10 @@ act('compile',async()=>{const identity=state.identity,version=state.version;
   catch(e){if(identity===state.identity&&version===state.version){$('graph-status').textContent='不能执行：'+e.message;throw e;}}
 });
 act('refresh-sessions',sessions);act('refresh-runs',status);
-act('import-issue',async()=>{const epoch=state.workspaceEpoch,url=$('issue-url').value,v=await api('/api/issue',{url});if(epoch!==state.workspaceEpoch||url!==$('issue-url').value)return;$('task-title').value=v.title;$('task-body').value=v.body;$('task-acceptance').value=v.body;state.preview=null;$('preview').replaceChildren();notice('已导入真实 Issue，请核对允许路径与验收文本。');});
-for(const id of ['task-title','task-body','task-scope','task-acceptance','issue-url','delivery'])$(id).addEventListener('input',()=>{state.preview=null;$('preview').replaceChildren();});
+act('import-issue',async()=>{const epoch=state.workspaceEpoch,url=$('issue-url').value,v=await api('/api/issue',{url});if(epoch!==state.workspaceEpoch||url!==$('issue-url').value)return;$('task-title').value=v.title;$('task-body').value=v.body;$('task-acceptance').value=v.body;invalidatePreview();notice('已导入真实 Issue，请核对允许路径与验收文本。');});
+for(const id of ['task-title','task-body','task-scope','task-acceptance','issue-url','delivery'])$(id).addEventListener('input',()=>invalidatePreview());
 act('prepare',prepare);$('runs').addEventListener('change',()=>selectRun($('runs').value));
 act('resume',async()=>{if(!state.run)throw new Error('选择运行');await api('/api/resume',{run_id:state.run});await poll();});
 act('cancel',async()=>{if(!state.run)throw new Error('选择运行');await api('/api/cancel',{run_id:state.run});await poll();});
 setInterval(poll,2000);
-(async()=>{try{await status();await newDraft();const workspace=state.workspaces.find(w=>w.id===sessionStorage.getItem('devflower-workspace'));if(workspace){setWorkspace(await api('/api/workspace',{path:workspace.path}));const run=sessionStorage.getItem('devflower-run');if(run){await status();if([...$('runs').options].some(o=>o.value===run)){$('runs').value=run;selectRun(run);}}}notice('Stable 身份已核验。配置工作流后进入任务与运行。');}catch(e){notice(e.message);}})();
+(async()=>{try{await status();await newDraft();const workspace=state.workspaces.find(w=>w.id===sessionStorage.getItem('devflower-workspace'));if(workspace){setWorkspace(await api('/api/workspace',{path:workspace.path}));const run=sessionStorage.getItem('devflower-run');if(run){await status();if([...$('runs').options].some(o=>o.value===run)){$('runs').value=run;selectRun(run);}}}notice('Stable 身份已核验。画布中双击人工确认节点填写任务；双击 Agent 节点配置。运行快照与草稿独立。');}catch(e){notice(e.message);}finally{$('studio').inert=false;$('studio').dataset.ready='true';}})();

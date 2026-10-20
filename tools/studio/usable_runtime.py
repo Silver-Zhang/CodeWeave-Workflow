@@ -218,6 +218,7 @@ class Runtime:
             raise Invalid("This GitHub profile supports all three delivery actions together, or review-only")
         bindings = {}
         verifications = []
+        verification_ids = {}
         nodes = {n["id"]: n for n in plan["document"]["nodes"]}
         questions = []
         final_question = None
@@ -227,7 +228,9 @@ class Runtime:
                 binding = self.agent_binding(n, project)
                 bindings[binding["role"]] = binding
             elif n["type"] == "verifier":
-                verifications.extend(specifications(n, self.operator.get("verification_profiles", {})))
+                contracts = specifications(n, self.operator.get("verification_profiles", {}))
+                verification_ids[key] = [v["id"] for v in contracts]
+                verifications.extend(contracts)
             elif n["type"] == "human_gate":
                 if plan["document"]["template"] == "C" and key == plan["order"][-2]:
                     final_question = n["config"]["question"]
@@ -247,6 +250,8 @@ class Runtime:
         config = dict(task_id=secrets.token_hex(16), project=project["id"], source=source["root"],
                       acceptance="pending", goal=task["body"] + "\nAcceptance:\n" + task["acceptance"],
                       scope=task["scope"], excludes=[], policy=policy, bindings=bindings,
+                      studio_workflow=dict(document=plan["document"], sha256=plan["sha256"],
+                                           verification_ids=verification_ids),
                       verification_isolation=self.operator.get("verification_isolation", "landlock"))
         if final_question:
             config["human_gate_policy"] = {"mode": "deferred-G4", "question": final_question}
@@ -344,7 +349,9 @@ class Runtime:
             result["current_agent"] = None
             for operation in operations:
                 context = operation["data"].get("context", {})
-                if operation["kind"] == "PROCESS" and context.get("agent_role"):
+                role = context.get("agent_role")
+                phase = {"planner": "PLANNING", "implementer": "IMPLEMENTING", "reviewer": "REVIEWING"}.get(role)
+                if operation["kind"] == "PROCESS" and phase == result["state"] and operation.get("_round") == (0 if role == "planner" else data["round"]):
                     process = operation["data"].get("process")
                     result["current_agent"] = dict(role=context["agent_role"], provider=context.get("provider"),
                         process=process, alive=operation["status"] == "RUNNING" and alive(process),
@@ -370,6 +377,34 @@ class Runtime:
                 if not any(w["alive"] for w in result["workers"]):
                     result["state"] = "RECOVERY_REQUIRED"
                     result["reason"] = "Recorded stage has no live Stable worker; explicit recovery must recheck actual side effects"
+                    result["current_agent"] = None
+            if "studio_workflow" in data["config"]:
+                from .usable_projection import workflow_graph
+                result["workflow_graph"] = workflow_graph(run, result, data, operations)
+                nodes = result["workflow_graph"]["nodes"]
+                reviewer = next(n for n in nodes if n["type"] == "reviewer")
+                result["verdict"] = reviewer.get("verdict")
+                result["findings"] = reviewer.get("findings", [])
+                # Retain the independent execution gates without showing weaker
+                # legacy phase inference beside the identity-bound canvas.
+                kinds = {"authorization": "human_gate", "implementer": "developer",
+                         "reviewer": "reviewer", "delivery": "delivery"}
+                checks = {r["id"]: r for n in nodes for r in n.get("results", [])}
+                execution_checks = {"verify-" + str(i): spec["id"] for i, spec in enumerate(data["config"]["policy"]["verification"])}
+                for gate_node in result["graph"]["nodes"]:
+                    kind = gate_node["type"]
+                    if kind in kinds:
+                        gate_node["status"] = next(n["status"] for n in nodes if n["type"] == kinds[kind])
+                    elif kind == "verification":
+                        # Legacy config.id is a numbered display label. Match
+                        # the execution graph's generated identity to policy.
+                        check = checks[execution_checks[gate_node["id"]]]
+                        gate_node.update(status=check["status"], counts=check["counts"])
+                    elif kind == "freeze":
+                        gate_node["status"] = "passed" if result["candidate"] else "blocked" if result["state"] == "RECOVERY_REQUIRED" else "pending"
+                    elif kind == "gate":
+                        complete = all(n["status"] == "passed" for n in nodes if n["type"] in ("verifier", "reviewer", "human_gate"))
+                        gate_node["status"] = "passed" if complete and result["state"] in ("READY", "COMMITTING", "PUSHING", "LOCAL_COMMITTED", "COMPLETED") else "blocked" if result["state"] in ("BLOCKED", "RECOVERY_REQUIRED", "AWAITING_HUMAN", "CANCELLED", "PARTIAL_DELIVERY") else "pending"
         return result
 
     def difference(self, run):

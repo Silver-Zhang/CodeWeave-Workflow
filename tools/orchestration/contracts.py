@@ -61,7 +61,7 @@ def require_keys(obj, required, optional=()):
 
 
 def config_check(config, *, execution=False):
-    require_keys(config, ('task_id', 'project', 'source', 'acceptance', 'goal', 'scope', 'excludes', 'policy', 'bindings'), ('delivery_targets', 'prior_reviews', 'github_delivery', 'human_gate_policy', 'verification_isolation'))
+    require_keys(config, ('task_id', 'project', 'source', 'acceptance', 'goal', 'scope', 'excludes', 'policy', 'bindings'), ('delivery_targets', 'prior_reviews', 'github_delivery', 'human_gate_policy', 'verification_isolation', 'studio_workflow'))
     if config.get('verification_isolation', 'landlock') not in ('landlock', 'bwrap'):
         raise Blocked('unknown verification isolation backend')
     if 'human_gate_policy' in config:
@@ -165,7 +165,71 @@ def config_check(config, *, execution=False):
             destinations.add(dest)
         if any(not x.startswith('.codex/' if provider == 'codex' else '.claude/') for x in destinations):
             raise Blocked('credential provider mismatch')
+    if 'studio_workflow' in config:
+        studio_workflow_check(config)
     return config
+
+
+def studio_workflow_check(config):
+    """Bind display identity to the complete graph and existing execution contracts.
+
+    The document never supplies executable commands, permissions or gate decisions.
+    Operator-approved policy/bindings remain the sole execution authority.
+    """
+    from studio.usable_graph import compile_plan
+    from studio.graph import Invalid
+    from studio.usable_verification import specification
+    value = config['studio_workflow']
+    require_keys(value, ('document', 'sha256', 'verification_ids'))
+    try:
+        plan = compile_plan(value['document'])
+    except (Invalid, ValueError, KeyError, TypeError, IndexError):
+        raise Blocked('invalid studio workflow graph') from None
+    if value['sha256'] != plan['sha256']:
+        raise Blocked('studio workflow hash mismatch')
+    nodes = {n['id']: n for n in plan['document']['nodes']}
+    verifier_ids = [key for key in plan['order'] if nodes[key]['type'] == 'verifier']
+    mapping = value['verification_ids']
+    if type(mapping) is not dict or set(mapping) != set(verifier_ids):
+        raise Blocked('studio verifier mapping coverage mismatch')
+    flattened = []
+    for key in verifier_ids:
+        ids = mapping[key]
+        if type(ids) is not list or not ids or any(not isinstance(x, str) for x in ids):
+            raise Blocked('invalid studio verifier mapping')
+        if len(set(ids)) != len(ids):
+            raise Blocked('duplicate studio verifier mapping')
+        # specifications() assigns exact node IDs for single checks, and node-ID
+        # prefixes for multi-case operator profiles. Swapping ownership is invalid.
+        if len(ids) == 1 and ids != [key] or len(ids) > 1 and any(
+                not re.fullmatch(re.escape(key) + r'-[A-Za-z][A-Za-z0-9_-]{0,63}', x) for x in ids):
+            raise Blocked('studio verifier mapping ownership mismatch')
+        flattened.extend(ids)
+    specs = config['policy']['verification']
+    if flattened != [s['id'] for s in specs] or len(set(flattened)) != len(flattened):
+        raise Blocked('studio verifier mapping differs from policy verification')
+    for key in verifier_ids:
+        n = nodes[key]; c = n['config']
+        bound = [s for s in specs if s['id'] in mapping[key]]
+        if c['profile'] == 'json-assertions':
+            if c['pattern'] or c['max_skipped'] != 0 or len(bound) < c['min_cases'] or any(
+                    s.get('runner') != 'json-assertion' or s['min_cases'] != 1 or s['max_skipped'] != 0 for s in bound):
+                raise Blocked('studio verifier profile differs from policy')
+        else:
+            try:
+                expected = specification(n)
+            except Invalid:
+                raise Blocked('invalid studio verifier profile') from None
+            if bound != [expected]:
+                raise Blocked('studio verifier profile differs from policy')
+    mode = plan['document']['template']
+    if config['policy']['mode'] != ('B' if mode == 'blank' else mode) or config['policy']['limits']['max_review_rounds'] != plan['max_rounds']:
+        raise Blocked('studio workflow limits differ from policy')
+    roles = {'implementer' if n['type'] == 'developer' else n['type'] for n in nodes.values()
+             if n['type'] in ('developer', 'planner', 'reviewer')}
+    if roles != set(config['bindings']):
+        raise Blocked('studio workflow roles differ from bindings')
+    return plan
 
 
 def authorized(config, authorization):

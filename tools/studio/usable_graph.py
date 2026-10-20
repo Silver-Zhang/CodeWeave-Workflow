@@ -31,7 +31,7 @@ def node(kind, identity=None):
         config = dict(profile="json-assertions", target="default", pattern="",
                       min_cases=1, max_skipped=0)
     elif kind == "human_gate":
-        config = {"question": "Confirm this task's scope, external model use and delivery permissions."}
+        config = {"question": "请确认本次任务范围、允许修改路径、外部模型使用及交付权限，并说明你的确认意见。"}
     return dict(id=identity or kind, type=kind, label=kind.replace("_", " ").title(),
                 x=80, y=100, config=config)
 
@@ -45,10 +45,10 @@ def template(kind="B"):
             n = node("human_gate", f"human-{i + 1}")
             if kind == "C":
                 n["config"]["question"] = [
-                    "G1: What is the question, boundary and success criterion?",
-                    "G2: What explanation and alternative are being tested?",
-                    "G3: What experiment could falsify the proposed explanation?",
-                    "G4: What interpretation and limits does the human approve?",
+                    "G1：请说明问题、任务边界与成功判据。",
+                    "G2：请说明要验证的解释及替代方案。",
+                    "G3：请说明什么实验结果可以证伪当前解释。",
+                    "G4：请解释实际结果及适用边界。",
                 ][i]
             nodes.append(n)
         if kind != "A":
@@ -56,7 +56,7 @@ def template(kind="B"):
         nodes += [node(k) for k in ("developer", "verifier", "reviewer")]
         if kind == "C":
             final = node("human_gate", "human-4")
-            final["config"]["question"] = "G4: Review the actual results, explain their meaning and limits, and approve this exact candidate."
+            final["config"]["question"] = "G4：请审阅本轮实际结果，解释其意义和边界，并确认这个固定候选。"
             nodes.append(final)
         nodes.append(node("delivery"))
     for i, n in enumerate(nodes):
