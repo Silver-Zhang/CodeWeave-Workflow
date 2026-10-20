@@ -1,0 +1,297 @@
+{
+  "schema": "codeweave-m2a-audit-result/1",
+  "verdict": "ACCEPT",
+  "candidate_manifest_sha256": "40328a84bf1e27948e17d1916ebfd3489a2bc3c4fadadc4560e889703c4a7c95",
+  "candidate_manifest_size_bytes": 14917,
+  "candidate_manifest_sidecar_sha256": "31d63913e2de21a098ead1f085d4828cc0c9444d5a878c6745c469ee533aa16f",
+  "candidate_manifest_sidecar_size_bytes": 90,
+  "candidate_file_count": 84,
+  "candidate_total_bytes": 502305,
+  "base_git_head": "95620d8da6afb8470d78400468fc4eee120147f2",
+  "candidate_branch": "feat/m2-usable-beta",
+  "audit": {
+    "session_id": "06fd5ee6-78e4-4dbd-ac8c-d442e9c97cb6",
+    "model_requested": "deepseek-flash[1m]",
+    "model_service_reported": "deepseek-flash",
+    "effort": "max",
+    "permission_mode": "auto",
+    "date": "2026-10-20",
+    "generated_at_utc": "2026-10-20T14:47:19Z",
+    "generated_at_local": "2026-10-20T22:47:19+0800",
+    "report_path": "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/review-2/audit/report.md",
+    "report_sha256": "194774587156e668a0bd75036445935c33490dbe2c3731734c5183c1c8a2abbf",
+    "report_size_bytes": 41002
+  },
+  "prior_run": {
+    "started_utc": "2026-10-20T14:10:01.569001+00:00",
+    "ended_utc": "2026-10-20T14:40:02.134045+00:00",
+    "supervision_limit_seconds": 1800,
+    "exit_code": 124,
+    "native_final_verdict": false,
+    "report_or_result_written": false,
+    "raw_stream_retained": true,
+    "stream_lines": 214017,
+    "report_completion_launch_utc": "2026-10-20T14:41:35.485333+00:00",
+    "not_treated_as_accept": true,
+    "not_counted_as_a_valid_completed_round": true
+  },
+  "data_transfer": {
+    "authorized_external_service": "api.deepseek.com",
+    "authorized_scope": "review-2 candidate (84 files) and necessary audit material for the limited audit/repair-review loop",
+    "claim_of_no_data_sent": false,
+    "other_external_upload": false
+  },
+  "old_verdict_preserved": {
+    "candidate_manifest_sha256": "ae00fe8fa4c17ee3d7de9be61d4ad3fb8b610d71f394074eabae28cb025a47eb",
+    "verdict": "NEEDS CORRECTION",
+    "round_5_report_sha256": "4a13838edc3fd834453a18a129ffdd6592fb4ff476f44af4711dd17061046079",
+    "round_5_result_sha256": "aac2e391dbd61b773b9ae9a93955224c32c2fea897764e474fd3698009cc70db",
+    "devflower_review_round_1_hashes_unchanged": true
+  },
+  "p1_p2_p3": {
+    "P1": {
+      "status": "CLOSED",
+      "summary": "unit_files/files.sha256 positive read-set, exact changed_inputs/profile evidence, ODR nonauthoritative, bounded preview with count/full-set hash/format, and real constexpr/enum/config-header probes all pass.",
+      "evidence": [
+        "V2 settings.hpp constexpr/enum: 8 definition_context_changed, audit_unrelated_c not reported, 0 calls, 1 file delta; exact settings hash pair; canonical changed_inputs SHA 770e889c319023dab4a8b97aa0f38a52a71bd278c7e2f1be27d1621e5b016ff4",
+        "V2 audit_macro_chain ODR differs while definition range/hash is unchanged; event still emitted, odr_hint.authoritative=false",
+        "V3 literal-only: one definition_text_changed, 0 calls, 1 file delta",
+        "V4 prepend and V5 move: only location_changed and ambiguous_correspondence; relation multisets independently equal; no semantic add/delete",
+        "V6 macro_config.hpp: 7 definition_context_changed, exact macro_config before/after hashes, configuration_changed=false, 0 calls",
+        "V7 12 long UTF-8 headers: count=12, preview 5 items/7541 canonical JSON bytes <= 8192, truncated=true, full 12-item canonical JSON 18097 bytes, full-set SHA 78e1fcf0ee1dd8adf732052c1b4753176d9e7e2500f09a3f8e0a2fe4158f481d independently recomputed, page 11291 ASCII bytes <= 262144",
+        "same-file macro edge: definition_buffer changed_inputs with exact before/after hashes; unaffected function not flagged",
+        "same-file constexpr edge: no symbol event, one file_text_changed; disclosed as N2"
+      ],
+      "limitations": [
+        "N1",
+        "N2"
+      ]
+    },
+    "P2": {
+      "status": "CLOSED",
+      "summary": "Strict UTF-8 decode without replacement; source_not_utf8 explicit CLI exit 2/HTTP 422; old-index bytes and valid windows outside invalid bytes remain readable; source-diff fails closed.",
+      "evidence": [
+        "V8 CRLF/Chinese/emoji/combining source: 87 bytes SHA e3c3b4b1750736daaa4aaf8404cfc4af00a884155674348aa7afc78482130016; line lengths 22/29/36; window begin/end 0/22, 22/51, 51/87; three distinct range hashes independently recomputed",
+        "V9 invalid 0xFF byte: line 2, lines 1-2, lines 1-3 all CLI exit 2 with one stderr JSON source_not_utf8 and empty stdout; HTTP 422; no U+FFFD",
+        "V9 valid line 1 and line 3 readable; full-file hash 79290843cbac5656d18fb5645721b4ce476e254631b482ba6405bd07cf008cff",
+        "old V8 index 740f86d8-5d68-4324-9245-e5230dac5a2c still returns original e3c3... bytes",
+        "source-diff valid line: exit 0, equal window hashes, left buffer e3c3..., right buffer 792908..., windowed=true; invalid line: exit 2/HTTP 422 with no partial output",
+        "HTTP live log /tmp/cwaudit-review2/owned-probe/http-live.log"
+      ],
+      "limitations": []
+    },
+    "P3": {
+      "status": "CLOSED",
+      "summary": "Whole-file and window hashes/raw offsets are exposed; integrity mismatch yields source_integrity_error and no automatic repair; other files and old indexes remain readable.",
+      "evidence": [
+        "V8 full-file hash e3c3...; window range hashes distinct; full 1-3 range equals whole-file hash; encoding=utf-8",
+        "SQLite backup /tmp/cwaudit-review2/owned-probe/integrity.sqlite3 10612736 bytes, SHA f4abe325f54ddfd98f5bf117a2dccb84750b5ec9194390b7c36c475a48b509a2",
+        "corrupted content for index 509d4120-851b-4e86-8027-dbaeeb90daf2 path third.cpp: stored SHA remains 0ad9de89..., corrupted content SHA 868fa569...; CLI exit 2/HTTP 503 source_integrity_error; source-diff likewise",
+        "DB SHA and row stored SHA unchanged before/after; no journal repair; old V8 index and second.cpp in same corrupted index still readable",
+        "HTTP integrity log /tmp/cwaudit-review2/owned-probe/http-integrity.log"
+      ],
+      "limitations": []
+    }
+  },
+  "blocking_findings": [],
+  "nonblocking_findings": [
+    {
+      "id": "N1",
+      "severity": "nonblocking-precision-limitation",
+      "title": "definition_context_changed uses observer-TU read-set union",
+      "detail": "A symbol defined in a TU that does not read a changed header can receive a context event when another observing/calling TU does read it. In V2, audit_remote_value is defined in third.cpp (does not read settings.hpp) but its units include main.cpp, which does; changed_inputs only lists the actual settings.hpp path. README/API/envelope document observer-TU scope and 'possible input-context change, not runtime behavior'. No false path is inserted into changed_inputs.",
+      "mandatory_failure": false
+    },
+    {
+      "id": "N2",
+      "severity": "nonblocking-precision-limitation",
+      "title": "same-definition-file external constant may be file-only",
+      "detail": "In edge-constexpr.dI5Hgx, changing same-file external_value 1->2 yields diff-symbols total_count=0 and only a main.cpp file_text_changed with before SHA 9ed4c8d98efc67e52289d5da2307346fe75beaa300a0c665950ee2ec01abedb1 and after SHA 015a9aa8ffae057092716ab3a05dc1c8a5e07207bc404e55c49334eafbdd7691. This follows from excluding definition/primary source buffers to keep pure line moves/body edits stable. README/API/envelope explicitly document that same-buffer external constants may only appear as file/source deltas and do not prove behavioral equivalence. The file-level before/after evidence is retained; no false 'unchanged' claim is made.",
+      "mandatory_failure": false
+    },
+    {
+      "id": "N3",
+      "severity": "low-residual-risk",
+      "title": "UI post-POST terminal race is theoretical",
+      "detail": "post() does not immediately update available; current refresh POST returns nonterminal and the real delayed-refresh Playwright test observed disabled compare throughout. Not observed and not a mandatory failure.",
+      "mandatory_failure": false
+    }
+  ],
+  "mandatory_cases": {
+    "01": "PASS",
+    "02": "PASS",
+    "03": "PASS",
+    "04": "PASS",
+    "05": "PASS",
+    "06": "PASS",
+    "07": "PASS",
+    "08": "PASS",
+    "09": "PASS",
+    "10": "PASS",
+    "11": "PASS",
+    "12": "PASS",
+    "13": "PASS",
+    "14": "PASS",
+    "15": "PASS",
+    "16": "PASS",
+    "17": "PASS",
+    "18": "PASS",
+    "19": "PASS",
+    "20": "PASS",
+    "21": "OUT_OF_SCOPE",
+    "22": "PASS",
+    "required_set": "01-20 plus 22; case 21 and M2-B cache reuse excluded by user instruction"
+  },
+  "tests": [
+    {
+      "name": "independent candidate manifest and sidecar verification",
+      "command": "python3 /tmp/cwaudit-review2/verify_manifest.py ...; sha256sum -c candidate-manifest.sha256",
+      "exit_code": 0,
+      "result": "84 expected/84 actual; missing/sha_mismatch/mode_mismatch/unexpected all empty; total_expected_bytes 502305; sidecar OK",
+      "evidence": "/tmp/cwaudit-review2/logs/manifest-initial.json; /tmp/cwaudit-review2/logs/verify_manifest.final.json; /tmp/cwaudit-review2/logs/verify_manifest.pristine-final.json"
+    },
+    {
+      "name": "independent full M2-A gate (fresh work copy)",
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHON=/home/workspace/CodeWeave_dev/.venv/bin/python CODEWEAVE_BUILD_PARENT=/tmp bash scripts/verify_m2.sh",
+      "working_directory": "/tmp/cwaudit-review2/work.sh54do",
+      "exit_code": 0,
+      "result": "PASS: complete M0/M1/M2-A gate; analyzer rebuilt; all layers passed with zero skips",
+      "evidence": "/tmp/cwaudit-review2/logs/verify_m2.log; /tmp/codeweave-m2-acceptance-yZE9QA"
+    },
+    {
+      "name": "rebuilt analyzer identity",
+      "exit_code": 0,
+      "result": "analyzer/main.cpp e2c71ba0488c3e6bff1052ca99d9a81e675b5c2238100abd31cfd19a09e41507; codeweave-analyzer b91b17afe37928da6f5f40374f20ee20e4f23f4d2505dfc417925e4e3c9b18b4 (47131096 bytes)",
+      "evidence": "/tmp/codeweave-m2-acceptance-yZE9QA/analyzer/codeweave-analyzer"
+    },
+    {
+      "name": "backend JUnit",
+      "command": "pytest via scripts/verify_m2.sh",
+      "exit_code": 0,
+      "result": "136 passed, 1 warning in 117.65s; JUnit tests=136 errors=0 failures=0 skipped=0 time=117.646; timestamp 2026-10-20T22:11:24.525815+08:00",
+      "evidence": "/tmp/codeweave-m2-acceptance-yZE9QA/backend.xml"
+    },
+    {
+      "name": "fixture repository test",
+      "exit_code": 0,
+      "result": "1 test OK (0.017s)",
+      "evidence": "/tmp/cwaudit-review2/logs/verify_m2.log"
+    },
+    {
+      "name": "frontend unit tests and build",
+      "command": "npm ci; tsc --noEmit && vite build; vitest",
+      "exit_code": 0,
+      "result": "124 packages installed; 887 modules transformed; 5 files/38 tests passed in 2.51s",
+      "evidence": "/tmp/cwaudit-review2/logs/verify_m2.log"
+    },
+    {
+      "name": "M1 real Chromium",
+      "command": "Playwright via scripts/verify_m2.sh",
+      "exit_code": 0,
+      "result": "7 passed (14.3s), zero skipped",
+      "evidence": "/tmp/cwaudit-review2/logs/verify_m2.log"
+    },
+    {
+      "name": "M2-A real Chromium",
+      "command": "Playwright M2 configuration via scripts/verify_m2.sh",
+      "exit_code": 0,
+      "result": "2 passed (23.5s): usable loop 11.1s; context/source hashes/non-UTF8 7.3s; zero skipped",
+      "evidence": "/tmp/cwaudit-review2/logs/verify_m2.log"
+    },
+    {
+      "name": "P1 constexpr/enum/read-set probes V2-V7 and edge fixtures",
+      "exit_code": 0,
+      "result": "V2 8 context events, exact input, unrelated not flagged; V3 literal-only; V4/V5 location-only+ambiguous; V6 macro config; V7 12-input preview and full-set hash; same-file macro definition_buffer; same-file constexpr file-only boundary",
+      "evidence": "/tmp/cwaudit-review2/owned-fixture/logs/; /tmp/cwaudit-review2/edge.wFyIVk/; /tmp/cwaudit-review2/edge-constexpr.dI5Hgx/"
+    },
+    {
+      "name": "P2 valid/invalid UTF-8 CLI and HTTP",
+      "exit_code": 0,
+      "result": "V8/V9 strict windows, raw bytes, CRLF/Unicode hashes, source_not_utf8 exit 2/single JSON/HTTP 422, old-index bytes readable, source-diff fail-closed",
+      "evidence": "/tmp/cwaudit-review2/owned-fixture/logs/refresh-p2v8.json; refresh-p2v9.json; status-p2v8.json; status-p2v9.json; /tmp/cwaudit-review2/owned-probe/http-live.log"
+    },
+    {
+      "name": "P3 corrupted SQLite integrity",
+      "exit_code": 0,
+      "result": "source_integrity_error CLI exit 2/HTTP 503; old index and other file readable; DB/row unchanged; no repair",
+      "evidence": "/tmp/cwaudit-review2/owned-probe/integrity.sqlite3; /tmp/cwaudit-review2/owned-probe/http-integrity.log; /tmp/cwaudit-review2/owned-probe/integrity-db-before.sha256"
+    },
+    {
+      "name": "independent real Playwright UI audit",
+      "command": "npx playwright test --config=playwright.config.ts (baseURL http://127.0.0.1:18434)",
+      "exit_code": 0,
+      "result": "1 passed (8.7s); PLAYWRIGHT_RC=0; real published pairs, exact changed_inputs set/hash, source hashes/offsets, history source switch, compare shortcut disabled during delayed refresh, no page errors",
+      "evidence": "/tmp/cwaudit-review2/ui-audit/run3.log; /tmp/cwaudit-review2/ui-audit/ui-audit.png; /tmp/cwaudit-review2/ui-audit/ui-audit.spec.ts"
+    },
+    {
+      "name": "84-file old/new regression surface",
+      "exit_code": 0,
+      "result": "84 same-named files: 74 byte-identical, exactly 10 declared changes; old-only __pycache__ absent from canonical; no C++/schema/sealing/publication changes",
+      "evidence": "/tmp/cwaudit-review2/logs/diff-old-new.txt; /tmp/cwaudit-review2/logs/diff-*.txt"
+    }
+  ],
+  "limitations": [
+    {
+      "id": "N1",
+      "type": "precision",
+      "blocking": false,
+      "description": "definition_context_changed uses observer-TU positive read-set union; a symbol whose own definition TU does not read a changed header can be reported if another observing TU reads it. changed_inputs lists only actual read paths; docs/envelope explicitly label this conservative and possible-only."
+    },
+    {
+      "id": "N2",
+      "type": "precision",
+      "blocking": false,
+      "description": "Same-definition-file external constexpr/constant changes can produce only file_text_changed/source delta, not a symbol-level definition_context_changed. This is documented as a boundary and does not prove behavioral equivalence; file-level before/after hashes remain visible. Excluding definition/primary buffers is required to keep pure line moves and body edits stable."
+    },
+    {
+      "id": "N3",
+      "type": "ui-residual-risk",
+      "blocking": false,
+      "description": "Theoretical post-POST terminal refresh race in WorkspacePanel was not observed; current refresh POST returns nonterminal and the real delayed-refresh test kept compare disabled throughout."
+    },
+    {
+      "id": "N4",
+      "type": "scope",
+      "blocking": false,
+      "description": "The entire historical 84-file matrix was not reconstructed. Current full gate, current 136 backend tests, 9 Chromium tests, targeted V2-V9 fixtures, and byte-unchanged-path review were used; user explicitly allowed concentration on existing evidence and prohibited reopening the huge old matrix."
+    },
+    {
+      "id": "N5",
+      "type": "unverified-edge",
+      "blocking": false,
+      "description": "A bare lone-CR fixture versus Clang line numbering was not separately constructed. CRLF, U+0085, Chinese, emoji, combining and invalid-byte windows were tested; no observed failure."
+    },
+    {
+      "id": "N6",
+      "type": "documentation",
+      "blocking": false,
+      "description": "docs/http-api.md contains the minor typo 'at most8' (missing space); no protocol/identity/security effect."
+    },
+    {
+      "id": "N7",
+      "type": "scope",
+      "blocking": false,
+      "description": "M2-B cache reuse/acceleration and mandatory case 21 are out of scope by user instruction; no PASS is claimed for them."
+    },
+    {
+      "id": "N8",
+      "type": "test-material",
+      "blocking": false,
+      "description": "Only self-owned fixtures and fake private sentinels were used; no RMC/F11/reference implementation/real private project/credentials/sensitive material was used. The authorized api.deepseek.com transmission of review-2 material did occur; no claim is made that no data was sent."
+    }
+  ],
+  "boundaries": {
+    "production_source_modified": false,
+    "tests_expectations_modified": false,
+    "canonical_candidate_modified": false,
+    "old_report_or_devflower_modified": false,
+    "git_write_operations": false,
+    "parent_port_8000_touched": false,
+    "external_uploads_beyond_authorized_deepseek": false,
+    "writable_audit_outputs_only": [
+      "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/review-2/audit/report.md",
+      "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/review-2/audit/result.json"
+    ]
+  },
+  "final_note": "ACCEPT is limited to the independently verified M2-A scope 01-20 plus 22. The prior 1800-second timeout was not an ACCEPT; no native verdict existed before this report completion. N1 and N2 are real disclosed limitations, not hidden failures, and are nonblocking under the current documented M2-A contract."
+}

@@ -1,0 +1,457 @@
+{
+  "verdict": "NEEDS CORRECTION",
+  "candidate_manifest_sha256": "ae00fe8fa4c17ee3d7de9be61d4ad3fb8b610d71f394074eabae28cb025a47eb",
+  "candidate": "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/round-5/candidate",
+  "manifest": "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/round-5/candidate-manifest.json",
+  "base_git_head": "95620d8da6afb8470d78400468fc4eee120147f2",
+  "branch": "feat/m2-usable-beta",
+  "manifest_file_count": 84,
+  "report": "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/round-5/audit/report.md",
+  "audit_identity": {
+    "session_uuid": "06fd5ee6-78e4-4dbd-ac8c-d442e9c97cb6",
+    "actual_model": "deepseek-flash[1m]",
+    "service_returned_model": "deepseek-flash",
+    "effort": "max",
+    "permission": "auto",
+    "not_opus_claim": true,
+    "date": "2026-10-20"
+  },
+  "environment": {
+    "python": "/home/workspace/CodeWeave_dev/.venv/bin/python (Python 3.12)",
+    "llvm_clang": "18.1.3",
+    "codeweave_llvm_prefix": "/home/workspace/CodeWeave_dev/.toolchain/llvm-18/usr/lib/llvm-18",
+    "resource_dir": "lib/clang/18",
+    "bubblewrap": "0.9",
+    "cmake": "3.28",
+    "node": "22",
+    "chromium": "real local ready",
+    "formal_workcopy": "/tmp/cwaudit5/verifycand-JSnR6p",
+    "formal_build_evidence": "/tmp/cwaudit5/verifybuild/codeweave-m2-acceptance-HMhWlh",
+    "analyzer_sha256": "b91b17afe37928da6f5f40374f20ee20e4f23f4d2505dfc417925e4e3c9b18b4",
+    "analyzer_main_cpp_sha256": "e2c71ba0488c3e6bff1052ca99d9a81e675b5c2238100abd31cfd19a09e41507"
+  },
+  "contract_statuses": {
+    "01": "PASS",
+    "02": "PASS",
+    "03": "PASS",
+    "04": "PASS",
+    "05": "FAIL",
+    "06": "PASS",
+    "07": "PASS",
+    "08": "PASS",
+    "09": "PASS",
+    "10": "PASS",
+    "11": "PASS",
+    "12": "PASS",
+    "13": "PASS",
+    "14": "PASS",
+    "15": "FAIL",
+    "16": "PASS",
+    "17": "PASS",
+    "18": "PASS",
+    "19": "PASS",
+    "20": "PASS",
+    "21": "OUT_OF_SCOPE",
+    "22": "PASS"
+  },
+  "blocking_findings": [
+    {
+      "id": "P1",
+      "severity": "P1",
+      "title": "definition_context_changed only checks ODRHash/profile; read-set/constexpr/enum changes with identical definition bytes are missed, and events have no exact changed inputs",
+      "source": [
+        "backend/codeweave/diff.py:108-117 (trigger at line 116)",
+        "backend/codeweave/diff.py:27-50 (_side does not load unit_files/files.sha256)",
+        "analyzer/main.cpp:213-225 (ODRHash, nonauthoritative hint)"
+      ],
+      "contract": [
+        "architecture.md:129: changed macro/config/read-set with identical definition bytes must be definition_context_changed with exact changed inputs; ODRHash is a nonauthoritative hint; an ODR match cannot fill the gap",
+        "acceptance.md:13 (case05): consumers invalidated and input/config cause explained"
+      ],
+      "trigger": "Change inline constexpr/enum values in a header consumed by a function whose definition bytes, definition range, ODRHash, and profile_id stay identical.",
+      "evidence": [
+        "/tmp/cwaudit5/case23ctx/summary.json",
+        "/tmp/cwaudit5/logs/case23-final-diff-symbols.json",
+        "/tmp/cwaudit5/logs/case23-final-diff-calls.json",
+        "/tmp/cwaudit5/logs/case23-final-diff-files.json",
+        "/tmp/cwaudit5/logs/case23-behavior-old.txt",
+        "/tmp/cwaudit5/logs/case23-behavior-new.txt",
+        "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/definition-context-probe.json",
+        "/tmp/cwaudit5/logs/d4-diff-symbols.json"
+      ],
+      "key_result": "case23ctx old index 9dc8ea33-055e-4f9c-962e-1758c5378889 -> new b1fbd1fe-55c9-492c-a75e-3563e7e8611c; same profile be097d7d...; leaf ODR 2280648299 both sides; root ODR 4026570732 both sides; definition bytes/ranges identical; unit_files includes settings.hpp both sides; diff-symbols returned_count=0, diff-calls returned_count=0, diff-files one file_text_changed for settings.hpp; behavior old leaf=4 root=5, new leaf=18 root=19. Codex probe independently inspected: old d78b1f35..., new f5c94406..., same empty symbols/calls and only value.hpp file_text_changed. d4 macro case fires but has no changed_inputs.",
+      "impact": "A real behavior-affecting header/read-set edit is reported as no function change in CLI/UI Diff; even the macro case lacks exact changed inputs, so the input/config cause is not stated. This violates the required M2-A Diff contract.",
+      "minimal_fix": "In diff.py _side load unit_files and files.sha256; for matched symbols with unchanged definition bytes compare hashes of read-set files for the symbol's observer units, excluding the symbol's own definition_file to preserve pure line-move behavior; emit definition_context_changed with changed_inputs [{path,before_sha256,after_sha256}]; keep ODRHash as an additional hint; when profile_id differs attach profile before/after in changed_inputs. No new analyzer architecture or M2-B required.",
+      "regression": [
+        "New header constexpr/enum fixture: exactly one definition_context_changed for the consumer with changed_inputs containing the header's before/after SHA-256; no synthetic symbol/call deltas.",
+        "case05 macro header: context event remains and gains changed_inputs (header hash and/or profile pair).",
+        "Pure line-only move / blank lines outside range: only location_changed, site_location_changed, or ambiguous_correspondence; no definition_context_changed.",
+        "Literal-only change: only definition_text_changed.",
+        "Shared header consumed by a and b but not c: context events only for actual observers; unrelated .cpp edit does not fire for other TUs.",
+        "-D/profile change: context event with profile before/after; configuration_changed coherent.",
+        "Document the same-file external constexpr residual of the minimal fix; do not claim it is covered."
+      ],
+      "blocking": true
+    },
+    {
+      "id": "P2",
+      "severity": "P2",
+      "title": "Source retrieval silently replaces non-UTF-8 indexed bytes with U+FFFD, so served bytes and SHA-256 do not match the indexed file",
+      "source": [
+        "backend/codeweave/index.py:543",
+        "backend/codeweave/app.py:123-126",
+        "backend/codeweave/app.py:202-209"
+      ],
+      "contract": [
+        "acceptance.md:23 (case15): both sides serve original indexed byte slices and hashes",
+        "architecture.md:153: source response bounded saved buffer"
+      ],
+      "trigger": "Index a C++ source containing a non-UTF-8 byte such as 0xFF, then query source via public CLI and HTTP.",
+      "evidence": [
+        "/tmp/cwaudit5/case15bad/proj/bad.cpp",
+        "/tmp/cwaudit5/logs/c15bad_source.json",
+        "/tmp/cwaudit5/logs/c15bad_http_source.json",
+        "/tmp/cwaudit5/logs/c15bad_index.out",
+        "/tmp/cwaudit5/logs/c15bad_index.err"
+      ],
+      "key_result": "Indexed bad.cpp is 61 bytes, SHA-256 15f2e9e051325146407c36895472c96f0f54fc5e40ce825abbfccc89cb920029, containing 0xFF. CLI and HTTP source responses return U+FFFD replacement text; re-encoded served content is 63 bytes, SHA-256 99d4aec9575fe0a2de53b07dc036bc20553c5640b74ef0409f3be578459c2bb3. The response does not signal an error and has no sha256 field.",
+      "impact": "Users/clients cannot trust served source bytes or verify them against the immutable index; this violates the byte-slice/hash part of case15 for non-UTF-8 source.",
+      "minimal_fix": "Never use errors='replace'. Prefer a byte-safe representation (content_base64 plus content_encoding) for non-UTF-8 files; or fail closed with source_not_utf8. In either case expose the indexed SHA-256/range SHA-256 and ensure served bytes hash to it. Do not silently substitute.",
+      "regression": [
+        "Index a file containing 0xFF; assert either explicit source_not_utf8 with no fake content, or base64 round-trip SHA equals the indexed file SHA-256.",
+        "Cover both CLI and HTTP.",
+        "Assert whole-file and range hashes match files.sha256 / definition_range.",
+        "Valid UTF-8 (Chinese/emoji/combining/CRLF) continues to round-trip exactly."
+      ],
+      "blocking": true
+    }
+  ],
+  "non_blocking_findings": [
+    {
+      "id": "P3",
+      "severity": "P3",
+      "title": "source and source-diff responses lack a hash envelope",
+      "source": [
+        "backend/codeweave/app.py:123-126",
+        "backend/codeweave/app.py:202-209",
+        "backend/codeweave/index.py:543"
+      ],
+      "evidence": [
+        "/tmp/cwaudit5/logs/c15_source_a_final.json",
+        "/tmp/cwaudit5/logs/c15_source_b_final.json",
+        "/tmp/cwaudit5/logs/c15_diff_source.json",
+        "/tmp/cwaudit5/logs/c15_diff_files.json"
+      ],
+      "key_result": "Source payload keys are content,end_line,index_id,path,start_line; source-diff keys are comparison_id,left,right,left_index_id,right_index_id,unified_diff,windowed; nested content has no sha256. Diff-files and diff-symbols do carry hashes. Valid case15 content SHAs are d3b20c19... (157 bytes) and 85eb8716... (161 bytes).",
+      "impact": "A source response cannot be verified directly; combined with P2, byte substitution is invisible.",
+      "minimal_fix": "Add whole-file sha256 and range_sha256/buffer_sha256 to source and source-diff envelopes using existing files.sha256 and definition_range data; keep budgets; show/verify in CLI/UI.",
+      "blocking": false
+    }
+  ],
+  "tests": [
+    {
+      "id": "formal-verify-m2",
+      "command": "CODEWEAVE_BUILD_PARENT=/tmp/cwaudit5/verifybuild bash scripts/verify_m2.sh",
+      "exit_code": 0,
+      "result": "VERIFY_EXIT=0; 132 backend passed, 0 failed, 0 skipped, 1 warning in 101.13s; fixture 1 passed; frontend 5 files/38 tests passed; M1 Chromium 7 passed (13.5s); M2 Chromium 1 passed (15.7s); new analyzer SHA-256 b91b17afe37928da6f5f40374f20ee20e4f23f4d2505dfc417925e4e3c9b18b4",
+      "evidence": [
+        "/tmp/cwaudit5/logs/verify_m2.log",
+        "/tmp/cwaudit5/verifybuild/codeweave-m2-acceptance-HMhWlh/backend.xml"
+      ]
+    },
+    {
+      "id": "junit-backend",
+      "command": "read JUnit backend.xml",
+      "exit_code": 0,
+      "result": "testsuite errors=0 failures=0 skipped=0 tests=132 time=101.129",
+      "evidence": [
+        "/tmp/cwaudit5/verifybuild/codeweave-m2-acceptance-HMhWlh/backend.xml"
+      ]
+    },
+    {
+      "id": "case01-literal",
+      "command": "public CLI twice index literal 7->9, diff-symbols/diff-calls, Chromium literal.spec.ts",
+      "exit_code": 0,
+      "result": "literal-only: definition_text_changed only; old source immutable; Chromium 1 passed",
+      "evidence": [
+        "/tmp/cwaudit5/case01",
+        "/tmp/cwaudit5/case01/logs/chromium-case01.log"
+      ]
+    },
+    {
+      "id": "case02-03-target-and-line-move",
+      "command": "public CLI diff after unique token/AST target change; separate line-only move",
+      "exit_code": 0,
+      "result": "case02: relation_added=1, relation_removed=1, target_changed=1; case03: 16 location_changed only, 6 site_location_changed, zero semantic deltas; Chromium 1 passed",
+      "evidence": [
+        "/tmp/cwaudit5/logs/d1-cal.json",
+        "/tmp/cwaudit5/logs/d1-sym.json",
+        "/tmp/cwaudit5/logs/d2-diff-symbols.json",
+        "/tmp/cwaudit5/logs/d2-diff-calls.json",
+        "/tmp/cwaudit5/logs/chromium-cases02-03.log"
+      ]
+    },
+    {
+      "id": "case04-shared-header",
+      "command": "public CLI diff after shared header edit",
+      "exit_code": 0,
+      "result": "one definition_text_changed for shared_add only; no unrelated consumer deltas; full refresh reanalysis",
+      "evidence": [
+        "/tmp/cwaudit5/logs/d3-diff-symbols.json"
+      ]
+    },
+    {
+      "id": "case05-macro-context",
+      "command": "public CLI diff after DEMO_SCALE 4->5 in config header",
+      "exit_code": 0,
+      "result": "FAIL: one definition_context_changed for use_config, but confidence-only and no changed_inputs; definition range 232-277 and buffer hash e479fb8d... identical on both sides; event relies on ODR/profile",
+      "evidence": [
+        "/tmp/cwaudit5/logs/d4-diff-symbols.json"
+      ]
+    },
+    {
+      "id": "case23-readset-constexpr-enum",
+      "command": "own public CLI index old/new fixture and diff-symbols/diff-calls/diff-files; behavior binaries",
+      "exit_code": 0,
+      "result": "FAIL: diff-symbols=0, diff-calls=0, diff-files one file_text_changed settings.hpp; profile/ODR/definition bytes identical; runtime leaf=4 root=5 -> leaf=18 root=19",
+      "evidence": [
+        "/tmp/cwaudit5/case23ctx/summary.json",
+        "/tmp/cwaudit5/logs/case23-final-diff-symbols.json",
+        "/tmp/cwaudit5/logs/case23-final-diff-calls.json",
+        "/tmp/cwaudit5/logs/case23-final-diff-files.json",
+        "/tmp/cwaudit5/logs/case23-behavior-old.txt",
+        "/tmp/cwaudit5/logs/case23-behavior-new.txt"
+      ]
+    },
+    {
+      "id": "codex-probe-inspection",
+      "command": "read probe script/result JSON, verify SHAs and unit_files; did not rerun every probe command",
+      "exit_code": 0,
+      "result": "probe commands all exit 0; old d78b1f35... -> new f5c94406..., same profile 62f9a37e..., symbols=0, calls=0, files only value.hpp file_text_changed; analyzer SHA matches independent build; unit_files contains main.cpp and value.hpp both sides",
+      "evidence": [
+        "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/probe_definition_context.py",
+        "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/definition-context-probe.json"
+      ]
+    },
+    {
+      "id": "case06-template-and-shared",
+      "command": "public CLI diff on shared inline/template fixture",
+      "exit_code": 0,
+      "result": "9 items; template/shared_max USRs preserved with both TU observations; no first-TU-wins",
+      "evidence": [
+        "/tmp/cwaudit5/logs/d6-sym.json"
+      ]
+    },
+    {
+      "id": "cases07-08-selection-and-duplicates",
+      "command": "public CLI configure/index/diff with selected sources, duplicate commands, incompatible configurations",
+      "exit_code": 0,
+      "result": "incompatible -> multiple_configurations; stale -> stale_compilation_database; duplicate commands publish unit_count=4; no duplicate sites",
+      "evidence": [
+        "/tmp/cwaudit5/logs/c07_incompat.err",
+        "/tmp/cwaudit5/logs/c07_stale.err",
+        "/tmp/cwaudit5/logs/c07_dup.out",
+        "/tmp/cwaudit5/logs/c08_flag.out"
+      ]
+    },
+    {
+      "id": "case09-git-head-and-restart",
+      "command": "real Git HEAD fixture public CLI; Chromium case09",
+      "exit_code": 0,
+      "result": "workspace index 9e458f77... snapshot 39fd48b3... source_kind=workspace base/represented provenance; HEAD index d99e105f... snapshot 4bc2d07a... base=represented=46e95ea3...; Chromium renders saved return 1/one(); missing historical inputs block HEAD only",
+      "evidence": [
+        "/tmp/cwaudit5/case09/state_head/index.sqlite3",
+        "/tmp/cwaudit5/case09/state_head2/index.sqlite3",
+        "/tmp/cwaudit5/case09/logs/chromium-case09.log"
+      ]
+    },
+    {
+      "id": "case10-sealed-input",
+      "command": "public CLI refresh with host mutation after capture, sealed extra-file tamper, positive path",
+      "exit_code": 0,
+      "result": "workspace_changed_during_capture; old pointer 85ef867f... remains; positive 60e8648b...; sealed_input_changed; tampered input not mixed into AST",
+      "evidence": [
+        "/tmp/cwaudit5/logs/mut_capture.err",
+        "/tmp/cwaudit5/logs/mut_positive.json",
+        "/tmp/cwaudit5/logs/tamper_refresh.err"
+      ]
+    },
+    {
+      "id": "case11-analysis-failure",
+      "command": "public CLI refresh with syntax error/missing header; warning-only build; driver error",
+      "exit_code": 0,
+      "result": "analysis_failed, no publication, old pointer e2d1417f...; warning publish 2214f36d... coverage units_complete warning count 1; driver errors rejected",
+      "evidence": [
+        "/tmp/cwaudit5/logs/fail_baseline.json",
+        "/tmp/cwaudit5/logs/fail_syntax.err",
+        "/tmp/cwaudit5/logs/fail_driver*.json"
+      ]
+    },
+    {
+      "id": "case12-interruption",
+      "command": "public CLI refresh under ENOSPC, cancel, SIGKILL between stages",
+      "exit_code": 0,
+      "result": "failed ENOSPC keeps old index c720e078... and serves its source; cancel response cancelling, old pointer remains; kill leaves attempt interrupted, result_index_id null, latest old 60e8648b...; no half index",
+      "evidence": [
+        "/tmp/cwaudit5/logs/enospc_base.json",
+        "/tmp/cwaudit5/logs/enospc_old_src.json",
+        "/tmp/cwaudit5/logs/cancel_response.json",
+        "/tmp/cwaudit5/logs/open_recover.json",
+        "/tmp/cwaudit5/logs/kill_enqueue.json"
+      ]
+    },
+    {
+      "id": "case13-static-overload-cross-tu",
+      "command": "public CLI diff on same-name static/overload fixture",
+      "exit_code": 0,
+      "result": "6 location_changed; shared_inline one USR; shared_internal per TU @file/@tu USRs; calls include ambiguous_correspondence; no false matching",
+      "evidence": [
+        "/tmp/cwaudit5/logs/c13_diff_symbols.json",
+        "/tmp/cwaudit5/logs/c13_diff_calls.json"
+      ]
+    },
+    {
+      "id": "case14-conservative-calls",
+      "command": "public CLI diff repeated/unknown/lambda/virtual fixture; Chromium case14",
+      "exit_code": 0,
+      "result": "14 location_changed; calls 5 ambiguous_correspondence + 6 site_location_changed, zero relation deltas; Chromium case14 passed",
+      "evidence": [
+        "/tmp/cwaudit5/logs/c14_diff_symbols.json",
+        "/tmp/cwaudit5/logs/c14_diff_calls.json",
+        "/tmp/cwaudit5/case14/logs/chromium-case14-19.log"
+      ]
+    },
+    {
+      "id": "case15-unicode-and-invalid-bytes",
+      "command": "public CLI/HTTP source and diff on Chinese/emoji/combining/CRLF fixture; extra 0xFF byte fixture; Chromium case15/cursor",
+      "exit_code": 0,
+      "result": "valid Unicode/CRLF: 157-byte SHA d3b20c19... and 161-byte SHA 85eb8716..., hashes in diff events, UTF-16 cursor test passed; invalid 0xFF: indexed 61-byte SHA 15f2e9e0... served as 63-byte replacement SHA 99d4aec9..., no error and no source sha256; case15 FAIL on byte/hash sub-item",
+      "evidence": [
+        "/tmp/cwaudit5/logs/c15_source_a_final.json",
+        "/tmp/cwaudit5/logs/c15_source_b_final.json",
+        "/tmp/cwaudit5/logs/c15_diff_files.json",
+        "/tmp/cwaudit5/logs/c15bad_source.json",
+        "/tmp/cwaudit5/logs/c15bad_http_source.json",
+        "/tmp/cwaudit5/case01/logs/chromium-case15.log",
+        "/tmp/cwaudit5/case01/logs/chromium-case15-cursor.log"
+      ]
+    },
+    {
+      "id": "case16-security",
+      "command": "public CLI/HTTP with own sentinels: symlink/FIFO/path/#line/response/-D @file/plugin/xclang/MJ; real Git execve trace; normal vector/cstddef/header methods",
+      "exit_code": 2,
+      "result": "unsupported_input nonregular, unsupported_snapshot_link, source_not_registered, unsafe_compilation_argument; old pointer/status preserved; status 0/0 diagnostics, units_complete, input_count 162, frozen headers; Git only private stub plumbing core.fsmonitor=false, no hook/filter/sh; own sentinel mtime changed later by auditor's own control git status and is disclosed; normal standard headers succeed",
+      "evidence": [
+        "/tmp/cwaudit5/logs/fifo.err",
+        "/tmp/cwaudit5/logs/symlink.err",
+        "/tmp/cwaudit5/logs/shadow.err",
+        "/tmp/cwaudit5/logs/compile_negatives.txt",
+        "/tmp/cwaudit5/logs/status.json",
+        "/tmp/cwaudit5/case16/outside/git_sentinel"
+      ]
+    },
+    {
+      "id": "case17-optional-header-and-metadata",
+      "command": "real pytest test_namespace_optional_header_and_equal_metadata and auxiliary fixtures",
+      "exit_code": 0,
+      "result": "optional header changes target to beta; reverted alpha with same mtime triggers reanalysis/target changes; namespace invalidation coherent",
+      "evidence": [
+        "/tmp/cwaudit5/verifybuild/codeweave-m2-acceptance-HMhWlh/backend.xml",
+        "backend/tests/test_workspace.py:259"
+      ]
+    },
+    {
+      "id": "case18-migration",
+      "command": "public CLI explicit offline schema3 -> fresh schema4 migration; wrong schema/corrupt/missing DB negatives",
+      "exit_code": 0,
+      "result": "migrate.out schema_version=4 original_unchanged=true; legacy schema3 index 8bed09a0... readable; legacy diff rejected; no in-place auto upgrade",
+      "evidence": [
+        "/tmp/cwaudit5/logs/migrate.out"
+      ]
+    },
+    {
+      "id": "case19-pagination-and-budgets",
+      "command": "Chromium case19 260 event pages + long UTF-8 path; backend budget tests",
+      "exit_code": 0,
+      "result": "2 Chromium tests passed in case14/case19 log; source 200 lines/32768 bytes, event page <=262144, bounded error protocol; no traceback",
+      "evidence": [
+        "/tmp/cwaudit5/case14/logs/chromium-case14-19.log"
+      ]
+    },
+    {
+      "id": "case20-http-security-and-dual-version",
+      "command": "real local HTTP server public API: 26 security checks, real refresh/cancel/restart, Chromium stale pair/snapshot",
+      "exit_code": 0,
+      "result": "all 26 checks expected (Host/Origin/token/JSON/field allowlist/413/404/405/403); read-only DB SHA unchanged 3d77b3b3...; old 856e117d... -> new 664031e4..., all seven states observed, duplicate same job, stale generation 409 workspace_generation_conflict, conflict token 409 idempotency_conflict, pinned_same true; busy held capturing, refresh_busy, cancel cancelling->cancelled, indexes unchanged; restart rotates token, old token rejected, latest 664031e4..., 9 indexes, comparison 3c7fb689..., active_attempts=0; Chromium stale 2 passed",
+      "evidence": [
+        "/tmp/cwaudit5/case17/logs/case20-security.json",
+        "/tmp/cwaudit5/case17/logs/case20-refresh.json",
+        "/tmp/cwaudit5/case17/logs/case20-busy.json",
+        "/tmp/cwaudit5/case17/logs/case20-restart.json",
+        "/tmp/cwaudit5/case17/logs/chromium-stale.log"
+      ]
+    },
+    {
+      "id": "case22-scope-vs-deletion",
+      "command": "public CLI diff after dropping sole-definition TU while header declaration survives; then physical delete",
+      "exit_code": 0,
+      "result": "beta definition_removed with coverage_change=out_of_scope, definition_range null, units alpha.cpp+main.cpp; 13 call items include 7 relation_out_of_scope + 6 unmatched_sites; shared observations survive; no symbol_removed; later physical delete only file_removed beta.cpp",
+      "evidence": [
+        "/tmp/cwaudit5/logs/r5-scope-diff-symbols.json",
+        "/tmp/cwaudit5/logs/r5-scope-diff-calls.json",
+        "/tmp/cwaudit5/logs/r5-scope-diff-files.json",
+        "/tmp/cwaudit5/logs/r5-delete-diff-symbols.json",
+        "/tmp/cwaudit5/logs/r5-delete-diff-files.json"
+      ]
+    },
+    {
+      "id": "manifest-before-report",
+      "command": "python /tmp/cwaudit5/verify_manifest.py; sha256sum -c candidate-manifest.sha256",
+      "exit_code": 0,
+      "result": "manifest SHA ae00fe8f...; expected 84, actual 93 (9 audit-created pycache extras); missing=[], sha_mismatch=[], mode_mismatch=[]; total_expected_bytes 478142; candidate-manifest.json: OK",
+      "evidence": [
+        "/tmp/cwaudit5/logs/final_manifest_pre_report.json",
+        "/tmp/cwaudit5/logs/final_manifest_prewrite.json",
+        "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/round-5/candidate-manifest.sha256"
+      ]
+    }
+  ],
+  "limitations": [
+    "P2/P3 interpretation is strict: case15's specified valid Unicode/emoji/combining/CRLF fixtures pass, but the contract text says original indexed byte slices and hashes without limiting to UTF-8; a real 0xFF source byte is silently replaced. If the product instead explicitly restricts sources to UTF-8, it must reject non-UTF-8 at the boundary rather than replace bytes, and the contract/error protocol must say so.",
+    "The proposed P1 minimal fix uses TU-level positive unit_files read-sets, not a complete include-resolution dependency model; it can conservatively fire for unused header changes in the same TU. This is input-context, not exact runtime causality.",
+    "Excluding a symbol's own definition_file to preserve pure line moves leaves a documented residual: an external constexpr in the same .cpp can still be missed. A per-definition read-set would be needed for that residual, but is not required for the reported header read-set case and would be a larger change.",
+    "ODRHash is nonauthoritative and cannot be used to prove no definition-context change; this is the root of P1.",
+    "The formal suite passes 132 backend tests and VERIFY_EXIT=0, but its macro tests (backend/tests/test_workspace.py:87 and frontend/e2e-m2/workspace.spec.ts:52) change ODR, so they do not cover the constexpr/enum ODR-invariant case and do not make case05 pass.",
+    "The Codex probe was inspected and its SHAs/argv/exit/JSON/unit_files verified, but its commands were not rerun one by one; the same class was independently reproduced with the different case23ctx fixture.",
+    "Candidate has no .git directory; Git modes were verified from executable permission bits according to the manifest rule, while the original source repository HEAD/branch were checked separately read-only.",
+    "Nine backend/codeweave/__pycache__/*.pyc files were created in the candidate directory by audit imports at 20:15:38. They are not in the manifest and were not deleted because deletion would alter the candidate; the 84 manifest files remain byte/mode identical.",
+    "The case16 own Git sentinel mtime was changed at 21:11:25 by the auditor's own `git -C ... status --porcelain` control command after the product trace at 20:13:55; product execve trace shows no hook/filter/sh execution. This is disclosed rather than claiming the sentinel was untouched.",
+    "No full implicit-call analysis, PCH/modules, whole-program virtual dispatch, M2-B, arbitrary historical builds, private projects, RMC/F11/reference, credentials, or network upload were attempted; they remain outside this audit.",
+    "No old ACCEPT is inherited. Round-2/3/4 interrupted records remain as history; this report is based only on the current round's evidence.",
+    "The parent agent's port 8000 demo server was not touched; audit HTTP servers on 18091/18097 were stopped after use. Case20 conclusions rely on saved real HTTP responses and Chromium logs, not on currently running services."
+  ],
+  "final_candidate_check": {
+    "status": "verified_after_report_and_result_written",
+    "manifest_sha256": "ae00fe8fa4c17ee3d7de9be61d4ad3fb8b610d71f394074eabae28cb025a47eb",
+    "expected": 84,
+    "actual": 93,
+    "missing": [],
+    "sha_mismatch": [],
+    "mode_mismatch": [],
+    "unexpected_count": 9,
+    "unexpected": [
+      "backend/codeweave/__pycache__/__init__.cpython-312.pyc",
+      "backend/codeweave/__pycache__/__main__.cpython-312.pyc",
+      "backend/codeweave/__pycache__/cli.cpython-312.pyc",
+      "backend/codeweave/__pycache__/diff.cpython-312.pyc",
+      "backend/codeweave/__pycache__/git_snapshot.cpython-312.pyc",
+      "backend/codeweave/__pycache__/index.cpython-312.pyc",
+      "backend/codeweave/__pycache__/schema.cpython-312.pyc",
+      "backend/codeweave/__pycache__/snapshot.cpython-312.pyc",
+      "backend/codeweave/__pycache__/workspace.cpython-312.pyc"
+    ],
+    "total_expected_bytes": 478142,
+    "sha256sum_check": "candidate-manifest.json: OK (exit 0)",
+    "note": "Nine pycache files are audit-generated and outside the manifest; all 84 manifest entries match byte SHA-256 and Git mode. The same check was repeated after the report final block was appended and was field-for-field identical."
+  }
+}

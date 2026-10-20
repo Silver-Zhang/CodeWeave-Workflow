@@ -1,0 +1,22 @@
+{
+  "branch": "feat/m2-usable-beta",
+  "base": "95620d8da6afb8470d78400468fc4eee120147f2",
+  "head": "7e1e0750de0c4259c961649804ba1907640fbbe2",
+  "tree": "e3a7cec6f5e4280c67d2065974a0e66d5360ab71",
+  "candidate_manifest_sha256": "40328a84bf1e27948e17d1916ebfd3489a2bc3c4fadadc4560e889703c4a7c95",
+  "committed_tree_matches_accepted_candidate": true,
+  "working_tree_clean": true,
+  "pushed": true,
+  "pr_created": true,
+  "remote_refs": {
+    "refs/heads/feat/m2-usable-beta": "7e1e0750de0c4259c961649804ba1907640fbbe2",
+    "refs/heads/main": "95620d8da6afb8470d78400468fc4eee120147f2"
+  },
+  "remote_sha_verified_utc": "2026-10-20T14:52:40.009579+00:00",
+  "pr_number": 3,
+  "pr_url": "https://github.com/Silver-Zhang/CodeWeave/pull/3",
+  "pr_head_sha": "7e1e0750de0c4259c961649804ba1907640fbbe2",
+  "pr_base_sha": "95620d8da6afb8470d78400468fc4eee120147f2",
+  "pr_state": "open",
+  "pr_merged": false
+}

@@ -5,10 +5,10 @@
 | 项 | 当前约定 |
 |---|---|
 | 源码仓库 | https://github.com/Silver-Zhang/CodeWeave |
-| 上次核验的源码 main | 676f63d4c8d14f23e263f43e828deae566a9b9ec（开工前重新核验） |
+| 上次核验的源码 main | 95620d8da6afb8470d78400468fc4eee120147f2（本轮fetch核验，已含M0/M1） |
 | 产品基线 | [BASE_v0.1](plans/BASE_v0.1.md) |
 | 默认模式 | B · 工程协作 |
-| 当前关口 | M2-R0 v2 设计独立 ACCEPT/可实施；M0/M1 当前回归通过、PR #1/#2 待合并；未实现 M2，用户冻结/合并与后续实施另计 |
+| 当前关口 | M2-A真实独立ACCEPT，源码7e1e0750…已推送/PR#3 open；用户试用待，不自动合并/发布或进入M2-B |
 
 产品是自动提取的代码结构地图，不是聊天记录或 Markdown 知识库。人类 Web 界面和外部 Agent 查询共用同一索引；本地保存后的修改和 Git 双版本结构差异属于首版目标。聊天 Agent、GitLab 集成、运行时序后置。
 

@@ -1,0 +1,64 @@
+{
+  "candidate_manifest_sha256": "40328a84bf1e27948e17d1916ebfd3489a2bc3c4fadadc4560e889703c4a7c95",
+  "attempts": [
+    {
+      "stage": "review-2",
+      "session_id": "06fd5ee6-78e4-4dbd-ac8c-d442e9c97cb6",
+      "model_requested": "deepseek-flash[1m]",
+      "effort": "max",
+      "permission_mode": "auto",
+      "started": "2026-10-20T14:10:01.569001+00:00",
+      "ended": "2026-10-20T14:40:02.134045+00:00",
+      "exit_code": 124,
+      "pid": 1025957,
+      "prompt_sha256": "bf8d691fa6ae79924aeeba50a56fbbe33e69d0016d5dab598efb1ddfc37544ab"
+    },
+    {
+      "stage": "review-2/report-completion",
+      "session_id": "06fd5ee6-78e4-4dbd-ac8c-d442e9c97cb6",
+      "model_requested": "deepseek-flash[1m]",
+      "effort": "max",
+      "permission_mode": "auto",
+      "started": "2026-10-20T14:41:35.485333+00:00",
+      "ended": "2026-10-20T14:48:18.120452+00:00",
+      "exit_code": 0,
+      "pid": 1173235,
+      "prompt_sha256": "99a66ee000151b3d25c4c2400965a61e1bdcc16496ba6ee97502b15cf57438e8"
+    }
+  ],
+  "final_native": {
+    "type": "result",
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 24,
+    "session_id": "06fd5ee6-78e4-4dbd-ac8c-d442e9c97cb6"
+  },
+  "final_native_result": {
+    "verdict": "ACCEPT",
+    "candidate_manifest_sha256": "40328a84bf1e27948e17d1916ebfd3489a2bc3c4fadadc4560e889703c4a7c95",
+    "report": "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/review-2/audit/report.md",
+    "report_sha256": "194774587156e668a0bd75036445935c33490dbe2c3731734c5183c1c8a2abbf",
+    "result": "/home/workspace/CodeWeave_dev/m2-usable-beta-20261020/review-2/audit/result.json",
+    "result_sha256": "3d0ab1b789b09f44dd242c46288211ef9aab29ee9e785964e0fcabbb410d4ed6",
+    "mandatory_cases": "01-20 PASS; 22 PASS; 21 OUT_OF_SCOPE",
+    "blocking_findings": [],
+    "limitations": [
+      "N1 observer-TU conservative context over-report",
+      "N2 same-file external constant may remain file/source-only",
+      "N3 theoretical UI post-POST terminal race not observed",
+      "N4 old full matrix not reconstructed",
+      "N5 bare lone-CR window edge not separately tested",
+      "N6 minor documentation typo",
+      "N7 M2-B/cache reuse out of scope",
+      "N8 self-owned fixtures only; authorized api.deepseek.com transmission did occur"
+    ],
+    "prior_run": {
+      "exit_code": 124,
+      "native_final_verdict": false,
+      "not_treated_as_accept": true
+    }
+  },
+  "native_raw_sha256": "957f61c64a977ca09433a1fc70dadbaf116d52bb3ff2a5dd381344376a6acc37",
+  "raw_logs_retained_local": true,
+  "old_timeout_not_accepted": true
+}

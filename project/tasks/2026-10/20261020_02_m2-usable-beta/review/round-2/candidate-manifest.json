@@ -1,0 +1,428 @@
+{
+  "base_head": "95620d8da6afb8470d78400468fc4eee120147f2",
+  "branch": "feat/m2-usable-beta",
+  "deleted": [],
+  "files": [
+    {
+      "mode": "100644",
+      "path": ".editorconfig",
+      "sha256": "8d0ee1f479c25b6f1251e2ed7c4b6277bc5b00264be281b20e92532ed2687bca"
+    },
+    {
+      "mode": "100644",
+      "path": ".gitignore",
+      "sha256": "2d1c5008e789644baa4d0318aeb4ac8acd32f19bb95c151dc4f388a949cab953"
+    },
+    {
+      "mode": "100644",
+      "path": "AGENTS.md",
+      "sha256": "bf5f9127dbdc75c42ffb663faf2a370ba9286ad1888c6da3dd392a220e2db6ea"
+    },
+    {
+      "mode": "100644",
+      "path": "CONTRIBUTING.md",
+      "sha256": "10ae32f7113b95b5911b6805b429dd9a6ae0030fdebea664c4b8f4df6a062a41"
+    },
+    {
+      "mode": "100644",
+      "path": "LICENSE",
+      "sha256": "b0a3128a905c1d844f7088e08412860994c5bc2bef66ced402ccf01012806736"
+    },
+    {
+      "mode": "100644",
+      "path": "README.md",
+      "sha256": "ecab8ac258c4d3bba93870f82e079335b98552d134470f236bf48f15627d043b"
+    },
+    {
+      "mode": "100644",
+      "path": "analyzer/CMakeLists.txt",
+      "sha256": "b35113bb0c64c7cbba9fcafe81c15d8a9a6c034cac59bbd1609bde4a67950ff9"
+    },
+    {
+      "mode": "100644",
+      "path": "analyzer/README.md",
+      "sha256": "6c63b873461b33f38a3526254d9c8f62700079035b676525d32b7c3e998e98d3"
+    },
+    {
+      "mode": "100644",
+      "path": "analyzer/main.cpp",
+      "sha256": "e2c71ba0488c3e6bff1052ca99d9a81e675b5c2238100abd31cfd19a09e41507"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/__init__.py",
+      "sha256": "1e962fc35a1cf7837acefecd5c15d2951089a11e6e97ee80bdeaf3798d3aaf09"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/__main__.py",
+      "sha256": "212800b753997effc17357014e98e1c7b49231b80ce6d5f7559ea312a458468a"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/app.py",
+      "sha256": "4e60f53f7d6ad1176bc53dc56c1d6ac8444b09e5c5183ff5834522cb4141a321"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/cli.py",
+      "sha256": "4b044fbbd7ccd9925b6b777bb88b8fff01bebc9d4af5d8438ab4251f8546174a"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/demo.py",
+      "sha256": "e38e5a27818a05c15840961d1bb6a289ed97deeaa70c2207ab9b40a63743e943"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/diff.py",
+      "sha256": "7cbb6d66d3bc6b6c7ded904774ac853b2c0d90c5d9358cf8792e0c13f4218e92"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/git_snapshot.py",
+      "sha256": "4df72a6662bd602d7046ee98d9127de82621820eeb1a80911d0c69985864d0a6"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/index.py",
+      "sha256": "c9d3711986e6b5d94b9f36b9a14988bb451320b3c74314bc11df5f1dd0a63cb8"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/schema.py",
+      "sha256": "5c0e3766d16755ddcd09e0afc368aebaa882d696d03f2bacc07895cb393156b3"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/snapshot.py",
+      "sha256": "c744ed4cf17f25161778c138c25ae93e37802c4414ebb12177aa410acd9da767"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/workspace.py",
+      "sha256": "541ba1abf9407587ca5b80cdbc85042d2294dc66d40cf9d0e1feca8fb8f9b18b"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/codeweave/workspace_worker.py",
+      "sha256": "bf789d6c61ec3f5c524acaa7a71f38133aab17f53ab3caaa354e516b01246aba"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/pyproject.toml",
+      "sha256": "d51f1c9d64be6f7aab3dc4877bdef8e2e0e52083d9ec4fb8c14e5f91843a70d0"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/support/pause_open.c",
+      "sha256": "92038766ffd409ecd07278db704ab1c42c3f9b41184b40581e6abf7abee75a1a"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/test_health.py",
+      "sha256": "a8d8c6587cd0b88575741898cf1106cc3612073549ef99d6b662b359cdafcbc1"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/test_m0_correction.py",
+      "sha256": "ccced6d4120fb457ac13bebffdb8a8e313179626aef66fd2f07de4493e613d63"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/test_m0_final_hardening.py",
+      "sha256": "92b52379fb7e133dd02356785686cf607016517bc399a6638b79f7c85ea1d0c9"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/test_m0_index.py",
+      "sha256": "3f149cc2867c1a4e96212caef6de49ea23349a674309c2e628dc1ba95ab0c767"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/test_m0_r2.py",
+      "sha256": "9557aa4c207b957b080ba00e1a64556f0350866419748117d6995e887c5ce9d4"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/test_m1_api.py",
+      "sha256": "ccd72abcd900134150bfca9d3b4be3470e0ee1cd067dd7b64f43cf2f22c35ff9"
+    },
+    {
+      "mode": "100644",
+      "path": "backend/tests/test_workspace.py",
+      "sha256": "545329f254b8ff970df568c8254b29dffe5b4538ff5bab9831998e3579eb30f1"
+    },
+    {
+      "mode": "100644",
+      "path": "docs/http-api.md",
+      "sha256": "d2f13823d38a4a48a119413c93227e79a2d199eda7a015c07f7829df7ed2b02b"
+    },
+    {
+      "mode": "100644",
+      "path": "examples/workspace/README.md",
+      "sha256": "f9e63deff02d489ee9b1a65341083cf2c7e00e128a9f81112c3596c0c1c0af33"
+    },
+    {
+      "mode": "100644",
+      "path": "examples/workspace/config.hpp",
+      "sha256": "38da9fb6a71f7581ba15452374152c164c9e927f0b6b82b9ccea18aac019d153"
+    },
+    {
+      "mode": "100644",
+      "path": "examples/workspace/main.cpp",
+      "sha256": "8bc6edc58d88dc700bc9e679bead65aea5a3b2ddeafe3744e69d5bebb7d5a04a"
+    },
+    {
+      "mode": "100644",
+      "path": "examples/workspace/shared.hpp",
+      "sha256": "371b540d50bbc08cbad203590e32431f1f4f21bb2511a2862e00a35d6eda5e0a"
+    },
+    {
+      "mode": "100644",
+      "path": "examples/workspace/worker.cpp",
+      "sha256": "a444c22b570f8cde5c1ca92ecc81429e814f547d7267d6b446d62e6cf1266579"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/README.md",
+      "sha256": "d287c59db1f360c398ef136320cea84ec39dc245fc5fd3764e598815160759df"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/e2e-m2/workspace.spec.ts",
+      "sha256": "755696d73379a5f421b89f333964dddeb57ff0856cf51215b6020ce1c720c79c"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/e2e/indexRefresh.spec.ts",
+      "sha256": "d09ed3c2e698defb81f5640055ab9a13d670e912016aba5c9a8af978a86bbe09"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/e2e/map.spec.ts",
+      "sha256": "beab965f9fdbae387c05c27674ec6e18f948b468146e03d55aac178a4970720a"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/index.html",
+      "sha256": "125a75f95921749bdfa89503de876f995e34690a83052e6bff2f588bab58753c"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/package-lock.json",
+      "sha256": "f60b6af1a31b480e7e0d5b8d4f80cb9cb999cbc5e99983e609061c0b8a8d5f89"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/package.json",
+      "sha256": "15112addc2500105baceedb6213bec9b0ddb109a42834e6b634f1a1877b4189c"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/playwright.config.ts",
+      "sha256": "1b12a91391e821d862ba108fa081778f9833f0c4605a954e20e37e794d459b62"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/playwright.m2.config.ts",
+      "sha256": "0f3966e26994be38cfedffa04ca03df9e431b1d6ab28d5e30173a46d221cecfe"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/App.test.tsx",
+      "sha256": "c6976075323810826c19de17002cbd6674fe6501b4e426301f46366aedfa29dd"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/App.tsx",
+      "sha256": "2463754b200282f4f6d8f533f48193a4a677da3769b9fc080c57066e22190eec"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/DiffPanel.tsx",
+      "sha256": "35751c6226212f84e2bb9da6d12d1cb043176b59cbcba317312fdc016a6f7365"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/SourceBoundary.tsx",
+      "sha256": "ab6f9ce79ea495ca892844bcfd0594f6c9d47f457d93c8d90339329d15d34129"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/SourcePanel.tsx",
+      "sha256": "c440f96938ab6965964eadc1ec576301fac66394bbf4c5d96b435ecfe7baea4d"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/WorkspacePanel.test.tsx",
+      "sha256": "8ffe99457c17f3d332633eab3fa19f5db3a7d0094a44698ee47fb10ad04d48a4"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/WorkspacePanel.tsx",
+      "sha256": "8131a39bda71c5033f79a54d2d62f7d26fcfadcfdd8deeb392dc582ffcf2dbba"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/api.ts",
+      "sha256": "78bb38b26fb91503b3a37b4cbd7101752a4295abf94f0d14ddbdcd63d932a0ce"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/env.d.ts",
+      "sha256": "058963a936c23a07f8c0d84951c4beb9c5cb74c17f01eb9a59498b1861b3e093"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/graph.test.ts",
+      "sha256": "2f42b9fb80f817eaf97db9fa43f2a62890741ecde0c8c408b837fa19fc79a3b6"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/graph.ts",
+      "sha256": "a409c99485a34dfc372d5bf443acff099bd41ca043063294cfc65ddcc6f52e9a"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/indexRefresh.test.tsx",
+      "sha256": "e223e57e771c54d077eabd34b9be095f5b184f5a4a5339599454e9f69d403671"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/main.tsx",
+      "sha256": "52f85ebb12df746ce299302837c0505bcea4306684675db3864c7a56d10e5fc7"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/sourceLocation.test.ts",
+      "sha256": "2470ea61007968f7c0da53aae10a5662b112a1eb9a23463396c4e5910e17ed1f"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/sourceLocation.ts",
+      "sha256": "e388859024923121aa5b3965629334c08a193ca5f7cc4b9b7fc6c432a1c883b7"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/src/style.css",
+      "sha256": "02088f4fec97e66f20953ae75a52b3dfe2932302f06928a90b3dc739f5c5efe1"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/tsconfig.json",
+      "sha256": "9971b9473a549c055ed9dc1f68de7fc107a9e5924b7a8afcc5522765997bc090"
+    },
+    {
+      "mode": "100644",
+      "path": "frontend/vite.config.ts",
+      "sha256": "b77e3d7f5120a9f40a380572a7d0f3886ff406af551cff3ccf6e0c1214480f5a"
+    },
+    {
+      "mode": "100644",
+      "path": "scripts/check_repository.py",
+      "sha256": "4ce74171039be2b7164470766f5bda549e0f71b05dba6a1fb79eeacb417c0422"
+    },
+    {
+      "mode": "100644",
+      "path": "scripts/run_local.py",
+      "sha256": "894f5b91a42b8d8481e90e840cfd90ed6d03c81785bd23ab92a4d3506f69fc1a"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/run_local.sh",
+      "sha256": "a07c07a527b61dc84f92f6efc6b82f725e1dd53c4ddbdd03a8e19151c22e6655"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/verify_m0.sh",
+      "sha256": "72bac51324f068630a250e07c4822b627c4422896f241f018b52a635305c3462"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/verify_m1.sh",
+      "sha256": "7505a4caa51214261223cc8bfd85b5ca30d13451d6c18ff305665298c74d5a99"
+    },
+    {
+      "mode": "100755",
+      "path": "scripts/verify_m2.sh",
+      "sha256": "40bcad8832aaee5efae7a9d377521201147883e718e48865dd1cc819af303466"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/create_fixture_repo.py",
+      "sha256": "64483493fe092f27c05859ec9e4b537d5f6b84ac57517039db9af7e2f972b343"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v1/CMakeLists.txt",
+      "sha256": "f3648fc8eda62aac4fbfc90bf3b2e3d24be39e496f09604ceb17d65c23e8c50a"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v1/main.cpp",
+      "sha256": "290e21911b17f41c4fd284f5d11df260fe00c6b7347bce3dde880cc2bc6cdf77"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v2/CMakeLists.txt",
+      "sha256": "f3648fc8eda62aac4fbfc90bf3b2e3d24be39e496f09604ceb17d65c23e8c50a"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/cpp_versions/v2/main.cpp",
+      "sha256": "9641f9c157f4cefb0e9e38cf398a0e66ed924bcf6388e52445a6712b4659ebc8"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/m0/CMakeLists.txt",
+      "sha256": "f1526c38045e82c0de9b6a91247904db75f94cc68b441831f2240b012b262b4d"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/m0/alpha.cpp",
+      "sha256": "e06943b3b6cb2248d57927850cfb63f85ebaf0dd16067887f5bd5bbe275f7a14"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/m0/beta.cpp",
+      "sha256": "75d9cd446ff121e909dffc9bb92f6d5125e335bacd2cc8127e12e29dd2d33a4d"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/m0/shared.hpp",
+      "sha256": "ede925e3c754f2093819edb1a0905d5c5f79c37ff211f9badf5a1372d1326ec2"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/m1/left/unit.cpp",
+      "sha256": "a99d3fc2f85da9b3ebfc467ae4d30787e98afa4d04bf450213c6ac8aeffef5f4"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/m1/right/unit.cpp",
+      "sha256": "233c9ee1d015df1f05c88c1a89c429a759596ff198784a0863e68f5989aa8acf"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/fixtures/m1/shared.hpp",
+      "sha256": "66a2bc48f6cd435e253ccc31432ffb3ce1e203aae8d742d64229929d31410310"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/serve_m1_fixture.py",
+      "sha256": "d6fac4b6f15cd01bafd79200df89cd2020f075bd57c4fa73128acd645de824a8"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/serve_m2_fixture.py",
+      "sha256": "eb633ed7ce03a6d0900658054ab6f329d262ec4f1cefacb84c0c0fd54a0eb1c6"
+    },
+    {
+      "mode": "100644",
+      "path": "tests/test_fixture_repo.py",
+      "sha256": "5797a4d3d28868e5a3fa3ef3516c19349e186efabefcf895b4894eb68559d754"
+    }
+  ],
+  "status": " M README.md\n M analyzer/README.md\n M analyzer/main.cpp\n M backend/codeweave/app.py\n M backend/codeweave/cli.py\n M backend/codeweave/index.py\n M docs/http-api.md\n M frontend/src/App.tsx\n M frontend/src/api.ts\n M frontend/src/style.css\n?? backend/codeweave/demo.py\n?? backend/codeweave/diff.py\n?? backend/codeweave/git_snapshot.py\n?? backend/codeweave/schema.py\n?? backend/codeweave/snapshot.py\n?? backend/codeweave/workspace.py\n?? backend/codeweave/workspace_worker.py\n?? backend/tests/test_workspace.py\n?? examples/workspace/README.md\n?? examples/workspace/config.hpp\n?? examples/workspace/main.cpp\n?? examples/workspace/shared.hpp\n?? examples/workspace/worker.cpp\n?? frontend/e2e-m2/workspace.spec.ts\n?? frontend/playwright.m2.config.ts\n?? frontend/src/DiffPanel.tsx\n?? frontend/src/WorkspacePanel.test.tsx\n?? frontend/src/WorkspacePanel.tsx\n?? scripts/run_local.py\n?? scripts/run_local.sh\n?? scripts/verify_m2.sh\n?? tests/serve_m2_fixture.py\n"
+}

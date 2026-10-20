@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "20261020_02_m2-usable-beta",
+  "date": "2026-10-20",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    "CodeWeave feat/m2-usable-beta: base 95620d8da6afb8470d78400468fc4eee120147f2 -> result 7e1e0750de0c4259c961649804ba1907640fbbe2; normal push and remote SHA verified; PR #3 open/unmerged",
+    "Accepted complete candidate: 84 files; manifest40328a84bf1e27948e17d1916ebfd3489a2bc3c4fadadc4560e889703c4a7c95; staged/commit tree e3a7cec6f5e4280c67d2065974a0e66d5360ab71 matches all bytes/modes",
+    "Codex and independent reviewer each freshly built verify_m2.sh:136 backend/fixture1/38 frontend/9 real Chromium; zero skips",
+    "Formal independent review1 ae00: NEEDS CORRECTION; original report/result/manifest retained in review/round-1",
+    "Formal independent review2: DeepSeek Flash/max/auto ACCEPT; native final exit0/is_error=false; P1/P2/P3 CLOSED; observer-TU and same-buffer precision limits disclosed; original records in review/round-2",
+    "DevFlower project/codeweave base4ae77c6a351cf9430f79bc10dd75f421ab37a227; archive in this task only plus project navigation; user acceptance/main merge/tag/release/M2-B not performed"
+  ]
+}
