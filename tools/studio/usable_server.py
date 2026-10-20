@@ -55,6 +55,7 @@ def handler(runtime, token):
                 path, query = parsed.path, parse_qs(parsed.query)
                 files = {"/": ("usable.html", "text/html; charset=utf-8"),
                          "/usable.js": ("usable.js", "text/javascript; charset=utf-8"),
+                         "/usable_canvas.js": ("usable_canvas.js", "text/javascript; charset=utf-8"),
                          "/usable.css": ("usable.css", "text/css; charset=utf-8")}
                 if not post and path in files:
                     name, mime = files[path]
@@ -126,6 +127,9 @@ def handler(runtime, token):
                 self.respond(400, {"error": str(exc)})
             except (ValueError, KeyError, TypeError):
                 self.respond(400, {"error": "Invalid request data"})
+            except (BrokenPipeError, ConnectionResetError):
+                # Browser navigation may close an in-flight snapshot connection.
+                pass
             except Exception:
                 self.respond(500, {"error": "Local runtime error; inspect operator evidence"})
     return Handler

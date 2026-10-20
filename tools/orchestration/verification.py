@@ -103,6 +103,7 @@ def verify(config, candidate, artifacts, run, round_number, candidate_hash, acce
             report = {'id': spec['id'], 'run_id': run, 'round': round_number, 'operation_id': operation,
                       'candidate_sha256': candidate_hash, 'acceptance_sha256': acceptance_hash,
                       'argv': argv, 'cwd': str(candidate), 'executor': 'controller-runner',
+                      'assertion': {k: spec[k] for k in ('runner', 'stdin', 'expected_json', 'read_paths', 'dependency_sha256', 'min_cases', 'max_skipped') if k in spec},
                       'process': process, 'counts': counter, 'passed': bool(passed),
                       'result_path': str(result_path), 'result_sha256': digest(result_path.read_bytes())}
             if store:

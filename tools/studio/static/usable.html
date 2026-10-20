@@ -1,45 +1,35 @@
 <!doctype html>
 <html lang="zh-CN">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DevFlower Stable Studio</title><link rel="stylesheet" href="/usable.css"><script src="/usable.js" defer></script></head>
+<title>DevFlower · 工作台</title><link rel="stylesheet" href="/usable.css"><script src="/usable_canvas.js" defer></script><script src="/usable.js" defer></script></head>
 <body>
-<header><strong>DevFlower</strong><span>Stable Studio · Usable v1</span><span id="trust">核验 Stable…</span></header>
-<main>
+<header><a class="brand" href="/">✳ <strong>DevFlower</strong></a><span class="edition">本地研发工作台</span><span id="trust">核验 Stable…</span></header>
+<div class="workspace-bar"><span class="eyebrow">工作区</span><input id="workspace-path" aria-label="本机 Git 仓库绝对路径" placeholder="输入本机 Git 仓库绝对路径"><button id="open-workspace">打开项目</button><select id="recent" aria-label="最近工作区"><option value="">最近工作区</option></select></div>
+<div class="context-bar"><span id="workspace-info">尚未选择工作区 · 项目源码与运行记录分开保存</span><span class="local-badge">LOCAL</span></div>
+<nav class="tabs" aria-label="工作台页面"><button data-tab="workflow" aria-selected="true">01 工作流</button><button data-tab="task" aria-selected="false">02 任务与运行</button><button data-tab="runs" aria-selected="false">03 进度与结果</button><button data-tab="sessions" aria-selected="false">原生会话</button></nav>
 <p id="notice" role="status">请使用 Stable 启动时打印的私有链接打开。</p>
-<section>
-<h1>工作区</h1>
-<p>输入本机 Git 仓库绝对路径。这里只打开明确选择的项目；Studio 私有数据另行存放。</p>
-<div class="row"><input id="workspace-path" placeholder="/home/workspace/DevFlower/Development"><button id="open-workspace">打开</button><select id="recent"><option value="">最近工作区</option></select></div>
-<p id="workspace-info">尚未选择</p>
+<main>
+<section id="panel-workflow" class="tab-panel">
+<div class="workflow-toolbar"><div><span class="eyebrow">WORKFLOW</span><input id="workflow-name" aria-label="工作流名称"><span id="save-state">未保存</span></div><div class="row"><select id="template" aria-label="起始模板"><option>B</option><option>A</option><option>C</option><option value="blank">空白</option></select><button id="new-draft">新建</button><select id="drafts" aria-label="已保存流程"><option value="">已保存流程</option></select><button id="save" class="primary">保存工作流</button></div></div>
+<div class="workbench">
+<aside class="palette"><h2>节点库</h2><p>添加节点，然后从输出端口拖动连线。</p>
+<button data-kind="human_gate"><b>◎ 人工确认</b><small>确认范围与授权</small></button><button data-kind="planner"><b>◇ Planner</b><small>分析与规划</small></button><button data-kind="developer"><b>⌘ Developer</b><small>Codex 实施</small></button><button data-kind="verifier"><b>✓ Verifier</b><small>固定验证合同</small></button><button data-kind="reviewer"><b>◈ Reviewer</b><small>Claude 独立审核</small></button><button data-kind="delivery"><b>↗ Delivery</b><small>受控交付</small></button>
+<details><summary>按类型添加</summary><select id="add-kind"><option value="planner">Planner</option><option value="developer">Developer</option><option value="verifier">Verifier</option><option value="reviewer">Reviewer</option><option value="human_gate">Human Gate</option><option value="delivery">Delivery</option></select><button id="add-node">添加节点</button></details>
+<div class="palette-note">支持顺序流程和有界修复回路。并行与子 Agent 暂不支持。</div></aside>
+<div class="canvas-area"><div class="canvas-toolbar"><div class="row"><button id="undo" aria-label="撤销">↶</button><button id="redo" aria-label="重做">↷</button><button id="delete-node">删除选中</button></div><div class="row"><button id="zoom-out" aria-label="缩小">−</button><span id="zoom-level">100%</span><button id="zoom-in" aria-label="放大">＋</button><button id="fit">适应画布</button></div></div>
+<svg id="canvas" viewBox="0 0 1100 620" tabindex="0" role="application" aria-label="工作流画布：拖动节点，输出端口连线，空白处平移，滚轮缩放"></svg>
+<div class="canvas-hint">拖动节点 · 空白处平移 · 滚轮缩放 · Delete 删除 · 橙色虚线为修复回路</div></div>
+<aside class="inspector"><h2>节点配置</h2><div id="node-config"><p>选择节点编辑配置。</p></div></aside>
+</div>
+<div class="validation-bar"><label>最多审核轮次 <input id="max-rounds" type="number" min="1" max="5" value="5"></label><span id="graph-status">尚未校验当前编辑版本</span><button id="compile">校验执行顺序</button><button data-go="task" class="primary">下一步：任务与授权 →</button></div>
+<details class="connections-panel"><summary>连接清单与键盘操作</summary><div class="row"><select id="edge-source" aria-label="连线起点"></select><span>→</span><select id="edge-target" aria-label="连线终点"></select><select id="edge-on" aria-label="连接类型"><option value="next">顺序</option><option value="repair">修复回路</option></select><button id="connect">连接</button></div><ul id="edges"></ul></details>
 </section>
-<section>
-<div class="row"><h2>工作流</h2><select id="template"><option>B</option><option>A</option><option>C</option><option value="blank">空白</option></select><button id="new-draft">新建</button><input id="workflow-name" aria-label="工作流名称"><button id="save">保存</button><select id="drafts"><option value="">已保存流程</option></select></div>
-<p id="save-state">未保存</p>
-<div class="row"><select id="add-kind"><option value="planner">Planner</option><option value="developer">Developer</option><option value="verifier">Verifier</option><option value="reviewer">Reviewer</option><option value="human_gate">Human Gate</option><option value="delivery">Delivery</option></select><button id="add-node">添加节点</button><button id="delete-node">删除选中节点</button><label>最多审核轮次 <input id="max-rounds" type="number" min="1" max="5" value="5"></label><button id="compile">校验可执行图</button></div>
-<div class="editor"><svg id="canvas" viewBox="0 0 1100 550" aria-label="工作流画布"></svg><div id="node-config"><p>选择节点编辑配置。拖动节点调整布局。</p></div></div>
-<div class="row"><select id="edge-source" aria-label="连线起点"></select><span>→</span><select id="edge-target" aria-label="连线终点"></select><select id="edge-on"><option value="next">顺序</option><option value="repair">修复回路</option></select><button id="connect">连接</button></div>
-<ul id="edges"></ul>
-<p>执行支持：顺序人工授权 → 可选 Planner → Codex Developer → 非零测试 → Claude Reviewer → Delivery，以及最多 5 轮修复。并行、子 Agent、任意 shell 验证节点暂不支持，运行前会拒绝。</p>
+<section id="panel-task" class="tab-panel task-layout" hidden>
+<div class="task-form"><span class="eyebrow">TASK CARD</span><h1>这次要完成什么？</h1><p>导入 Issue 或填写任务，核对允许路径与验收要求。</p><div class="row"><input id="issue-url" aria-label="GitHub Issue URL" placeholder="https://github.com/owner/repo/issues/6"><button id="import-issue">导入 Issue</button></div>
+<label>任务标题<input id="task-title"></label><label>目标与任务卡<textarea id="task-body" rows="8"></textarea></label><label>允许修改的相对路径（每行一个目录或文件）<textarea id="task-scope" rows="3" placeholder="tools/studio&#10;tests"></textarea></label><label>验收合同<textarea id="task-acceptance" rows="6"></textarea></label>
+<label class="delivery-choice"><input id="delivery" type="checkbox">允许本次受审候选提交、正常推送并创建或更新开发 PR；不合并 main。</label><button id="prepare" class="primary">检查配置并生成授权预览</button></div>
+<aside class="authorization-panel"><span class="eyebrow">REVIEW BEFORE RUN</span><h2>本次执行合同</h2><p>先核对工作流、测试和权限，再由你确认启动。修改配置后需要重新生成预览。</p><div id="preview"></div></aside>
 </section>
-<section>
-<h2>Agent 与原生会话</h2><button id="refresh-sessions">刷新发现</button>
-<p>本软件管理的会话可按项目、角色和 UUID 明确恢复。外部会话仅展示发现结果，不根据文件更新时间推断运行状态。归档与删除暂不支持。</p>
-<div id="sessions"></div>
-</section>
-<section>
-<h2>任务卡与当次授权</h2>
-<div class="row"><input id="issue-url" placeholder="https://github.com/owner/repo/issues/6"><button id="import-issue">导入 Issue</button></div>
-<label>任务标题<input id="task-title"></label>
-<label>目标与任务卡<textarea id="task-body" rows="7"></textarea></label>
-<label>允许修改的相对路径（每行一个目录或文件）<textarea id="task-scope" rows="3" placeholder="tools/studio&#10;tests"></textarea></label>
-<label>验收合同<textarea id="task-acceptance" rows="6"></textarea></label>
-<label><input id="delivery" type="checkbox">允许本次受审候选 commit、正常 push 到当前开发分支并创建或更新绑定 PR；不授权合并 main。</label>
-<button id="prepare">生成授权预览</button>
-<div id="preview"></div>
-</section>
-<section>
-<div class="row"><h2>运行监控</h2><select id="runs"><option value="">选择运行</option></select><button id="refresh-runs">刷新</button><button id="resume">核验并恢复</button><button id="cancel">停止本次运行</button></div>
-<p id="run-title">未选择运行</p><div id="monitor"></div>
-</section>
-</main>
-</body></html>
+<section id="panel-runs" class="tab-panel" hidden><div class="page-heading"><div><span class="eyebrow">EXECUTION</span><h1>进度与结果</h1></div><div class="row"><select id="runs" aria-label="选择运行"><option value="">选择运行</option></select><button id="refresh-runs">刷新</button><button id="resume">核验并恢复</button><button id="cancel" class="danger">停止运行</button></div></div><p id="run-title">未选择运行</p><div id="monitor"></div></section>
+<section id="panel-sessions" class="tab-panel" hidden><div class="page-heading"><div><span class="eyebrow">NATIVE SESSIONS</span><h1>Agent 与原生会话</h1></div><button id="refresh-sessions">刷新发现</button></div><p>托管会话按项目、角色和 UUID 恢复。外部会话仅显示“发现”，不推断活性；归档和删除暂不支持。</p><div id="sessions"></div></section>
+</main></body></html>

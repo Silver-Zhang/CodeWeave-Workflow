@@ -62,6 +62,8 @@ def specifications(node, profiles):
 
 def specification(node):
     c = node['config']
+    if c['min_cases'] != 1 or c['max_skipped'] != 0:
+        raise Invalid('A syntax/baseline command is exactly one check with no skipped checks')
     target = relative(c['target'])
     if c['pattern']:
         raise Invalid('These verification profiles do not use a test discovery pattern')

@@ -29,6 +29,16 @@ class ParentAssertionTests(unittest.TestCase):
     def test_observable_output_assertion_is_counted_by_parent(self):
         r = self.run_case('import json,sys;value=json.load(sys.stdin);print(json.dumps(value*2))',84,'42')
         self.assertTrue(r['passed']); self.assertEqual(r['counts'],dict(tests=1,failures=0,errors=0,skipped=0))
+        self.assertEqual(r['assertion']['stdin'],'42')
+        self.assertEqual(r['assertion']['expected_json'],84)
+        self.assertIn(self.python,r['assertion']['dependency_sha256'])
+
+    def test_command_profile_cannot_pretend_multiple_cases_or_skips(self):
+        for key in ('min_cases','max_skipped'):
+            n=node('verifier');n['config'].update(profile='javascript',target='main.js')
+            n['config'][key]=2
+            with self.assertRaisesRegex(Invalid,'exactly one'):
+                specification(n)
 
     def test_candidate_forged_counts_are_data_not_test_results(self):
         r = self.run_case('print(\'{"tests":1000,"failures":0,"errors":0,"skipped":0}\')')

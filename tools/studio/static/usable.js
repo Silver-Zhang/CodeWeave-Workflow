@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id);
 const text = (tag, value, cls) => { const e = document.createElement(tag); e.textContent = value; if(cls)e.className=cls; return e; };
 const state = {workspace:null, document:null, identity:crypto.randomUUID(), version:0, saved:null, selected:null,
-  profiles:[], verificationProfiles:[], owned:[], drafts:[], run:null, runEpoch:0, workspaceEpoch:0, preview:null};
+  profiles:[], verificationProfiles:[], owned:[], drafts:[], run:null, runEpoch:0, workspaceEpoch:0, preview:null, history:[], historyIndex:0, loadEpoch:0, statusEpoch:0, runRequest:0, pollPending:null};
 const fragment = new URLSearchParams(location.hash.slice(1));
 if(fragment.has('token')) { sessionStorage.setItem('devflower-stable-token',fragment.get('token')); history.replaceState(null,'',location.pathname); }
 const token = sessionStorage.getItem('devflower-stable-token') || '';
@@ -12,23 +12,31 @@ async function api(path,data) {
   const value=await response.json(); if(!response.ok)throw new Error(value.error||'请求失败'); return value;
 }
 function act(id, fn) { $(id).addEventListener('click',async()=>{try{await fn();}catch(e){notice(e.message);}}); }
-function changed() { state.version++; state.preview=null; $('preview').replaceChildren(); $('save-state').textContent='当前改动未保存'; }
+function changed(record=true) {
+  state.version++;state.preview=null;$('preview').replaceChildren();$('save-state').textContent='当前改动未保存';
+  $('graph-status').textContent='编辑已改变，需重新校验';
+  if(record&&JSON.stringify(state.history[state.historyIndex])!==JSON.stringify(state.document)) {
+    state.history=state.history.slice(0,state.historyIndex+1);state.history.push(structuredClone(state.document));
+    if(state.history.length>100)state.history.shift();state.historyIndex=state.history.length-1;
+  }
+  $('undo').disabled=state.historyIndex<=0;$('redo').disabled=state.historyIndex>=state.history.length-1;
+}
 function options(select, values, selected) {
   select.replaceChildren(...values.map(([value,label])=>{ const e=text('option',label);e.value=value;return e;}));
   if(selected!==undefined)select.value=selected;
 }
 function loadDocument(document,saved=null) {
   state.document=structuredClone(document);state.identity=crypto.randomUUID();state.version=0;state.saved=saved;state.selected=null;
-  state.preview=null;$('preview').replaceChildren();$('workflow-name').value=document.name;$('max-rounds').value=document.max_rounds;
-  $('save-state').textContent=saved?'已加载保存版本':'新草稿未保存';draw();
+  state.history=[structuredClone(document)];state.historyIndex=0;state.loadEpoch++;state.preview=null;$('preview').replaceChildren();$('graph-status').textContent='尚未校验当前编辑版本';$('workflow-name').value=document.name;$('max-rounds').value=document.max_rounds;
+  $('save-state').textContent=saved?'已加载保存版本':'新草稿未保存';draw();canvas.fit();
 }
 async function newDraft() {
-  const requested=$('template').value, identity=state.identity;
+  const requested=$('template').value, identity=state.identity, version=state.version, request=++state.loadEpoch;
   const document=await api('/api/template?kind='+encodeURIComponent(requested));
-  if(identity!==state.identity)return; loadDocument(document);
+  if(identity!==state.identity||version!==state.version||request!==state.loadEpoch)return; loadDocument(document);
 }
 async function status() {
-  const value=await api('/api/status');state.profiles=value.profiles;state.verificationProfiles=value.verification_profiles||[];state.drafts=value.drafts;
+  const epoch=++state.statusEpoch,value=await api('/api/status');if(epoch!==state.statusEpoch)return;state.profiles=value.profiles;state.verificationProfiles=value.verification_profiles||[];state.drafts=value.drafts;
   $('trust').textContent='Stable '+value.stable.slice(0,16);
   options($('recent'),[['','最近工作区'],...value.workspaces.map(w=>[w.id,w.path])],state.workspace?.id);
   options($('drafts'),[['','已保存流程'],...value.drafts.map(d=>[d.id,d.document.name])],state.saved?.id);
@@ -38,7 +46,7 @@ async function status() {
 function setWorkspace(workspace) {
   state.workspace=workspace;state.workspaceEpoch++;state.owned=[];state.preview=null;state.run=null;state.runEpoch++;
   $('workspace-path').value=workspace.path;$('workspace-info').textContent=`${workspace.path} · ${workspace.branch} · ${workspace.head}`;
-  $('sessions').replaceChildren();$('preview').replaceChildren();$('monitor').replaceChildren();$('run-title').textContent='未选择运行';status().catch(e=>notice(e.message));
+  $('sessions').replaceChildren();$('preview').replaceChildren();$('monitor').replaceChildren();$('run-title').textContent='未选择运行';sessionStorage.setItem('devflower-workspace',workspace.id);status().catch(e=>notice(e.message));sessions().catch(e=>notice(e.message));
 }
 async function saveDraft() {
   const identity=state.identity, version=state.version, document=structuredClone(state.document), saved=state.saved?{...state.saved}:null;
@@ -46,19 +54,25 @@ async function saveDraft() {
   if(identity===state.identity) {
     // A concurrent response must not replace a newer confirmed revision.
     const stillExpected=state.saved?.revision===(saved?.revision);
-    if(stillExpected||!state.saved&&!saved)state.saved={id:result.id,revision:result.revision};
-    $('save-state').textContent=version===state.version?'该快照已保存':'请求发出时的快照已保存；当前仍有未保存改动';
+    if(stillExpected||!state.saved&&!saved){state.saved={id:result.id,revision:result.revision};$('save-state').textContent=version===state.version?'该快照已保存':'请求发出时的快照已保存；当前仍有未保存改动';}
   }
   await status();
 }
 function field(parent,label,key,value,type='text',choices=null) {
+  const nodeId=state.selected;
   const labelNode=text('label',label); const input=document.createElement(choices?'select':type==='textarea'?'textarea':'input');
-  if(choices)options(input,choices,value);else if(type==='checkbox'){input.type='checkbox';input.checked=value;}else{input.type=type;input.value=value;}
+  if(choices)options(input,choices,value);else if(type==='checkbox'){input.type='checkbox';input.checked=value;}else{if(input.tagName==='INPUT')input.type=type;input.value=value;}
   input.dataset.field=key;labelNode.append(input);parent.append(labelNode);
   input.addEventListener('change',()=>{
-    const n=state.document.nodes.find(n=>n.id===state.selected);if(!n)return;
+    const n=state.document.nodes.find(n=>n.id===nodeId);if(!n||state.selected!==nodeId)return;
     const result=type==='checkbox'?input.checked:type==='number'?Number(input.value):input.value;
-    if(key==='label')n.label=result;else n.config[key]=result;changed();draw(false);if(n.type==='verifier'&&key==='profile')configure();
+    if(key==='label')n.label=result;else n.config[key]=result;
+    if(['developer','reviewer','planner'].includes(n.type)&&['provider','profile'].includes(key)){
+      const p=state.profiles.find(p=>key==='profile'?p.id===result:p.provider===result);
+      if(p){Object.assign(n.config,{profile:p.id,provider:p.provider,model:'unknown',effort:'unknown',session:'new',tools:p.provider==='codex'?['native']:['Read','Glob','Grep','Bash']});}
+    }
+    if(n.type==='verifier'&&key==='profile')Object.assign(n.config,{target:result==='json-assertions'?(state.verificationProfiles[0]?.id||'default'):result==='javascript'?'tools/studio/static/usable.js':'tools/devflower.py',pattern:'',min_cases:1,max_skipped:0});
+    changed();draw(false);if(['provider','profile'].includes(key))configure();
   });return input;
 }
 function configure() {
@@ -67,8 +81,9 @@ function configure() {
   parent.append(text('strong',n.type+' · '+n.id));field(parent,'显示名称','label',n.label);
   const c=n.config;
   if(['developer','reviewer','planner'].includes(n.type)) {
-    field(parent,'Provider','provider',c.provider,'text',[['codex','Codex'],['claude','Claude Code']]);
-    field(parent,'运行配置','profile',c.profile,'text',state.profiles.map(p=>[p.id,`${p.provider} · ${p.model} / ${p.effort}`]));
+    const providers=n.type==='developer'?['codex']:n.type==='reviewer'?['claude']:['codex','claude'];
+    field(parent,'Provider','provider',c.provider,'text',providers.map(p=>[p,p==='codex'?'Codex':'Claude Code']));
+    field(parent,'运行配置','profile',c.profile,'text',state.profiles.filter(p=>providers.includes(p.provider)).map(p=>[p.id,`${p.provider} · ${p.model} / ${p.effort}`]));
     const role=n.type==='developer'?'implementer':n.type;
     field(parent,'原生会话','session',c.session,'text',[['new','新建独立原生会话'],...state.owned.filter(s=>s.role===role&&s.provider===c.provider&&s.resume).map(s=>[s.id,s.id])]);
     field(parent,'请求模型（unknown 使用已批准配置）','model',c.model);
@@ -76,7 +91,7 @@ function configure() {
     field(parent,'系统职责','responsibility',c.responsibility,'textarea');
     field(parent,'项目背景','background',c.background,'textarea');
     field(parent,'步骤预算（秒，30–3600）','timeout_seconds',c.timeout_seconds,'number');
-    field(parent,'子 Agent（当前执行器不支持，启用将拒绝运行）','subagents',c.subagents,'checkbox');
+    field(parent,'子 Agent（当前执行器不支持）','subagents',c.subagents,'checkbox').disabled=true;
     parent.append(text('p','允许工具'));
     for(const tool of c.provider==='codex'?['native']:['Read','Glob','Grep','Bash','Write','Edit']) {
       const label=text('label',tool),input=document.createElement('input');input.type='checkbox';input.checked=c.tools.includes(tool);label.prepend(input);parent.append(label);
@@ -92,33 +107,54 @@ function configure() {
   } else if(n.type==='human_gate')field(parent,'实际人工确认问题','question',c.question,'textarea');
   else parent.append(text('p','交付权限在当次授权预览中确认；改连线不能绕过测试与独立审核。'));
 }
+const canvas = new WorkflowCanvas($('canvas'), {
+  select:id=>{state.selected=id;configure();}, change:()=>changed(), connect:addEdge,
+  remove:edge=>removeSelection(edge), message:notice, viewport:percent=>$('zoom-level').textContent=percent+'%'
+});
+function tab(name) {
+  for(const e of document.querySelectorAll('.tab-panel'))e.hidden=e.id!=='panel-'+name;
+  for(const e of document.querySelectorAll('[data-tab]'))e.setAttribute('aria-selected',String(e.dataset.tab===name));
+}
+for(const e of document.querySelectorAll('[data-tab],[data-go]'))e.addEventListener('click',()=>tab(e.dataset.tab||e.dataset.go));
+function addEdge(source,target,on) {
+  if(source===target)throw new Error('不能连接到自身');
+  if(on==='repair'&&(state.document.nodes.find(n=>n.id===source)?.type!=='reviewer'||state.document.nodes.find(n=>n.id===target)?.type!=='developer')){
+    notice('修复回路必须从 Reviewer 连接到 Developer');return;
+  }
+  if(state.document.edges.some(e=>e.source===source&&e.target===target&&e.on===on)){notice('此连接已存在');return;}
+  state.document.edges.push({source,target,on});changed();draw(false);
+}
+function removeSelection(edge=null) {
+  if(edge!==null){state.document.edges.splice(edge,1);canvas.edgeSelection=null;}
+  else {state.document.nodes=state.document.nodes.filter(n=>n.id!==state.selected);state.document.edges=state.document.edges.filter(e=>e.source!==state.selected&&e.target!==state.selected);state.selected=null;}
+  changed();draw();
+}
+async function addNode(kind) {
+  const identity=state.identity,n=await api('/api/node?kind='+encodeURIComponent(kind));if(identity!==state.identity)return;
+  n.id=n.type+'-'+crypto.randomUUID().slice(0,8);
+  n.x=Math.round(Math.max(0,Math.min(10000,canvas.view.x+canvas.view.w/2-105)));
+  n.y=Math.round(Math.max(0,Math.min(10000,canvas.view.y+canvas.view.h/2-41)));
+  state.document.nodes.push(n);state.selected=n.id;changed();draw();
+}
 function draw(config=true) {
-  if(!state.document)return;
-  const svg=$('canvas'), ns='http://www.w3.org/2000/svg';svg.replaceChildren();
-  const create=(tag,attrs)=>{const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;};
-  const nodes=new Map(state.document.nodes.map(n=>[n.id,n]));
-  for(const edge of state.document.edges) {
-    const a=nodes.get(edge.source),b=nodes.get(edge.target);if(!a||!b)continue;
-    svg.append(create('line',{x1:a.x+100,y1:a.y+35,x2:b.x+100,y2:b.y+35,class:edge.on==='repair'?'repair':''}));
-  }
-  for(const n of nodes.values()) {
-    const group=create('g',{class:'node'+(n.id===state.selected?' selected':''),transform:`translate(${n.x},${n.y})`});
-    group.append(create('rect',{width:200,height:70,rx:8}));
-    const label=create('text',{x:12,y:29});label.textContent=n.label.slice(0,22);group.append(label);
-    const kind=create('text',{x:12,y:51});kind.textContent=n.type;group.append(kind);svg.append(group);
-    group.addEventListener('pointerdown',event=>{
-      state.selected=n.id;configure();
-      const start={x:event.clientX,y:event.clientY,nx:n.x,ny:n.y};group.setPointerCapture(event.pointerId);
-      const move=e=>{n.x=Math.round(Math.max(0,Math.min(10000,start.nx+(e.clientX-start.x)*1100/svg.clientWidth)));n.y=Math.round(Math.max(0,Math.min(10000,start.ny+(e.clientY-start.y)*550/svg.clientHeight)));group.setAttribute('transform',`translate(${n.x},${n.y})`);};
-      const up=()=>{group.removeEventListener('pointermove',move);group.removeEventListener('pointerup',up);changed();draw(false);};
-      group.addEventListener('pointermove',move);group.addEventListener('pointerup',up);
-    });
-  }
+  if(!state.document)return;canvas.render(state.document,state.selected);
   const choices=state.document.nodes.map(n=>[n.id,n.label+' ('+n.id+')']);
   options($('edge-source'),choices);options($('edge-target'),choices);
-  $('edges').replaceChildren(...state.document.edges.map((e,i)=>{const li=text('li',`${e.source} → ${e.target} · ${e.on}`),button=text('button','删除连线');button.addEventListener('click',()=>{state.document.edges.splice(i,1);changed();draw(false);});li.append(button);return li;}));
+  $('edges').replaceChildren(...state.document.edges.map((e,i)=>{const li=text('li',`${e.source} → ${e.target} · ${e.on}`),button=text('button','删除连线');button.addEventListener('click',()=>removeSelection(i));li.append(button);return li;}));
+  $('undo').disabled=state.historyIndex<=0;$('redo').disabled=state.historyIndex>=state.history.length-1;
   if(config)configure();
 }
+function undo(delta) {
+  const index=state.historyIndex+delta;if(index<0||index>=state.history.length)return;
+  canvas.cancel();state.historyIndex=index;state.document=structuredClone(state.history[index]);state.selected=null;
+  changed(false);$('workflow-name').value=state.document.name;$('max-rounds').value=state.document.max_rounds;draw();
+}
+act('undo',()=>undo(-1));act('redo',()=>undo(1));act('zoom-in',()=>canvas.zoom(1.2));act('zoom-out',()=>canvas.zoom(1/1.2));act('fit',()=>canvas.fit());
+for(const button of document.querySelectorAll('[data-kind]'))button.addEventListener('click',()=>addNode(button.dataset.kind).catch(e=>notice(e.message)));
+document.addEventListener('keydown',e=>{
+  if(e.target.closest('input,textarea,select')||$('panel-workflow').hidden)return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo(e.shiftKey?1:-1);}
+});
 async function sessions() {
   if(!state.workspace)throw new Error('先打开工作区');
   const epoch=state.workspaceEpoch, value=await api('/api/sessions?workspace='+state.workspace.id);
@@ -159,12 +195,12 @@ async function prepare() {
     if(state.preview!==value)return;button.disabled=true;
     try{
       const result=await api('/api/authorize-run',{permit:value.id,sha256:value.sha256,answers:answers.map(a=>a.value)});
-      state.preview=null;parent.replaceChildren(text('p','已使用本次授权，运行 '+result.run_id));selectRun(result.run_id);await status();
+      state.preview=null;parent.replaceChildren(text('p','已使用本次授权，运行 '+result.run_id));tab('runs');selectRun(result.run_id);await status();
     }catch(e){notice(e.message);parent.append(text('p','授权可能已消费，请检查运行列表；不要盲目重试。'));}
   });parent.append(button);
 }
 function selectRun(run) {
-  state.run=run||null;state.runEpoch++;$('monitor').replaceChildren();$('run-title').textContent=run?'读取 '+run+'…':'未选择运行';poll();
+  state.run=run||null;state.runEpoch++;state.pollPending=null;if(run)sessionStorage.setItem('devflower-run',run);$('monitor').replaceChildren();$('run-title').textContent=run?'读取 '+run+'…':'未选择运行';poll();
 }
 function renderSnapshot(run,snapshot) {
   $('run-title').textContent=`${run} · ${snapshot.state||'UNKNOWN'} · round ${snapshot.round??'unknown'}`;
@@ -211,10 +247,12 @@ function renderSnapshot(run,snapshot) {
   }
 }
 async function poll() {
-  const run=state.run;if(!run)return;const epoch=++state.runEpoch;
-  try{const snapshot=await api('/api/run?id='+encodeURIComponent(run));if(state.run!==run||epoch!==state.runEpoch)return;
+  const run=state.run;if(!run)return;const epoch=state.runEpoch,key=run+':'+epoch;
+  if(state.pollPending===key)return;state.pollPending=key;const request=++state.runRequest;
+  try{const snapshot=await api('/api/run?id='+encodeURIComponent(run));if(state.run!==run||epoch!==state.runEpoch||request!==state.runRequest)return;
     if((snapshot.run_id||snapshot.id)!==run)throw new Error('运行快照身份不匹配');renderSnapshot(run,snapshot);
-  }catch(e){if(state.run!==run||epoch!==state.runEpoch)return;$('run-title').textContent=run+' · 状态未确认';$('monitor').replaceChildren(text('p',e.message,'error'));}
+  }catch(e){if(state.run!==run||epoch!==state.runEpoch||request!==state.runRequest)return;$('run-title').textContent=run+' · 状态未确认';$('monitor').replaceChildren(text('p',e.message,'error'));}
+  finally{if(request===state.runRequest)state.pollPending=null;}
 }
 act('open-workspace',async()=>{const epoch=++state.workspaceEpoch;const w=await api('/api/workspace',{path:$('workspace-path').value});if(epoch===state.workspaceEpoch)setWorkspace(w);});
 $('recent').addEventListener('change',()=>{const w=state.workspaces.find(w=>w.id===$('recent').value);if(w)setWorkspace(w);});
@@ -222,10 +260,13 @@ act('new-draft',newDraft);act('save',saveDraft);
 $('drafts').addEventListener('change',()=>{const d=state.drafts.find(d=>d.id===$('drafts').value);if(d)loadDocument(d.document,{id:d.id,revision:d.revision});});
 $('workflow-name').addEventListener('input',()=>{state.document.name=$('workflow-name').value;changed();});
 $('max-rounds').addEventListener('change',()=>{state.document.max_rounds=Number($('max-rounds').value);changed();});
-act('add-node',async()=>{const identity=state.identity,n=await api('/api/node?kind='+$('add-kind').value);if(identity!==state.identity)return;n.id=n.type+'-'+crypto.randomUUID().slice(0,8);n.x=100;n.y=200;state.document.nodes.push(n);state.selected=n.id;changed();draw();});
-act('delete-node',()=>{state.document.nodes=state.document.nodes.filter(n=>n.id!==state.selected);state.document.edges=state.document.edges.filter(e=>e.source!==state.selected&&e.target!==state.selected);state.selected=null;changed();draw();});
-act('connect',()=>{state.document.edges.push({source:$('edge-source').value,target:$('edge-target').value,on:$('edge-on').value});changed();draw(false);});
-act('compile',async()=>{const identity=state.identity,version=state.version,p=await api('/api/compile',{document:state.document});if(identity===state.identity&&version===state.version)notice('可执行顺序：'+p.order.join(' → '));});
+act('add-node',()=>addNode($('add-kind').value));
+act('delete-node',()=>removeSelection(canvas.edgeSelection));
+act('connect',()=>addEdge($('edge-source').value,$('edge-target').value,$('edge-on').value));
+act('compile',async()=>{const identity=state.identity,version=state.version;
+  try{const p=await api('/api/compile',{document:state.document});if(identity===state.identity&&version===state.version){$('graph-status').textContent='顺序校验通过 · '+p.order.length+' 个节点';notice('可执行顺序：'+p.order.join(' → '));}}
+  catch(e){if(identity===state.identity&&version===state.version){$('graph-status').textContent='不能执行：'+e.message;throw e;}}
+});
 act('refresh-sessions',sessions);act('refresh-runs',status);
 act('import-issue',async()=>{const epoch=state.workspaceEpoch,url=$('issue-url').value,v=await api('/api/issue',{url});if(epoch!==state.workspaceEpoch||url!==$('issue-url').value)return;$('task-title').value=v.title;$('task-body').value=v.body;$('task-acceptance').value=v.body;state.preview=null;$('preview').replaceChildren();notice('已导入真实 Issue，请核对允许路径与验收文本。');});
 for(const id of ['task-title','task-body','task-scope','task-acceptance','issue-url','delivery'])$(id).addEventListener('input',()=>{state.preview=null;$('preview').replaceChildren();});
@@ -233,4 +274,4 @@ act('prepare',prepare);$('runs').addEventListener('change',()=>selectRun($('runs
 act('resume',async()=>{if(!state.run)throw new Error('选择运行');await api('/api/resume',{run_id:state.run});await poll();});
 act('cancel',async()=>{if(!state.run)throw new Error('选择运行');await api('/api/cancel',{run_id:state.run});await poll();});
 setInterval(poll,2000);
-(async()=>{try{await status();await newDraft();notice('Stable 身份已核验。打开工作区开始。');}catch(e){notice(e.message);}})();
+(async()=>{try{await status();await newDraft();const workspace=state.workspaces.find(w=>w.id===sessionStorage.getItem('devflower-workspace'));if(workspace){setWorkspace(await api('/api/workspace',{path:workspace.path}));const run=sessionStorage.getItem('devflower-run');if(run){await status();if([...$('runs').options].some(o=>o.value===run)){$('runs').value=run;selectRun(run);}}}notice('Stable 身份已核验。配置工作流后进入任务与运行。');}catch(e){notice(e.message);}})();
