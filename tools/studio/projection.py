@@ -14,11 +14,11 @@ import sqlite3
 import time
 from .graph import digest, from_task
 
-STATES = {'CREATED', 'PREFLIGHT', 'IMPLEMENTING', 'SNAPSHOTTING', 'VERIFYING', 'REVIEWING', 'GATING',
-          'READY', 'COMMITTING', 'LOCAL_COMMITTED', 'PUSHING', 'COMPLETED', 'BLOCKED', 'RECOVERING', 'CANCELLED', 'PARTIAL_DELIVERY'}
-PHASE = {'CREATED': 'authorization', 'PREFLIGHT': 'authorization', 'IMPLEMENTING': 'implementer',
+STATES = {'CREATED', 'PREFLIGHT', 'PLANNING', 'IMPLEMENTING', 'SNAPSHOTTING', 'VERIFYING', 'REVIEWING', 'GATING',
+          'READY', 'AWAITING_HUMAN', 'COMMITTING', 'LOCAL_COMMITTED', 'PUSHING', 'COMPLETED', 'BLOCKED', 'RECOVERING', 'CANCELLED', 'PARTIAL_DELIVERY'}
+PHASE = {'PLANNING': 'authorization', 'CREATED': 'authorization', 'PREFLIGHT': 'authorization', 'IMPLEMENTING': 'implementer',
          'SNAPSHOTTING': 'freeze', 'VERIFYING': 'verification', 'REVIEWING': 'reviewer',
-         'GATING': 'gate', 'READY': 'gate', 'COMMITTING': 'delivery', 'PUSHING': 'delivery',
+         'GATING': 'gate', 'READY': 'gate', 'AWAITING_HUMAN': 'gate', 'COMMITTING': 'delivery', 'PUSHING': 'delivery',
          'LOCAL_COMMITTED': 'delivery', 'COMPLETED': 'delivery', 'PARTIAL_DELIVERY': 'delivery'}
 ACTIVE = {'IMPLEMENTING', 'REVIEWING', 'VERIFYING', 'COMMITTING', 'PUSHING'}
 TOKEN = re.compile(r'[A-Za-z0-9_.:/@\[\]-]{1,160}\Z')
@@ -94,7 +94,7 @@ class Reader:
         finally:
             db.close()
 
-    def snapshot(self, run):
+    def snapshot(self, run, *, _detail=False):
         if not isinstance(run, str) or not re.fullmatch(r'[a-f0-9]{32}', run):
             raise Unavailable('Invalid run ID')
         db = self.connect()
@@ -109,9 +109,10 @@ class Reader:
             process = json.loads(op['data']) if op else {}
             live = liveness(process.get('process')) if op and op['status'] == 'RUNNING' else 'unconfirmed'
             # Explicit identities only. Equal argv is legal and cannot identify a verifier.
-            rows = db.execute("SELECT id,kind,status,data FROM operations WHERE run=? AND kind IN ('PROCESS','VERIFICATION') AND length(data)<8388608 ORDER BY rowid DESC LIMIT 1000", (run,)).fetchall()
+            rows = db.execute("SELECT id,kind,status,data FROM operations WHERE run=? AND kind IN ('PROCESS','VERIFICATION','WORKER','AGENT_REQUEST') AND length(data)<8388608 ORDER BY rowid DESC LIMIT 1000", (run,)).fetchall()
             operations = [{**dict(r), 'data': json.loads(r['data'])} for r in rows]
-            return project(run, state, data, events, live, operations=operations)
+            value = project(run, state, data, events, live, operations=operations)
+            return (value, data, operations) if _detail else value
         finally:
             db.close()
 

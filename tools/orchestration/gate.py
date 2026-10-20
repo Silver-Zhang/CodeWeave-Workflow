@@ -52,6 +52,8 @@ def gate(run, round_number, candidate, acceptance, required, verification, imple
     mandatory = lambda f: f['severity'] in ('P0', 'P1') or f['severity'] == 'P2' and bool(set(f['contract_ids']) & set(required))
     if any(mandatory(f) and f['status'] != 'CLOSED' for f in findings.values()):
         raise Blocked('open required finding')
+    if any(mandatory(f) and (not f['evidence_refs'] or any(ref not in evidence_ids for ref in f['evidence_refs'])) for f in findings.values()):
+        raise Blocked('closed required finding lacks known evidence')
     for old in history:
         for f in old['findings']:
             if mandatory(f) and f['status'] != 'CLOSED' and (f['id'] not in findings or findings[f['id']]['status'] != 'CLOSED' or not findings[f['id']]['evidence_refs']):

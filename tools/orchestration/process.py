@@ -7,6 +7,7 @@ from pathlib import Path
 import selectors
 import signal
 import subprocess
+import tempfile
 import time
 from .common import Blocked, clean_env
 from .store import alive, process_identity
@@ -40,15 +41,40 @@ def stop(record):
 
 
 def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
-            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock', context=None):
+            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock', context=None, readonly_files=()):
+    # Native session HOME persists; scratch is short enough for AF_UNIX sockets
+    # and belongs to exactly one invocation. Cleanup cannot erase sessions.
+    parent_scratch = tempfile.gettempdir()
+    if len(os.fsencode(parent_scratch)) > 50:
+        parent_scratch = '/tmp'
+    with tempfile.TemporaryDirectory(prefix='dfp-', dir=parent_scratch) as scratch:
+        return _execute(argv, cwd, home, read, write, timeout, cap, store, run,
+                        input_text, env_extra, isolate, backend, context, readonly_files, scratch)
+
+
+def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
+             input_text, env_extra, isolate, backend, context, readonly_files, scratch):
     if not argv or not isinstance(argv, list):
         raise Blocked('argv required')
     home = Path(home)
     home.mkdir(parents=True, exist_ok=True)
-    (home / 'tmp').mkdir(exist_ok=True)
     env = clean_env(home)
     env.update(env_extra or {})
+    env['TMPDIR'] = scratch
     parent = os.getpid()
+    if readonly_files and backend != 'bwrap':
+        raise Blocked('read-only credential overlays require bwrap')
+    overlays = []
+    for source, relative in readonly_files:
+        from .common import relative as safe_relative
+        safe_relative(relative)
+        source, dest = Path(source), home / relative
+        if not source.is_absolute() or not source.is_file() or source.is_symlink():
+            raise Blocked('credential overlay must name a regular operator file')
+        if not dest.resolve().is_relative_to(home.resolve()) or dest.is_symlink():
+            raise Blocked('credential overlay escapes dedicated HOME')
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        overlays.append((source, dest))
     if backend == 'bwrap':
         wrapped = ['/usr/bin/bwrap', '--die-with-parent', '--unshare-user', '--unshare-pid',
                    '--unshare-ipc', '--unshare-uts', '--cap-drop', 'ALL', '--proc', '/proc', '--dev', '/dev',
@@ -58,10 +84,12 @@ def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
         for p in paths:
             if Path(p).exists():
                 wrapped += ['--ro-bind', str(Path(p).resolve()), str(p)]
-        for p in [str(home), *write]:
+        for p in [str(home), scratch, *write]:
             wrapped += ['--bind', str(Path(p).resolve()), str(p)]
+        for source, dest in overlays:
+            wrapped += ['--ro-bind', str(source), str(dest)]
         command = [str(Path(argv[0]).resolve()) if Path(argv[0]).is_absolute() else argv[0], *argv[1:]]
-        argv = wrapped + ['--remount-ro', '/', '--chdir', str(cwd), '--', *command]
+        argv = wrapped + ['--remount-ro', '/', '--remount-ro', '/tmp', '--chdir', str(cwd), '--', *command]
     elif backend != 'landlock':
         raise Blocked('unknown isolation backend')
 
@@ -70,7 +98,7 @@ def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
         if sandbox.LIBC.prctl(1, signal.SIGKILL, 0, 0, 0) or os.getppid() != parent:
             os._exit(125)
         if isolate and backend == 'landlock':
-            sandbox.enforce(sandbox.runtime_paths() + list(read), ['/dev/null', str(home)] + list(write))
+            sandbox.enforce(sandbox.runtime_paths() + list(read), ['/dev/null', str(home), scratch] + list(write))
 
     op = store.intent(run, 'PROCESS', {'argv': argv, 'cwd': str(cwd), 'context': context or {}}) if store else None
     proc = subprocess.Popen(argv, cwd=cwd, env=env, stdin=subprocess.PIPE,

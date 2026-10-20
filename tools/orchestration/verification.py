@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from .common import Blocked, digest, tree_hash
+from .common import Blocked, canonical, digest, tree_hash, save
 from .process import execute
 
 
@@ -52,18 +52,48 @@ def verify(config, candidate, artifacts, run, round_number, candidate_hash, acce
         result_path = artifacts / (digest(spec['id'].encode())[:16] + ('.xml' if spec['result_format'] == 'junit' else '.json'))
         # No stale result can pass. A unique directory is allocated for each round.
         argv = [x.replace('{artifacts}', str(artifacts)).replace('{result}', str(result_path)) for x in spec['argv']]
-        if not any(str(result_path) in x for x in argv):
-            raise Blocked('verification argv must bind {result}')
+        runner = spec.get('runner')
+        for path, expected in spec.get('dependency_sha256', {}).items():
+            if digest(Path(path).read_bytes()) != expected:
+                raise Blocked('Approved verifier dependency changed')
         binding = {'run_id': run, 'round': round_number, 'verification_id': spec['id'],
                    'candidate_sha256': candidate_hash, 'acceptance_sha256': acceptance_hash}
         operation = store.intent(run, 'VERIFICATION', binding) if store else None
         try:
-            process, _, _ = execute(argv, candidate, artifacts / 'home', read=[str(candidate)], write=[str(artifacts)],
+            if runner not in ('json-assertion', 'exit-code'):
+                raise Blocked('Execution requires parent-owned assertions; legacy candidate-reported counters are unsupported')
+            process, stdout, _ = execute(argv, candidate, artifacts / 'home',
+                read=[str(candidate), *spec.get('read_paths', [])], input_text=spec.get('stdin', ''),
+                write=[],
                 timeout=config['policy']['limits']['step_timeout_seconds'], cap=config['policy']['limits']['max_log_bytes'],
-                store=store, run=run, context={**binding, 'verification_operation_id': operation})
+                store=store, run=run, backend=config.get('verification_isolation', 'landlock'),
+                context={**binding, 'verification_operation_id': operation})
             # Exit is observed before validation, and is never a PASS signal.
             if store:
                 store.finish(operation, 'EXECUTED', process_operation_id=process['operation_id'])
+            if runner:
+                if runner == 'json-assertion':
+                    matched = False
+                    try:
+                        def unique(pairs):
+                            obj = {}
+                            for key, value in pairs:
+                                if key in obj:
+                                    raise ValueError('duplicate JSON key')
+                                obj[key] = value
+                            return obj
+                        actual = json.loads(stdout, object_pairs_hook=unique, parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
+                        matched = canonical(actual) == canonical(spec['expected_json'])
+                    except (ValueError, TypeError, UnicodeError):
+                        pass
+                    counter = dict(tests=1, failures=int(process['exit'] != 0 or not matched), errors=0, skipped=0)
+                elif runner == 'exit-code':
+                    counter = dict(tests=1, failures=int(process['exit'] != 0), errors=0, skipped=0)
+                else:
+                    raise Blocked('Unknown trusted verification runner')
+                # Only the Controller can reach this result path; candidate code
+                # received neither the path nor write access to its directory.
+                save(result_path, counter)
             counter = counts(result_path, spec['result_format'])
             passed = process['exit'] == 0 and not any(process[k] for k in ('timeout', 'overflow', 'cancelled'))
             passed = passed and counter['tests'] >= spec['min_cases'] and counter['skipped'] <= spec['max_skipped']

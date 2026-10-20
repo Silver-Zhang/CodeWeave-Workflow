@@ -234,19 +234,15 @@ class IntegrationRegressions(Fixture):
         p = subprocess.run(['git', '-C', str(self.source), 'rev-parse', '--verify', '--quiet', 'refs/heads/unborn-user-branch'])
         self.assertNotEqual(p.returncode, 0)
 
-    def test_DF_R03_shipped_policy_uses_actual_result_binding(self):
+    def test_DF_R03_historical_candidate_reporter_is_not_executable(self):
         policy = load(Path(__file__).resolve().parents[1] / 'docs/design/v0.2-a/examples/workflow-policy.example.json')
-        spec = policy['verification'][0]
-        self.assertTrue(any('{result}' in value for value in spec['argv']))
-        # Exercise the actual verifier with the shipped arguments and a tiny
-        # fixture pytest stand-in, without requiring a downloaded dependency.
-        candidate = self.base / 'candidate';candidate.mkdir()
-        (candidate / 'pytest.py').write_text('import pathlib,sys; pathlib.Path(sys.argv[sys.argv.index("--junitxml")+1]).write_text(\'<testsuite tests="1"><testcase name="fixture"/></testsuite>\')\n')
+        self.assertTrue(any('{result}' in value for value in policy['verification'][0]['argv']))
         config = copy.deepcopy(self.config);config['policy'] = policy
-        spec['argv'][0] = sys.executable
-        results = verify(config, candidate, self.base / 'verification', 'fixture', 1, tree_hash(candidate), 'a'*64)
-        self.assertTrue(results[0]['passed'])
-        self.assertEqual(results[0]['counts']['tests'], 1)
+        candidate = self.base / 'candidate';candidate.mkdir()
+        with self.assertRaisesRegex(Blocked, 'parent-owned assertions'):
+            verify(config, candidate, self.base / 'verification', 'fixture', 1, tree_hash(candidate), 'a'*64)
+        # Failure occurs before any candidate subprocess can forge its old result.
+        self.assertFalse((self.base / 'verification' / 'home').exists())
 
     def test_DF_R03_demo_preparation_produces_real_valid_config(self):
         tool = Path(__file__).resolve().parents[1] / 'examples/orchestrator/prepare.py'

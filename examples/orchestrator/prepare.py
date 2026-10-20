@@ -29,9 +29,14 @@ def main():
     policy = load(Path(__file__).resolve().parents[2] / 'docs/design/v0.2-a/examples/workflow-policy.example.json')
     for role in policy['agents']:
         policy['agents'][role]['session_policy'] = 'new'
-    policy['required_contracts'] = ['clamp']
-    policy['verification'] = [{'id': 'clamp', 'argv': [sys.executable, 'verify_fixture.py', '{result}'],
-                               'result_format': 'controller-json', 'min_cases': 6, 'max_skipped': 0}]
+    python = str(Path(sys.executable).resolve())
+    cases = [(-5, 0), (0, 0), (1, 1), (9, 9), (10, 10), (17, 10)]
+    policy['verification'] = [dict(id='clamp-' + str(i), argv=[python, '-I', '-c',
+        'import json,runpy,sys;print(json.dumps(runpy.run_path("clamp.py")["clamp"](json.load(sys.stdin))))'],
+        stdin=json.dumps(value), expected_json=expected, read_paths=[],
+        dependency_sha256={python:digest(Path(python).read_bytes())}, runner='json-assertion',
+        result_format='controller-json', min_cases=1, max_skipped=0) for i, (value, expected) in enumerate(cases)]
+    policy['required_contracts'] = [case['id'] for case in policy['verification']]
     source = base / 'source'
     config = {'task_id': 'clamp-demo', 'project': args.project, 'source': str(source),
               'acceptance': str(base / 'acceptance.txt'),
@@ -39,7 +44,7 @@ def main():
               'scope': ['clamp.py'], 'excludes': [], 'policy': policy, 'bindings': bindings}
     # Inputs are validated before any files are written. New policy never resumes
     # a supplied UUID; subsequent rounds restore the exact captured role session.
-    config_check(config)
+    config_check(config, execution=True)
     for b in bindings.values():
         home = Path(b['home']).resolve()
         if home == base or base.is_relative_to(home):

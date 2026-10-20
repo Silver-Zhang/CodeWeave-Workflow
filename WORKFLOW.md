@@ -32,7 +32,7 @@ B 模式默认使用顺序双 Agent 执行：人确认任务、范围、合同�
 
 最多 5 轮审核，单步骤基础设施重试最多 2 次；同候选、同阻断集合连续两轮无新证据则停。认证/网络/权限/会话失败且不能安全恢复、未经批准的候选/配置/授权/合同变化、用户停止及预算耗尽均记录实际 BLOCKED/CANCELLED，不放宽判据或改写负面裁决。status/audit 只查询；cancel 停止本任务拥有的进程组，之后保留证据；resume 先检查真实状态再恢复，CANCELLED 不暗中重启。默认 READY 无交付；commit-only 为 LOCAL_COMMITTED（持久 ref），远端全部读回才为 COMPLETED，跨库部分交付单独记录。
 
-Controller 验收自身时使用独立固定外部监督流程，不使用待审 gate 自批。当前 Git 运行 backend 仅本地 bare remote；真实服务上的 PR、人工批准、main 集成及清理由获准的外部操作完成，不以文档流程冒称已自动实现这些远端操作。临时分支治理见 docs/BRANCHING.md。
+Controller 验收自身时使用独立固定外部监督流程，不使用待审 gate 自批。默认 v0.2-A CLI 的 Git backend 仍仅支持本地 bare remote；外部独立审核并固定的 Stable Studio 可使用另行配置的 GitHub 适配器，在当次实际人工授权及完整 gate 通过后正常 push 并创建绑定 PR。候选 Development 不能自行授予 Stable 身份。人工批准、main 集成及分支清理仍由获准的外部操作完成，详见 [Stable Studio](docs/USABLE.md)。临时分支治理见 docs/BRANCHING.md。
 
 状态是进度，不是裁决：`待设计/待决策/实施中/待验证/待复核/已完成/已关闭/阻塞`。允许“审核任务已完成，但结论 NEEDS CORRECTION”；不等于代码修复成功。用户验收与合并状态在 README §4 单列。
 
