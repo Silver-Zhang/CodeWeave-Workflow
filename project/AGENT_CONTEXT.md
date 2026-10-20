@@ -1,9 +1,7 @@
 # 接手入口
 
-本轮20261020_01_studio-v01-stabilization已完成，最终ACCEPT。先读STATUS.md和任务README；必要机器摘要在同目录evidence.json，原始证据在archives/studio-v01-stabilization-20261020/。源码Studio-stabilization/（flow/studio-mvp，ab6ea15）；DevFlower/保留Controller分支，Studio-validation/保留旧基线；自身记录仅records/project/。这些为同一DevFlower仓库的独立工作树。
+最新任务20261020_02_studio-v01-final-stability已完成，最终ACCEPT；ST-R04保存身份和ST-R05监控身份修复。先读STATUS和任务README。源码Studio-stabilization/（flow/studio-mvp，4636083），自身记录records/project/，原始证据archives/studio-v01-final-stability-20261020/。其他DevFlower工作树与旧任务完整保留。
 
-Codex实施、真实Claude Code通过已批准DeepSeek路由审核，请求max、resolved effort unknown。框架审核UUID ed0a5ce5-2478-4577-bf8b-ee05413a7f31，cwd=/home/workspace/DevFlower，第二轮明确resume；默认Claude历史已有指向专用HOME会话的符号链接，未迁移其他会话。该会话两轮均有真实终态；第1轮ACCEPT后被外部SELF-R01阻断，第2轮新候选ACCEPT且全部必需缺陷关闭。新Controller不批准自身。
+真实Claude Code通过DeepSeek路由审核，model deepseek-flash[1m]、请求max、resolved effort unknown；cwd=/home/workspace/DevFlower，同项目专用UUID ed0a5ce5-2478-4577-bf8b-ee05413a7f31明确resume。本轮1次正式审核ACCEPT、exit0。持久HOME仍为archives/studio-v01-stabilization-20261020/runtime/independent-reviewer，不能按临时目录清理；配置根、原生记录和准确恢复命令见最新任务README/session-binding记录。没有复制全部全局配置或其他项目会话。
 
-下一步仅按用户新指示处理PR #3的Draft/评审与依赖PR #2的人工合并。没有main合并、删分支、release或业务自动交付的追加授权。当前Git产品backend仍限本地bare remote；本次GitHub交付由授权外部步骤完成，不能推导未来任务永久许可。
-
-工作区职责：/home/workspace/DevFlower开发框架并保留自身project记录；/home/workspace/CodeWeave_dev的CodeWeave仓库与DevFlower project/codeweave实例均保留，未经授权不动。Studio v0.1任务完成即停止，不自动进入v0.2。
+技术冻结条件已满足；PR #3保持Draft和#2依赖。任何main合并、删除分支、release及真实业务交付仍需独立授权；PR #2不得随Studio审核自动合并。后续仅按用户新指示处理评审/合并顺序，不自动开发下一代，不修改CodeWeave/RMC或project/codeweave。

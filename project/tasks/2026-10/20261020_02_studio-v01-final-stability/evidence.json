@@ -1,0 +1,1236 @@
+{
+  "schema_version": 1,
+  "task_id": "20261020_02_studio-v01-final-stability",
+  "final_verdict": "ACCEPT",
+  "candidate": {
+    "candidate_sha256": "af66e5c0dc5b4f8855933c26834b9c2714eb1b03daf41a0d23e3a9d243e929b0",
+    "contract_sha256": "f851df710f325dd50b58e2ea3671a6aee39251671845093ebe1c6429c08cf49f",
+    "git_head": "ab6ea154e795ecd8ff57dd3c6181c6c3835d1816",
+    "base_tree": "25c9cc4ceb30741d9f4fad44872106798d14b285",
+    "git_tree": "1dc790d5e259821570b0f79d62cc25dc77bc3d1d",
+    "controller_sha256": "06eb6d8be79f722b7f8600083f60c2dd6e8d5316de948b1f877cb01a8be0bebc",
+    "entries": [
+      {
+        "path": ".github/workflows/studio.yml",
+        "size": 867,
+        "mode": "100644",
+        "sha256": "9bd80b5657f7d4383d33c12028f3f3b1dcf4cc6eae03d7bddc980ef59541c255"
+      },
+      {
+        "path": ".gitignore",
+        "size": 204,
+        "mode": "100644",
+        "sha256": "1118ee6938acb2eda78950ce0a4a16e2990c1a601812a66fad2a0d6093c24580"
+      },
+      {
+        "path": "AGENTS.md",
+        "size": 2723,
+        "mode": "100644",
+        "sha256": "75d8832e828b38334e389c13058ea3ec2c6ee43edfd6a1c3fdc7946d0c6aeea0"
+      },
+      {
+        "path": "CLAUDE.md",
+        "size": 330,
+        "mode": "100644",
+        "sha256": "1dc6e5b9b0c8d7b0c9a0c7c3f0b355c82437fd1a87080ef3327cfd2c607e5028"
+      },
+      {
+        "path": "README.md",
+        "size": 2796,
+        "mode": "100644",
+        "sha256": "13a81d083e1de08bb4adfbb0eeb4ec6eba784bca8d6fef897b96bf20968d2a5c"
+      },
+      {
+        "path": "WORKFLOW.md",
+        "size": 6913,
+        "mode": "100644",
+        "sha256": "04a80e24bf60737cc9cea20e6d7e6962ccf1c94752293915b9d74c913b6d229a"
+      },
+      {
+        "path": "docs/BRANCHING.md",
+        "size": 3245,
+        "mode": "100644",
+        "sha256": "b7ca35f5a67108981624bb6bcb86957ab29c4433fe341952699baa8b86dd8964"
+      },
+      {
+        "path": "docs/ORCHESTRATOR.md",
+        "size": 13387,
+        "mode": "100644",
+        "sha256": "ddb2a1d14662176edf605412ef6f1b7863c5f741505b819237f63c7186efa28f"
+      },
+      {
+        "path": "docs/REFERENCES.md",
+        "size": 1943,
+        "mode": "100644",
+        "sha256": "678d91543ccbcc3a24f184dbd44901ae9148ff49ffd7f4a087b63f45caf12f46"
+      },
+      {
+        "path": "docs/STUDIO.md",
+        "size": 10544,
+        "mode": "100644",
+        "sha256": "a771bdfedfa5da5b8abcf82d700ddbfaf292c5ffb22f110caade77247bc0b42c"
+      },
+      {
+        "path": "docs/design/v0.2-a/ACCEPTANCE.md",
+        "size": 3785,
+        "mode": "100644",
+        "sha256": "3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242"
+      },
+      {
+        "path": "docs/design/v0.2-a/LOCAL_AGENT_PROMPT.md",
+        "size": 5542,
+        "mode": "100644",
+        "sha256": "89b383ccc95a8732e23898b006ba05466fea50f24dfd75a4d7815b8e556c0b9f"
+      },
+      {
+        "path": "docs/design/v0.2-a/README.md",
+        "size": 15265,
+        "mode": "100644",
+        "sha256": "8a8feb207ffcae2493a6ee244c55b9debac9e4aa523ebfaab23a390cc155a5bd"
+      },
+      {
+        "path": "docs/design/v0.2-a/examples/review-result.example.json",
+        "size": 434,
+        "mode": "100644",
+        "sha256": "f36a1e52aa57f3272d37f426a91a3889185c717db6eca20284151a719a7ee69d"
+      },
+      {
+        "path": "docs/design/v0.2-a/examples/workflow-policy.example.json",
+        "size": 1037,
+        "mode": "100644",
+        "sha256": "510cb3c07ef9f18748a6b30b3645d316b56b0903cb8ef5ee4ec49ee66984730b"
+      },
+      {
+        "path": "docs/design/v0.2-a/schemas/README.md",
+        "size": 1383,
+        "mode": "100644",
+        "sha256": "2ba2ca5df30f542bb8659e56666b1a931b10d0a023d83a373e2ffb5b97c3f34a"
+      },
+      {
+        "path": "docs/design/v0.2-a/schemas/review-result.schema.json",
+        "size": 1529,
+        "mode": "100644",
+        "sha256": "3b0fc0ddcb965c47a2475a14e67b6628c895cffc5af1242a0549874496b0ed0d"
+      },
+      {
+        "path": "docs/design/v0.2-a/schemas/workflow-policy.schema.json",
+        "size": 2484,
+        "mode": "100644",
+        "sha256": "ea3ce17845870843934489eef154cdd952845b77959dacc6ef59997905cfd190"
+      },
+      {
+        "path": "examples/orchestrator/prepare.py",
+        "size": 4525,
+        "mode": "100644",
+        "sha256": "f349f4e05669bab6ad1562071e5bb37bb97f508e4ab2d1cd4cf175badb2a6035"
+      },
+      {
+        "path": "templates/PROJECT.md",
+        "size": 582,
+        "mode": "100644",
+        "sha256": "3de1d87ca31d533ef95c0ba6f28c9eb370a8a473e9e34b0c18bbf1e69589c629"
+      },
+      {
+        "path": "templates/TASK.md",
+        "size": 1155,
+        "mode": "100644",
+        "sha256": "cf90dd8ca345dca7f048e3295e1e8fd4e478a5edb11fc73e9c034c8a2bf596e8"
+      },
+      {
+        "path": "tests/host_isolation.py",
+        "size": 3316,
+        "mode": "100644",
+        "sha256": "f40d73be51652c7754c5d9812cbb70909c3e6b20cf07bdb343e41099cf339591"
+      },
+      {
+        "path": "tests/studio_browser.py",
+        "size": 7730,
+        "mode": "100644",
+        "sha256": "dd348f444247a044a688084741deb51c36418aacd8bb413aff883b800ea4bbd1"
+      },
+      {
+        "path": "tests/studio_identity_races.cjs",
+        "size": 16630,
+        "mode": "100644",
+        "sha256": "9a12e8a502b7439e671e024d8fb17027e43eb093cf5987417a2953229cbb5dd6"
+      },
+      {
+        "path": "tests/studio_identity_races.py",
+        "size": 3261,
+        "mode": "100644",
+        "sha256": "4912977cf45ee586bc96fa24d67ab35a3b82e32c84df6ddfa3bc3f61f0f268dd"
+      },
+      {
+        "path": "tests/studio_races.cjs",
+        "size": 5394,
+        "mode": "100644",
+        "sha256": "2923e221ad089beca3fe7d63a2a7f2c8f7cf7894f637049299ae0d77e2640479"
+      },
+      {
+        "path": "tests/studio_races.py",
+        "size": 1915,
+        "mode": "100644",
+        "sha256": "9dfc3857f67d49d95fb42cd437949462f0b6739d581fad196bae2597e0db5aad"
+      },
+      {
+        "path": "tests/test_devflower.py",
+        "size": 6743,
+        "mode": "100644",
+        "sha256": "5a537eeda8d05051d26529ea6125ae84d2356e1e68c14a8ec7f60b7958a4ca20"
+      },
+      {
+        "path": "tests/test_failure_modes.py",
+        "size": 2366,
+        "mode": "100644",
+        "sha256": "30a792f89f501cddc090f842a7d3a64466f5fc65e2c0dd094e3f3050012d6eb0"
+      },
+      {
+        "path": "tests/test_integration_regressions.py",
+        "size": 16440,
+        "mode": "100644",
+        "sha256": "59d608811529ec54cbf68ac9bc50dd5d6bb939a2b745f549fca294c79747f67f"
+      },
+      {
+        "path": "tests/test_orchestration.py",
+        "size": 36351,
+        "mode": "100644",
+        "sha256": "7347bebe09bcc6a26a494bfa7262bde9f04945e67dc64524e5a25f109e222fec"
+      },
+      {
+        "path": "tests/test_studio.py",
+        "size": 17534,
+        "mode": "100644",
+        "sha256": "fa875e0fc752cfdcf9f3a084cfb118db2ffa02f0aa5de859d4e969a6ae057716"
+      },
+      {
+        "path": "tests/test_studio_progress.py",
+        "size": 9091,
+        "mode": "100644",
+        "sha256": "86bef5abb38553f52e02b26cb89988abbd0e541bb0e7d21b19481326ecca21e1"
+      },
+      {
+        "path": "tools/devflower.py",
+        "size": 11657,
+        "mode": "100644",
+        "sha256": "29908899d5337f7cef11fbf5f824016d0cf58c90d16aa56782796d16035c2ae9"
+      },
+      {
+        "path": "tools/devflower_studio.py",
+        "size": 197,
+        "mode": "100644",
+        "sha256": "22c8caea38ed2002a468562a4157fb8120bcd777ea2f2a79e7ad50a7b3e735df"
+      },
+      {
+        "path": "tools/orchestration/__init__.py",
+        "size": 75,
+        "mode": "100644",
+        "sha256": "19170f5ed48d2a25dfa0621c8521022fa165b11e54afedaddacf35adeca5bcab"
+      },
+      {
+        "path": "tools/orchestration/adapters.py",
+        "size": 9303,
+        "mode": "100644",
+        "sha256": "1c42142eb13fc14551d1ece300828d3e178f5cfdbbd7dc8b3252c6c9b4a38efa"
+      },
+      {
+        "path": "tools/orchestration/cli.py",
+        "size": 2768,
+        "mode": "100644",
+        "sha256": "484c834467569e04cac87856e3777a0be24b08e23b5cb51258ab2f2fe49f0c4b"
+      },
+      {
+        "path": "tools/orchestration/common.py",
+        "size": 6336,
+        "mode": "100644",
+        "sha256": "c90cbbf5cc344353e2d1ed6b85277d2252922dd57a66b35df864d2b000a02901"
+      },
+      {
+        "path": "tools/orchestration/contracts.py",
+        "size": 7294,
+        "mode": "100644",
+        "sha256": "2f7bf8ef3b1e07b2369025b35033d3995616d0f70cbf3bda67db3ff36fccec1b"
+      },
+      {
+        "path": "tools/orchestration/controller.py",
+        "size": 21807,
+        "mode": "100644",
+        "sha256": "35d6ce236293b31289117f21a326ea6637eec345dc9fb77aade1efaf4465a11b"
+      },
+      {
+        "path": "tools/orchestration/delivery.py",
+        "size": 12657,
+        "mode": "100644",
+        "sha256": "6e7255ddf2aa7871fdf66679e017b76463bdc768d6de73be49ab64ce98d5a245"
+      },
+      {
+        "path": "tools/orchestration/gate.py",
+        "size": 3962,
+        "mode": "100644",
+        "sha256": "c68db38b1d435eabe08f32f9329902b38ae57b4e330153e10a5da3b42d53a1bd"
+      },
+      {
+        "path": "tools/orchestration/privacy.py",
+        "size": 2320,
+        "mode": "100644",
+        "sha256": "81f20cda5e5cf92447f47428ca4e07d3d732e8a9e0347e48eb1b1dfac1c9b871"
+      },
+      {
+        "path": "tools/orchestration/process.py",
+        "size": 6615,
+        "mode": "100644",
+        "sha256": "d00b0299d827d002b106daddf4286718b2b3cc1e107159c9f29a4ad1d796c95c"
+      },
+      {
+        "path": "tools/orchestration/sandbox.py",
+        "size": 3964,
+        "mode": "100644",
+        "sha256": "cb01d84d66d31d5929e47dd265ba03050046ceef90424cdd9730dffdf7323492"
+      },
+      {
+        "path": "tools/orchestration/store.py",
+        "size": 5381,
+        "mode": "100644",
+        "sha256": "a332eeba9ffb5bea57f8f6f3bf2cbb421e38fea917f09fe4c600e7d034b260b2"
+      },
+      {
+        "path": "tools/orchestration/verification.py",
+        "size": 5092,
+        "mode": "100644",
+        "sha256": "c29bc4bceb4a1af1832815aa62fb21fd1ade48e0145059822c4a79720369811d"
+      },
+      {
+        "path": "tools/studio/__init__.py",
+        "size": 86,
+        "mode": "100644",
+        "sha256": "d2a831970647642f0e78e6ef59a0d317dec140396af70e3fe2a30d907e842230"
+      },
+      {
+        "path": "tools/studio/graph.py",
+        "size": 10585,
+        "mode": "100644",
+        "sha256": "3bfa93eb35fb8dea2d1092e6f192d2118e8643061a6a92adf0ee2e386e817ef1"
+      },
+      {
+        "path": "tools/studio/projection.py",
+        "size": 14310,
+        "mode": "100644",
+        "sha256": "3771f26635f19be0cadd2e12ce45dc9a75f9c03b22f78570ffc6c1da45981ee3"
+      },
+      {
+        "path": "tools/studio/server.py",
+        "size": 16817,
+        "mode": "100644",
+        "sha256": "665b3ebff14fcc1212bdf62876292ec4b944e9e577778cd5d83e924c2f7da943"
+      },
+      {
+        "path": "tools/studio/static/app.js",
+        "size": 29261,
+        "mode": "100644",
+        "sha256": "5eb5d26bb7e5a5d4425fe3b1c3291ef7c710b446cbac4e59238fa87583ec3de1"
+      },
+      {
+        "path": "tools/studio/static/index.html",
+        "size": 4535,
+        "mode": "100644",
+        "sha256": "0ea38604220f63c27b2ba430d363afc46de182dcea3cd67871a5ff97fdc4aa3b"
+      },
+      {
+        "path": "tools/studio/static/style.css",
+        "size": 9557,
+        "mode": "100644",
+        "sha256": "9f996d8ed9f43f87ee7a6e6263b801115c398de99ea93caeac5def264b145f62"
+      }
+    ],
+    "changed_paths": [
+      "docs/STUDIO.md",
+      "tests/studio_identity_races.py",
+      "tests/studio_identity_races.cjs",
+      "tools/studio/static/app.js"
+    ],
+    "round": 1,
+    "external_supervisor": "fixed external bootstrap; candidate Controller is not approving itself"
+  },
+  "source_delivery": {
+    "branch": "flow/studio-mvp",
+    "parent": "ab6ea154e795ecd8ff57dd3c6181c6c3835d1816",
+    "commit": "4636083073b39b6e1f42f4544f7b3d35d4f32140",
+    "tree": "1dc790d5e259821570b0f79d62cc25dc77bc3d1d",
+    "candidate_sha256": "af66e5c0dc5b4f8855933c26834b9c2714eb1b03daf41a0d23e3a9d243e929b0",
+    "remote_readback": "4636083073b39b6e1f42f4544f7b3d35d4f32140",
+    "local_head": "4636083073b39b6e1f42f4544f7b3d35d4f32140",
+    "checked_files": 55,
+    "worktree_clean": true,
+    "method": "authorized GitHub connector expected SHA force=false normal fast-forward; native git fetch readback",
+    "time_unix": 1792467316.7929852
+  },
+  "records_delivery": "separate project/devflower archive; the containing commit identifies this record; private delivery-summary.json records readbacks",
+  "tests": {
+    "unittest": {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit": 0,
+      "seconds": 17.73,
+      "tests": 132,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "baseline": {
+      "argv": [
+        "python3",
+        "tools/devflower.py",
+        "check",
+        "--baseline"
+      ],
+      "exit": 0,
+      "seconds": 0.03,
+      "tests": null,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "host-isolation": {
+      "argv": [
+        "python3",
+        "tests/host_isolation.py"
+      ],
+      "exit": 0,
+      "seconds": 0.7,
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "js-syntax": {
+      "argv": [
+        "node",
+        "--check",
+        "tools/studio/static/app.js"
+      ],
+      "exit": 0,
+      "seconds": 0.05,
+      "tests": null,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "executions": {
+    "baseline_identity": {
+      "exit": 1,
+      "tests": 2,
+      "failures": 2,
+      "skipped": 0,
+      "tool_session": 45249
+    },
+    "current_identity": {
+      "exit": 0,
+      "tests": 17,
+      "failures": 0,
+      "skipped": 0,
+      "tool_session": 7669
+    },
+    "prior_races": {
+      "exit": 0,
+      "tests": 9,
+      "failures": 0,
+      "skipped": 0,
+      "tool_session": 94898
+    },
+    "regression_tool_session": 96579,
+    "models": "No new model fixture run; real independent review is separate. Previous clamp runs belong to the previous task, not this candidate."
+  },
+  "reviews": [
+    {
+      "round": 1,
+      "process": {
+        "pid": 358905,
+        "start": "103227895",
+        "session_id": "ed0a5ce5-2478-4577-bf8b-ee05413a7f31",
+        "cwd": "/home/workspace/DevFlower",
+        "exit": 0,
+        "timeout": false,
+        "seconds": 669.44,
+        "monitor_sha256": "b3290f48cf9c8e845a73d7c3772a14e96280a211f2afc7f8c88e353b0011aa36",
+        "candidate_manifest_sha256": "c39b7018fd0e64762f1ec70e7875290856c6d4be924f72289c70e0967e2fb2e2",
+        "stdout_sha256": "fea83b8bc1607fba3ba64455bcc7f7f82704937f64223136617f1f07e22a1948",
+        "stderr_sha256": "af2f4f95914df9c684b8c6d9f07bfa793cb3ed8a4c9f15c3022ee6363d84537e"
+      },
+      "actual_model": "deepseek-flash[1m]",
+      "requested_effort": "max",
+      "resolved_effort": "unknown",
+      "raw_verdict_sha256": "bb6ee1632328853862b4be5ec1d71cdbd30dfe9dcc965f95d6bc931eab0601bb",
+      "original_verdict_fields": {
+        "candidate_sha256": "af66e5c0dc5b4f8855933c26834b9c2714eb1b03daf41a0d23e3a9d243e929b0",
+        "contract_sha256": "f851df710f325dd50b58e2ea3671a6aee39251671845093ebe1c6429c08cf49f",
+        "verdict": "ACCEPT",
+        "identity_checks": {
+          "source_files": 55,
+          "manifest_entries": 55,
+          "manifest_matches_recomputed_entries": true,
+          "candidate_aggregate_recomputed": "af66e5c0dc5b4f8855933c26834b9c2714eb1b03daf41a0d23e3a9d243e929b0",
+          "contract_bytes_sha256_recomputed": "f851df710f325dd50b58e2ea3671a6aee39251671845093ebe1c6429c08cf49f",
+          "manifest_file_sha256": "c39b7018fd0e64762f1ec70e7875290856c6d4be924f72289c70e0967e2fb2e2",
+          "git_tree_recomputed": "1dc790d5e259821570b0f79d62cc25dc77bc3d1d",
+          "git_tree_matches_claim": true,
+          "git_blobs_checked": 55,
+          "git_blob_mismatches": {},
+          "git_ls_tree_extra_or_missing": [],
+          "controller_hash_recomputed": "06eb6d8be79f722b7f8600083f60c2dd6e8d5316de948b1f877cb01a8be0bebc",
+          "controller_hash_matches_claim": true,
+          "controller_files_byte_identical_to_baseline": true,
+          "baseline_source_files": 53,
+          "baseline_aggregate_recomputed": "0ac41811de05565109482397c112064316fef7df7dffaa606e656182e890ba1d",
+          "baseline_git_tree_recomputed": "25c9cc4ceb30741d9f4fad44872106798d14b285",
+          "baseline_tree_matches_claim": true,
+          "baseline_head_claim": "ab6ea154e795ecd8ff57dd3c6181c6c3835d1816",
+          "changed_vs_baseline": [
+            "docs/STUDIO.md",
+            "tools/studio/static/app.js"
+          ],
+          "new_vs_baseline": [
+            "tests/studio_identity_races.cjs",
+            "tests/studio_identity_races.py"
+          ],
+          "deleted_vs_baseline": [],
+          "app_js_sha256": "5eb5d26bb7e5a5d4425fe3b1c3291ef7c710b446cbac4e59238fa87583ec3de1",
+          "review_supervision": "Fixed external bootstrap, not the candidate Controller; process tree shows PID 1 /usr/bin/bwrap and Claude Code 2.1.303 resumed session ed0a5ce5-2478-4577-bf8b-ee05413a7f31 with --model deepseek-flash[1m] --effort max; no devflower/Controller process is running.",
+          "review_session": {
+            "session_id": "ed0a5ce5-2478-4577-bf8b-ee05413a7f31",
+            "requested_model": "deepseek-flash[1m]",
+            "requested_effort": "max",
+            "resolved_effort": "unknown",
+            "native_record_exists": true,
+            "native_record_read_by_reviewer": false
+          }
+        },
+        "closures": {
+          "ST-R01": "CLOSED",
+          "ST-R02": "CLOSED",
+          "ST-R03": "CLOSED",
+          "ST-R04": "CLOSED",
+          "ST-R05": "CLOSED",
+          "SELF-R01": "CLOSED",
+          "F-06": "CLOSED"
+        },
+        "findings": [
+          {
+            "id": "ST-R04",
+            "severity": "P1",
+            "status": "CLOSED",
+            "file": "tools/studio/static/app.js",
+            "mechanism": "Baseline save handler retained only global saved.id/saved.revision and unconditionally assigned the response to saved. A delayed POST for workflow A could complete after the user had switched to or created workflow B, making saved.id=A while B was visible; the next B save then sent A's id and A's expected revision and overwrote A. Saves were not serialized per draft and edits made during a save were reported as fully saved.",
+            "minimal_reproduction": "Baseline source over real local HTTP and ordinary Chromium: rename the draft NEW_A, start a POST /api/workflows and hold its response, click New, rename NEW_B, release A's response, then save B. Baseline B's save adopted A's returned id (independent baseline run: 'B adopted A id'); B's document was not created and A could be overwritten. The current candidate instead returned distinct response ids for A and B, kept both documents under their own ids, and used B's own revision as the CAS base.",
+            "expected_behavior": "A save must bind the initiating workflow id, revision, document snapshot and edit version; stale responses must not change the active draft's saved identity; only history/listing may refresh; same-draft saves must serialize; edits during a save must remain visibly unsaved; backend immutable revisions and CAS conflicts must remain authoritative.",
+            "evidence": "reviewer-tests/work/identity-baseline-2/identity-repro-results.json: ST-R04 delayed save A then new B FAIL with 'B adopted A id', plus baseline failures for load-B, reverse-order, dirty-edit, uncommitted-field, same-draft double-click, stale-error, monitor-save and import cases (19/23 baseline failures). reviewer-tests/work/identity-current-final/identity-repro-results.json: ST-R04 cases PASS (23/23 overall). Shipped tests/studio_identity_races.py: 17/17 PASS. Supplied evidence executions.json records baseline_identity exit 1 with 2 failures; my independent baseline harness reproduces the same two primary defects and more.",
+            "required_corrections": "None outstanding on this candidate; draftGeneration, captured id/revision/snapshot, savesInFlight serialization, guarded history refresh and dirty-state rendering are implemented and independently verified."
+          },
+          {
+            "id": "ST-R05",
+            "severity": "P2",
+            "status": "CLOSED",
+            "file": "tools/studio/static/app.js",
+            "mechanism": "Baseline poll() fetched the current global runId and rendered whatever snapshot returned, without binding the request to a selection generation or verifying snapshot.id. A delayed snapshot for run A could therefore populate the UI after run B was selected, producing B's header/revision with A's nodes, test counts, rounds, notice and inspector (including A's READY/ACCEPT), and stale failures could clear or degrade B's view.",
+            "minimal_reproduction": "Baseline source over real local HTTP and ordinary Chromium: hold the /api/runs/A snapshot, select A, select B, release A's held snapshot. Baseline displayed title RUN_A while the revision said Controller run B, with 6 tests and Round 2 ACCEPT from A. Current candidate discarded the stale A response; B remained B and no A content appeared.",
+            "expected_behavior": "Each snapshot request must bind run_id and a request generation; stale success and failure responses must not touch the current view; the returned snapshot.id must match the requested run; switching runs, leaving the monitor, current failures and timeouts must clear stale nodes/rounds/verdicts; title, nodes, rounds, inspector and history must all come from one verified snapshot; old process records must never show RUNNING.",
+            "evidence": "reviewer-tests/work/identity-baseline-2/identity-repro-results.json: ST-R05 late A snapshot FAIL with selected B showing RUN_A/6 tests/ACCEPT; reverse, stale-failure, timeout, id-mismatch, A-B-A, isolation and list-failure cases also failed on baseline (19/23 baseline failures). reviewer-tests/work/identity-current-final/identity-repro-results.json: all 23 current cases PASS, including A to B to A with a DB-updated second A, inverse snapshot and list replies, stale and current failures/timeouts, snapshot id mismatch, old process record unconfirmed, draft/monitor isolation and full UI-versus-API provenance. Shipped studio_identity_races.py 17/17 PASS.",
+            "required_corrections": "None outstanding on this candidate; poll generation binding, snapshot id verification, clear-on-switch/error, cleared run panels and single-snapshot rendering are implemented and independently verified."
+          }
+        ],
+        "independent_tests": [
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v",
+            "executor": "local reviewer sandbox, frozen candidate source read-only",
+            "exit": 0,
+            "tests": 132,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/unittest-independent.log: Ran 132 tests in 10.969s, OK."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_orchestration.py",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 48,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/module-test_orchestration.py.log: Ran 48 tests, OK."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_integration_regressions.py",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 17,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/module-test_integration_regressions.py.log: Ran 17 tests, OK."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_studio.py",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 35,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/module-test_studio.py.log: Ran 35 tests, OK."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_studio_progress.py",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 8,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/module-test_studio_progress.py.log: Ran 8 tests, OK, including ST-R02/ST-R03 and the F-06 crafted-collision regression."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_devflower.py",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 20,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/module-test_devflower.py.log: Ran 20 tests, OK."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_failure_modes.py",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/module-test_failure_modes.py.log: Ran 4 tests, OK."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/devflower.py check --baseline",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": null,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "OK: structural checks only; not an approval or correctness proof."
+          },
+          {
+            "command": "/usr/bin/node --check tools/studio/static/app.js ; /home/silver/.local/share/node-v22.14.0-linux-x64/bin/node --check tools/studio/static/app.js",
+            "executor": "local reviewer sandbox (Node 18.19.1 and Node 22.14.0)",
+            "exit": 0,
+            "tests": null,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "Both checks exit 0; Node 18.19.1 reported."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 tests/studio_races.py --node <node22> --playwright-module <playwright> --chromium <chromium-1248> --artifacts <new scratch dir>",
+            "executor": "local reviewer sandbox, real HTTP + ordinary Chromium, no offline bridge",
+            "exit": 0,
+            "tests": 9,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/shipped-races/race-results.json: 9/9 PASS, including prior ST-R01 races, SELF-R01 invalid argv and F-01."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 tests/studio_identity_races.py --node <node22> --playwright-module <playwright> --chromium <chromium-1248> --artifacts <new scratch dir>",
+            "executor": "local reviewer sandbox, real HTTP + ordinary Chromium, synthetic SQLite fixtures, no model calls",
+            "exit": 0,
+            "tests": 17,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/shipped-identity/identity-results.json: 17/17 PASS across ST-R04 and ST-R05 primary and additional cases."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I identity_repro.py --source-root ../baseline-source --label baseline",
+            "executor": "local reviewer sandbox, baseline-source old candidate over real HTTP + ordinary Chromium",
+            "exit": 1,
+            "tests": 23,
+            "failures": 19,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/identity-baseline-2/identity-repro-results.json: expected old-candidate failures reproduce both primary bugs; ST-R04 'B adopted A id' and ST-R05 selected B rendered RUN_A with 6 tests and ACCEPT. Exit 1 is the deliberate baseline reproduction, not a current-candidate failure. Four checks that were already invariant on baseline passed (CAS, provenance, old process record, history-refresh persistence)."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I identity_repro.py --source-root ../source --label current",
+            "executor": "local reviewer sandbox, current candidate over real HTTP + ordinary Chromium",
+            "exit": 0,
+            "tests": 23,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/identity-current-final/identity-repro-results.json: 23/23 PASS covering delayed saves, new/load/import drafts, same-draft edits including uncommitted visible fields, reverse-order responses, concurrent same-draft and cross-draft saves, real CAS conflicts, history refresh, monitor save completion, A-B-A, inverse snapshot/list replies, stale/current failures and timeouts, snapshot id mismatch, old process records, draft/monitor isolation and one-snapshot provenance including timeline."
+          },
+          {
+            "command": "python3 -m unittest discover -s tests -p test_orchestration.py -k A07 -v",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/targeted-A07.log: zero-test/skip/false-exit, symlink, JUnit and post-READY evidence-change negatives pass."
+          },
+          {
+            "command": "python3 -m unittest discover -s tests -p test_orchestration.py -k A08 -v",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 2,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/targeted-A08.log: ACCEPT with failed verification, contradictory contracts, stale identity, open P1 and missing/duplicate verification all blocked."
+          },
+          {
+            "command": "python3 -m unittest discover -s tests -p test_orchestration.py -k A09 -v",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/targeted-A09.log: simulator NEEDS_CORRECTION -> repair -> new candidate -> ACCEPT; post-review candidate mutation refused by deliver_run; budget and non-progress limits block."
+          },
+          {
+            "command": "python3 -m unittest discover -s tests -p test_orchestration.py -k A12 -v",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/targeted-A12.log: exact tree/index preservation, hooks/filters/dirty/wrong remote, mutation during build, commit recovery."
+          },
+          {
+            "command": "python3 -m unittest discover -s tests -p test_orchestration.py -k A13 -v",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/targeted-A13.log: lost-receipt readback, two local bare remotes partial delivery, no forced push, retry without repeat."
+          },
+          {
+            "command": "python3 -m unittest discover -s tests -p test_orchestration.py -k A16 -v",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 1,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/targeted-A16.log: candidate Controller refuses its own framework source with 'external bootstrap'."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I independent_progress.py",
+            "executor": "local reviewer sandbox, frozen modules with synthetic operations",
+            "exit": 0,
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/independent-progress-results.json: ST-R02 distinct verifier identity failed/passed with counts 1/2 and mismatch cases pending/no-counts; ST-R03 round-2 previous candidate/ACCEPT hidden with history immutable; F-06 crafted labels distinct while raw statuses remain failed/passed; ACCEPT-with-failed-verification gate blocked."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I independent_launch.py",
+            "executor": "local reviewer sandbox; real Launcher and authorized(), Popen spy, no Controller process spawned",
+            "exit": 0,
+            "tests": 11,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/independent-launch-results.json: no permit/wrong hash/changed auth/active run refused with zero spawns; fixed argv, engine-root cwd, no shell, new session, filtered env; single use enforced."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I - (Studio App HTTP authority surface)",
+            "executor": "local reviewer sandbox, real local HTTP",
+            "exit": 0,
+            "tests": 12,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/http-authority-check.json: /api/start no permit 422 and no bearer 401; authorize/exec/deliver/cancel/resume/merge/commit/push all 404; /api/meta no bearer 401; static page 200."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I - (Landlock ABI 8 isolation probe)",
+            "executor": "local reviewer sandbox",
+            "exit": 0,
+            "tests": 3,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/landlock-probe.json: read/write denied with successful positive control; outside-allowlist write exit 1 and file unchanged."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 tests/host_isolation.py (local nested sandbox)",
+            "executor": "local reviewer sandbox, nested bwrap unavailable",
+            "exit": 1,
+            "tests": 4,
+            "failures": 2,
+            "errors": 2,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/host-isolation-local.log: FAILED (failures=2, errors=2). This is an environment failure, not a pass; no host probe was silently skipped."
+          },
+          {
+            "command": "external host runner -> python3 host_runner_probe.py (bwrap smoke, host_isolation, Node 18 syntax)",
+            "executor": "fixed external credential-free host runner; not the candidate Controller",
+            "exit": 0,
+            "tests": 4,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/runner-result.json: candidate af66e5c0..., app.js sha 5eb5d26b... matches manifest; bwrap 0.9.0 smoke exit 0; host_isolation 4/4 OK; Node v18.19.1 --check exit 0; script sha 4a47250e... matches the inspected reviewer script."
+          },
+          {
+            "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I verify_identity.py",
+            "executor": "local reviewer sandbox, frozen source and baseline-source",
+            "exit": 0,
+            "tests": 55,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0,
+            "evidence": "reviewer-tests/work/identity-final.json: 55/55 file hashes match manifest; aggregate af66e5c0...; contract f851df71...; Git blob IDs and tree 1dc790d5... match; controller hash 06eb6d8b...; baseline aggregate 0ac41811... and tree 25c9cc4c... match; controller files byte-identical to baseline."
+          }
+        ],
+        "limitations": [
+          "No new real-model fixture execution was performed for this candidate, as explicitly allowed by the task. Previous clamp/model runs are historical evidence from earlier tasks/candidates and are not treated as current-candidate execution. The changed files are UI/docs/tests only; the Controller/backend were verified byte-identical to baseline and exercised through the full regression and targeted security tests.",
+          "The legacy optional tests/studio_browser.py was not run because Python Playwright is absent; the provided Node Playwright/Chromium toolchain was used without any offline bridge. Shipped studio_races.py (9/9), shipped studio_identity_races.py (17/17) and my independently authored 23-case identity suite were executed against the current candidate.",
+          "bwrap cannot create user namespaces inside the nested review sandbox. The fixed external credential-free host runner executed the bwrap smoke and host_isolation 4/4 plus the Node 18 syntax check; the local nested host_isolation failure is recorded as a failure, not a pass. Landlock ABI 8 probes passed locally.",
+          "The frozen snapshot has no .git, so the mapping from git HEAD ab6ea154e795ecd8ff57dd3c6181c6c3835d1816 to tree 25c9cc4c... is supplied. I recomputed the 53-file baseline aggregate 0ac41811... and tree 25c9cc4c..., and the 55-file candidate aggregate af66e5c0..., tree 1dc790d5..., all Git blob IDs and the controller hash from the frozen bytes; all match the manifest and git-ls-tree.txt.",
+          "The review session requested deepseek-flash[1m] with effort max, but the actual resolved effort is unknown/absent and is not asserted as max. The native session record exists under the dedicated reviewer HOME and was not read or exported; HOME, config root, session id, cwd and process arguments match session-binding.json and process-intent.json.",
+          "Baseline-source reproduction is reviewer-authored and is corroborated by the supplied executions.json baseline_identity result (exit 1, 2 primary failures). My 23-case baseline harness reproduced 19 expected old-candidate failures, including both primary ST-R04/ST-R05 defects; four invariant checks already passed on baseline. Baseline harness exit 1 is the expected defect reproduction, not a current-candidate failure.",
+          "The shipped identity tests and my harness use synthetic SQLite control fixtures and a UI-only launcher status fixture; no real Controller run or authority was issued. The unchanged Controller/backend security gates were independently sampled via targeted A07/A08/A09/A12/A13/A16 tests, a real Launcher/authorized() check, and an HTTP authority-surface check.",
+          "Incidental nonblocking UI observations, none of which violate identity or authorization: after /api/start, if the new run row has not appeared yet, the monitor may auto-select the newest existing run with its own correct id/state while the notice says it is waiting; a history-list refresh failure after a successful save is suppressed and the sidebar may remain stale until the next refresh; a save whose response is lost leaves the local CAS base stale, so the next save resolves through a 409 conflict rather than silent overwrite.",
+          "The real remote/PR state was not queried because this review made no GitHub/network requests beyond the approved reviewer provider; the verdict concerns the frozen candidate and its technical acceptance, not PR mergeability or remote authorization.",
+          "The manifest-bound acceptance.md (sha256 f851df71...) is the contract reviewed; no repository text was treated as new operational authority beyond that frozen contract."
+        ]
+      }
+    }
+  ],
+  "session": {
+    "cli": "/home/silver/.local/share/claude/versions/2.1.303",
+    "version": "2.1.303 (Claude Code)",
+    "auth_exit": 0,
+    "logged_in": true,
+    "supports_resume": true,
+    "supports_max": true,
+    "supports_json": true,
+    "HOME": "/home/workspace/DevFlower/archives/studio-v01-stabilization-20261020/runtime/independent-reviewer",
+    "config_root": "/home/workspace/DevFlower/archives/studio-v01-stabilization-20261020/runtime/independent-reviewer/.claude",
+    "native_record": "/home/workspace/DevFlower/archives/studio-v01-stabilization-20261020/runtime/independent-reviewer/.claude/projects/-home-workspace-DevFlower/ed0a5ce5-2478-4577-bf8b-ee05413a7f31.jsonl",
+    "native_record_exists": true,
+    "session_id": "ed0a5ce5-2478-4577-bf8b-ee05413a7f31",
+    "cwd": "/home/workspace/DevFlower",
+    "requested_model": "deepseek-flash[1m]",
+    "requested_effort": "max",
+    "resolved_effort": "unknown",
+    "existing_session_processes": [],
+    "resume_command": "cd /home/workspace/DevFlower\nHOME=/home/workspace/DevFlower/archives/studio-v01-stabilization-20261020/runtime/independent-reviewer /home/silver/.local/share/claude/versions/2.1.303 --resume ed0a5ce5-2478-4577-bf8b-ee05413a7f31 --model deepseek-flash[1m] --effort max"
+  },
+  "external_gate": {
+    "verdict": "ACCEPT",
+    "executor": "fixed external Codex bootstrap, no candidate Controller authority",
+    "candidate_sha256": "af66e5c0dc5b4f8855933c26834b9c2714eb1b03daf41a0d23e3a9d243e929b0",
+    "contract_sha256": "f851df710f325dd50b58e2ea3671a6aee39251671845093ebe1c6429c08cf49f",
+    "git_tree": "1dc790d5e259821570b0f79d62cc25dc77bc3d1d",
+    "git_head": "ab6ea154e795ecd8ff57dd3c6181c6c3835d1816",
+    "reviewer_session": "ed0a5ce5-2478-4577-bf8b-ee05413a7f31",
+    "actual_model": "deepseek-flash[1m]",
+    "requested_effort": "max",
+    "resolved_effort": "unknown",
+    "raw_verdict_sha256": "bb6ee1632328853862b4be5ec1d71cdbd30dfe9dcc965f95d6bc931eab0601bb",
+    "checks": [
+      {
+        "check": "manifest exact",
+        "passed": true
+      },
+      {
+        "check": "branch/base",
+        "passed": true
+      },
+      {
+        "check": "contract",
+        "passed": true
+      },
+      {
+        "check": ".github/workflows/studio.yml",
+        "passed": true
+      },
+      {
+        "check": ".gitignore",
+        "passed": true
+      },
+      {
+        "check": "AGENTS.md",
+        "passed": true
+      },
+      {
+        "check": "CLAUDE.md",
+        "passed": true
+      },
+      {
+        "check": "README.md",
+        "passed": true
+      },
+      {
+        "check": "WORKFLOW.md",
+        "passed": true
+      },
+      {
+        "check": "docs/BRANCHING.md",
+        "passed": true
+      },
+      {
+        "check": "docs/ORCHESTRATOR.md",
+        "passed": true
+      },
+      {
+        "check": "docs/REFERENCES.md",
+        "passed": true
+      },
+      {
+        "check": "docs/STUDIO.md",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/ACCEPTANCE.md",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/LOCAL_AGENT_PROMPT.md",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/README.md",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/examples/review-result.example.json",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/examples/workflow-policy.example.json",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/schemas/README.md",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/schemas/review-result.schema.json",
+        "passed": true
+      },
+      {
+        "check": "docs/design/v0.2-a/schemas/workflow-policy.schema.json",
+        "passed": true
+      },
+      {
+        "check": "examples/orchestrator/prepare.py",
+        "passed": true
+      },
+      {
+        "check": "templates/PROJECT.md",
+        "passed": true
+      },
+      {
+        "check": "templates/TASK.md",
+        "passed": true
+      },
+      {
+        "check": "tests/host_isolation.py",
+        "passed": true
+      },
+      {
+        "check": "tests/studio_browser.py",
+        "passed": true
+      },
+      {
+        "check": "tests/studio_identity_races.cjs",
+        "passed": true
+      },
+      {
+        "check": "tests/studio_identity_races.py",
+        "passed": true
+      },
+      {
+        "check": "tests/studio_races.cjs",
+        "passed": true
+      },
+      {
+        "check": "tests/studio_races.py",
+        "passed": true
+      },
+      {
+        "check": "tests/test_devflower.py",
+        "passed": true
+      },
+      {
+        "check": "tests/test_failure_modes.py",
+        "passed": true
+      },
+      {
+        "check": "tests/test_integration_regressions.py",
+        "passed": true
+      },
+      {
+        "check": "tests/test_orchestration.py",
+        "passed": true
+      },
+      {
+        "check": "tests/test_studio.py",
+        "passed": true
+      },
+      {
+        "check": "tests/test_studio_progress.py",
+        "passed": true
+      },
+      {
+        "check": "tools/devflower.py",
+        "passed": true
+      },
+      {
+        "check": "tools/devflower_studio.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/__init__.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/adapters.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/cli.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/common.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/contracts.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/controller.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/delivery.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/gate.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/privacy.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/process.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/sandbox.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/store.py",
+        "passed": true
+      },
+      {
+        "check": "tools/orchestration/verification.py",
+        "passed": true
+      },
+      {
+        "check": "tools/studio/__init__.py",
+        "passed": true
+      },
+      {
+        "check": "tools/studio/graph.py",
+        "passed": true
+      },
+      {
+        "check": "tools/studio/projection.py",
+        "passed": true
+      },
+      {
+        "check": "tools/studio/server.py",
+        "passed": true
+      },
+      {
+        "check": "tools/studio/static/app.js",
+        "passed": true
+      },
+      {
+        "check": "tools/studio/static/index.html",
+        "passed": true
+      },
+      {
+        "check": "tools/studio/static/style.css",
+        "passed": true
+      },
+      {
+        "check": "candidate aggregate",
+        "passed": true
+      },
+      {
+        "check": "complete source set",
+        "passed": true
+      },
+      {
+        "check": "explicit scope",
+        "passed": true
+      },
+      {
+        "check": "Controller and backend unchanged",
+        "passed": true
+      },
+      {
+        "check": "no unexpected staging",
+        "passed": true
+      },
+      {
+        "check": "real process terminal",
+        "passed": true
+      },
+      {
+        "check": "session/cwd/requested effort",
+        "passed": true
+      },
+      {
+        "check": "actual approved model",
+        "passed": true
+      },
+      {
+        "check": "native record persists",
+        "passed": true
+      },
+      {
+        "check": "manifest start binding",
+        "passed": true
+      },
+      {
+        "check": "fixed external supervisor version",
+        "passed": true
+      },
+      {
+        "check": "current actual ACCEPT",
+        "passed": true
+      },
+      {
+        "check": "required defects closed",
+        "passed": true
+      },
+      {
+        "check": "no blocking open findings",
+        "passed": true
+      },
+      {
+        "check": "self test unittest",
+        "passed": true
+      },
+      {
+        "check": "self test baseline",
+        "passed": true
+      },
+      {
+        "check": "self test host-isolation",
+        "passed": true
+      },
+      {
+        "check": "self test js-syntax",
+        "passed": true
+      },
+      {
+        "check": "required self counts",
+        "passed": true
+      },
+      {
+        "check": "identity/identity-results.json",
+        "passed": true
+      },
+      {
+        "check": "prior-races/race-results.json",
+        "passed": true
+      },
+      {
+        "check": "browser actual exits",
+        "passed": true
+      },
+      {
+        "check": "independent scenarios verified externally",
+        "passed": true
+      },
+      {
+        "check": "source privacy",
+        "passed": true
+      }
+    ],
+    "checked_at_unix": 1792467237.3256354,
+    "delivery": "PENDING"
+  },
+  "independent_evidence_assessment": {
+    "passed": true,
+    "executor": "external Codex evidence cross-check",
+    "independent_browser": {
+      "baseline_tests": 23,
+      "baseline_failures": 19,
+      "current_tests": 23,
+      "current_failures": 0,
+      "current_skip": 0
+    },
+    "full_unittest": 132,
+    "host_tests": 4,
+    "required_closures": {
+      "ST-R01": "CLOSED",
+      "ST-R02": "CLOSED",
+      "ST-R03": "CLOSED",
+      "ST-R04": "CLOSED",
+      "ST-R05": "CLOSED",
+      "SELF-R01": "CLOSED",
+      "F-06": "CLOSED"
+    },
+    "source_manifest_independent_matches": true,
+    "initial_harness_failures_preserved": {
+      "path": "review/reviewer-tests/work/identity-current/identity-repro-results.json",
+      "failures": 2,
+      "assessment": "Initial import-case assertions demanded an omitted request id; final tests instead check distinct returned A/B ids and actual server documents, including A remaining unchanged. These checks enforce the contract requirement; no source changed during review. Initial failure logs remain intact."
+    },
+    "nonblocking_limitations": [
+      "No new real-model fixture execution was performed for this candidate, as explicitly allowed by the task. Previous clamp/model runs are historical evidence from earlier tasks/candidates and are not treated as current-candidate execution. The changed files are UI/docs/tests only; the Controller/backend were verified byte-identical to baseline and exercised through the full regression and targeted security tests.",
+      "The legacy optional tests/studio_browser.py was not run because Python Playwright is absent; the provided Node Playwright/Chromium toolchain was used without any offline bridge. Shipped studio_races.py (9/9), shipped studio_identity_races.py (17/17) and my independently authored 23-case identity suite were executed against the current candidate.",
+      "bwrap cannot create user namespaces inside the nested review sandbox. The fixed external credential-free host runner executed the bwrap smoke and host_isolation 4/4 plus the Node 18 syntax check; the local nested host_isolation failure is recorded as a failure, not a pass. Landlock ABI 8 probes passed locally.",
+      "The frozen snapshot has no .git, so the mapping from git HEAD ab6ea154e795ecd8ff57dd3c6181c6c3835d1816 to tree 25c9cc4c... is supplied. I recomputed the 53-file baseline aggregate 0ac41811... and tree 25c9cc4c..., and the 55-file candidate aggregate af66e5c0..., tree 1dc790d5..., all Git blob IDs and the controller hash from the frozen bytes; all match the manifest and git-ls-tree.txt.",
+      "The review session requested deepseek-flash[1m] with effort max, but the actual resolved effort is unknown/absent and is not asserted as max. The native session record exists under the dedicated reviewer HOME and was not read or exported; HOME, config root, session id, cwd and process arguments match session-binding.json and process-intent.json.",
+      "Baseline-source reproduction is reviewer-authored and is corroborated by the supplied executions.json baseline_identity result (exit 1, 2 primary failures). My 23-case baseline harness reproduced 19 expected old-candidate failures, including both primary ST-R04/ST-R05 defects; four invariant checks already passed on baseline. Baseline harness exit 1 is the expected defect reproduction, not a current-candidate failure.",
+      "The shipped identity tests and my harness use synthetic SQLite control fixtures and a UI-only launcher status fixture; no real Controller run or authority was issued. The unchanged Controller/backend security gates were independently sampled via targeted A07/A08/A09/A12/A13/A16 tests, a real Launcher/authorized() check, and an HTTP authority-surface check.",
+      "Incidental nonblocking UI observations, none of which violate identity or authorization: after /api/start, if the new run row has not appeared yet, the monitor may auto-select the newest existing run with its own correct id/state while the notice says it is waiting; a history-list refresh failure after a successful save is suppressed and the sidebar may remain stale until the next refresh; a save whose response is lost leaves the local CAS base stale, so the next save resolves through a 409 conflict rather than silent overwrite.",
+      "The real remote/PR state was not queried because this review made no GitHub/network requests beyond the approved reviewer provider; the verdict concerns the frozen candidate and its technical acceptance, not PR mergeability or remote authorization.",
+      "The manifest-bound acceptance.md (sha256 f851df71...) is the contract reviewed; no repository text was treated as new operational authority beyond that frozen contract."
+    ],
+    "no_new_model_fixture": true
+  },
+  "technical_ready_to_merge": true,
+  "main_merge_authorized": false,
+  "pr3_draft": true,
+  "pr3_base": "flow/multi-agent-orchestration",
+  "pr2_merged": false,
+  "raw_evidence_local": "archives/studio-v01-final-stability-20261020"
+}
