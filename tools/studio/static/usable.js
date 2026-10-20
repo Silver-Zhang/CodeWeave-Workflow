@@ -8,6 +8,12 @@ if(fragment.has('token')) { sessionStorage.setItem('devflower-stable-token',frag
 const token = sessionStorage.getItem('devflower-stable-token') || '';
 $('studio').inert=true;
 function notice(message) { $('notice').textContent=message; }
+function confirmedPR(receipt) {
+  const pr=receipt?.pr, url=typeof pr?.url==='string'?pr.url:'';
+  const match=/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/pull\/([1-9][0-9]*)$/.exec(url);
+  return receipt?.pushed===true&&/^[0-9a-f]{40}$/.test(receipt.commit||'')&&pr?.head===receipt.commit
+    &&Number.isSafeInteger(pr.number)&&match&&String(pr.number)===match[1]?pr:null;
+}
 let panelOrigin=null;
 function closePanels() { for(const e of document.querySelectorAll('.floating-panel'))e.hidden=true; $('node-menu').hidden=true; }
 function openPanel(id) {
@@ -350,9 +356,10 @@ function renderNodeEvidence(open=true) {
     if(snapshot.human_gate){const button=text('button','填写本轮 G4 结果确认');button.addEventListener('click',()=>{$('monitor').closest('details').open=true;$('g4-answer')?.focus();});parent.append(button);}
   }
   if(n.type==='delivery'){
-    parent.append(text('h3','交付权限与门禁'),text('pre',JSON.stringify(n.delivery||snapshot.delivery,null,2)),text('p',`Controller 阶段 ${snapshot.state} · 当前审核 ${snapshot.verdict||'未确认'}；仅固定 gate 可以允许交付。`));
-    const url=n.delivery?.pr?.url;
-    if(url){const a=text('a','打开真实开发 PR');a.href=url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}
+    const receipt=n.delivery||(!snapshot.workflow_graph?snapshot.github_receipt:null);
+    parent.append(text('h3','交付权限与门禁'),text('pre',JSON.stringify(receipt||snapshot.delivery,null,2)),text('p',`Controller 阶段 ${snapshot.state} · 当前审核 ${snapshot.verdict||'未确认'}；仅固定 gate 可以允许交付。`));
+    const pr=confirmedPR(receipt);
+    if(pr){const a=text('a','打开真实开发 PR');a.href=pr.url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}
     else parent.append(text('p','尚无已读回确认的 PR 入口。'));
   }
   if(['developer','implementer','reviewer','planner'].includes(n.type)){
@@ -385,8 +392,9 @@ function renderSnapshot(run,snapshot) {
   parent.append(stages);
   if(snapshot.verdict)parent.append(text('p','本轮独立审核：'+snapshot.verdict));
   for(const finding of snapshot.findings||[])parent.append(text('p',`${finding.id} · ${finding.status} · ${finding.title}`));
-  if(snapshot.github_receipt?.pr?.url) {
-    const link=text('a','打开开发 PR');link.href=snapshot.github_receipt.pr.url;link.target='_blank';link.rel='noopener noreferrer';parent.append(link);
+  const pr=confirmedPR(snapshot.github_receipt);
+  if(pr) {
+    const link=text('a','打开开发 PR');link.href=pr.url;link.target='_blank';link.rel='noopener noreferrer';parent.append(link);
   }
   if(snapshot.human_gate) {
     const label=text('label','必填：请解释本轮候选的实际结果、适用边界，并确认此候选。'+snapshot.human_gate.question),answer=document.createElement('textarea'),approve=text('button','确认当前候选的 G4 结果解释');answer.id='g4-answer';

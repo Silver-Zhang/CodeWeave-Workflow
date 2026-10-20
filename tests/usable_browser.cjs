@@ -305,6 +305,23 @@ async function dragFirstNode(){
    assert(await page.locator('#canvas [data-node="developer"]').count()===1,'run replaced design document');
    assert((await page.locator('#canvas [data-node="developer"]').textContent()).includes('我的开发节点'),'draft was overwritten by run');
  });
+ await check('legacy Delivery uses matching readback and rejects mismatched or unsafe PR receipts',async()=>{
+   await page.click('[data-tab="runs"]');await page.selectOption('#runs',access.canvas['legacy-delivered']);
+   await page.waitForFunction(id=>document.querySelector('#run-title').textContent.includes(id+' · COMPLETED'),access.canvas['legacy-delivered']);
+   await page.locator('#canvas [data-node="delivery"] .node-body').click();
+   assert(await page.locator('#node-evidence a').count()===1,'legacy readback missing from Delivery node');
+   assert(await page.locator('#node-evidence a').getAttribute('href')==='https://github.com/fixture/project/pull/42','legacy PR identity incorrect');
+   assert(!(await page.textContent('#node-evidence')).includes('尚无已读回'),'valid legacy receipt falsely shown missing');
+   await page.keyboard.press('Escape');
+   for(const name of ['legacy-mismatched','legacy-unsafe']){
+     await page.selectOption('#runs',access.canvas[name]);
+     await page.waitForFunction(id=>document.querySelector('#run-title').textContent.includes(id+' · COMPLETED'),access.canvas[name]);
+     await page.locator('#canvas [data-node="delivery"] .node-body').click();
+     assert(await page.locator('#node-evidence a').count()===0,name+' exposed an unverified PR');
+     assert(await page.locator('#monitor>a').count()===0,name+' exposed an unverified monitor link');
+     await page.keyboard.press('Escape');
+   }
+ });
  await check('late frozen graph cannot cross run identity and stale or dead evidence cannot appear current',async()=>{
    await page.click('[data-tab="runs"]');const delay=await interceptOnce('**/api/run?id='+access.canvas.failed);
    await page.selectOption('#runs',access.canvas.failed);await delay.reached;

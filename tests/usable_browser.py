@@ -61,6 +61,16 @@ def canvas_runs(runtime, fixture):
                 store.transition(run, 'COMPLETED', config=delivered_config,
                     github_receipt=dict(commit='a' * 40, pushed=True, pr=dict(number=42,
                         url='https://github.com/fixture/project/pull/42', head='a' * 40)))
+        for case in ('legacy-delivered', 'legacy-mismatched', 'legacy-unsafe'):
+            data = json.loads(json.dumps(store.get(runs['delivered'])['data']))
+            data['config'].pop('studio_workflow')
+            run = store.create(data);runs[case] = run
+            data['review']['report']['run_id'] = run
+            if case == 'legacy-mismatched':
+                data['github_receipt']['pr']['head'] = 'b' * 40
+            if case == 'legacy-unsafe':
+                data['github_receipt']['pr']['url'] = 'javascript:alert(1)'
+            store.transition(run, 'COMPLETED', **data)
     finally:
         store.db.close()
     return runs

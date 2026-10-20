@@ -269,6 +269,12 @@ class WorkflowTests(unittest.TestCase):
                 data = store.get(run)['data']
                 validate(data['review']['report'], schema('review-result'))
                 snapshot = self.http_snapshot(run)
+                if case.startswith('legacy-'):
+                    self.assertNotIn('workflow_graph', snapshot)
+                    self.assertIn('delivery', {n['id'] for n in snapshot['graph']['nodes']})
+                    self.assertEqual(snapshot['github_receipt'], data['github_receipt'])
+                    self.assertEqual(snapshot['state'], 'COMPLETED')
+                    continue
                 nodes = {n['id']: n for n in snapshot['workflow_graph']['nodes']}
                 self.assertEqual(nodes['separate-check']['status'],
                                  'failed' if case == 'failed' else 'pending' if case == 'stale' else 'passed')
