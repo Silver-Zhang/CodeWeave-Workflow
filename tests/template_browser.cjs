@@ -14,7 +14,7 @@ async function test(name,fn){
 }
 async function preset(p,kind){
  await p.locator('#template-library summary').click();await p.selectOption('#template',kind);
- await p.click('#new-draft');await p.waitForFunction(()=>document.querySelector('#save-state').textContent==='新草稿未保存');
+ await p.click('#new-draft');await p.waitForFunction(k=>document.querySelector('#workflow-name').value.startsWith(k+' 起始模板'),kind);
 }
 async function compile(p){
  await p.keyboard.press('Escape');await p.click('#flow-options');
