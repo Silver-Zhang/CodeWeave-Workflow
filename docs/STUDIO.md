@@ -10,7 +10,7 @@
 python3 tools/devflower_studio.py --workspace "$HOME/.local/share/devflower-studio-preview"
 ```
 
-`--workspace` 首次必须是**尚不存在**的新目录，不能在框架源码或 Controller 控制目录内部，也不能包含它们。以后复用同一个 Studio 目录即可加载已保存版本。此目录只存 Studio 草稿，不替代 project 分支、task.json 或运行状态库。
+`--workspace` 首次必须是**尚不存在**的新目录，不能在框架源码或 Controller 控制目录内部，也不能包含它们。以后复用同一个 Studio 目录即可加载已保存版本。此目录存 Studio 草稿与可重建的最小会话索引，不替代 project 分支、task.json 或运行状态库。
 
 打开终端打印的完整地址，形如 `http://127.0.0.1:8765/#token=...`。令牌仅保存在当前浏览器会话，页面读取后清除地址栏的 fragment。不要分享令牌。服务仅监听 127.0.0.1，不用于多用户公网部署。端口冲突可用 `--port 8766`。
 
@@ -93,7 +93,7 @@ python3 tools/devflower_studio.py \
 
 ## 6. 安全与版本边界
 
-服务使用每次启动随机令牌、严格 Host/Origin/Fetch-Metadata 校验、无 CORS、CSP 和请求大小上限。API 错误不返回 Engine 异常正文、凭据或任意文件内容。读取 Controller 时不执行 SQL 写入；SQLite 的 WAL 读锁/共享内存机制不等于修改工作流权威状态。Studio 的独立 SQLite 只存不可变画布版本，乐观并发失败返回 409，不覆盖另一标签页的修改。保存绑定发起时的草稿身份、版本和文档快照；同一草稿的保存串行，切换或新建后旧响应只刷新历史，不改变当前草稿身份。保存期间继续编辑仍显示未保存改动。
+服务使用每次启动随机令牌、严格 Host/Origin/Fetch-Metadata 校验、无 CORS、CSP 和请求大小上限。API 错误不返回 Engine 异常正文、凭据或任意文件内容。读取 Controller 时不执行 SQL 写入；SQLite 的 WAL 读锁/共享内存机制不等于修改工作流权威状态。Studio 的草稿 SQLite 保存不可变画布版本；另有独立的最小会话索引，乐观并发失败返回 409，不覆盖另一标签页的修改。保存绑定发起时的草稿身份、版本和文档快照；同一草稿的保存串行，切换或新建后旧响应只刷新历史，不改变当前草稿身份。保存期间继续编辑仍显示未保存改动。
 
 这是单人、本地开发工具，不是面对不可信本机账户、恶意管理员或公网的完整隔离边界。不要在节点目标、标签或命令中输入凭据。私有源码外发依然须独立授权。前端不收集遥测。
 
@@ -117,3 +117,95 @@ python3 tests/studio_browser.py --chromium /usr/bin/chromium
 **证据边界：**容器不能解析 GitHub，未取得完整 checkout；实际读取远端固定版本并重建本轮测试依赖，`common.py`、`contracts.py` 和 policy Schema 与 Git blob SHA 一致。没有重跑旧的 89 项核心回归。容器 Chromium 禁止直接 HTTP 导航，交互检查采用 `--offline-bridge`：页面执行真实 JS，API 经 Python 桥接到真实本地 HTTP 服务；不宣称完成普通浏览器网络通道的端到端测试。新 CI 只运行 Studio 合同与 JS 语法测试。
 
 本轮没有调用真实 Codex/Claude 服务；启动监督测试中的 Popen/authorization 是明确标注的模拟。读取进度使用当前 SQLite 合同的测试夹具，不冒充模型运行。新增独立 Claude 源码审核、用户实际任务试用和主线验收待完成。此版本先以开发分支/PR 交付，不自动合并 main。
+
+## 8. Workspace Manager M0：业务工作区与原生会话
+
+`--workspace` 仍然是 Studio 专有草稿和索引目录。业务源码目录另用
+`--project-root` 登记，可重复指定（最多 8 个）：
+
+```sh
+python3 tools/devflower_studio.py \
+  --workspace /absolute/new-studio-data \
+  --project-root /home/A --project-root /home/B \
+  --session-profiles /absolute/operator/session-profiles.json
+```
+
+左侧和“Agent 会话（只读）”面板可以切换已登记工作区。显示规范化路径、
+本机身份、各来源扫描覆盖、Provider/Profile/原生 ID、记录中的 cwd、
+时间、CLI 版本和能力。切换、关闭、并发刷新及网络错误会使旧响应失效；
+不复用 Controller 运行画布或任务裁决。浏览器没有原生目录选择器，
+也不能登记任意路径、写入会话、启动模型或执行恢复命令。
+
+不提供登记文件时，扫描当前 `HOME/.codex/sessions`（或 `CODEX_HOME/sessions`）、
+`HOME/.claude/projects`（或 `CLAUDE_CONFIG_DIR/projects`），以及每个业务工作区
+**直接**包含的 `.codex/sessions`、`.claude/projects`。不会递归搜索整个 HOME
+或项目源码寻找历史库；更深的嵌套根和独立审核 HOME 必须明确登记。
+只有原生会话结构和元数据匹配才生成索引行，单独的项目配置目录不算会话库。
+
+登记文件是操作员在终端选择的本地 JSON，不是浏览器输入：
+
+```json
+{
+  "defaults": true,
+  "limits": {"depth": 5, "entries": 2000, "files": 200, "bytes": 33554432},
+  "profiles": [
+    {
+      "provider": "claude",
+      "home": "/absolute/reviewer-home",
+      "config_root": "/absolute/reviewer-home/.claude",
+      "workspace": "/home/A",
+      "original_project_root": "/home/A"
+    },
+    {
+      "provider": "codex",
+      "home": "/home/operator",
+      "config_root": "/home/operator/.codex",
+      "workspace": "/home/A",
+      "original_project_root": "/old/project-A",
+      "session_ids": ["11111111-2222-4333-8444-555555555555"]
+    }
+  ]
+}
+```
+
+`workspace` 与 `original_project_root` 必须成对出现，前者必须已用
+`--project-root` 登记。共享旧 cwd 时使用明确的 `session_ids` 限定原生 UUID，
+避免把整个存储环境的其他项目误归属。不同 Provider、环境、原始文件的相同 ID
+不会静默合并。cwd 与登记原属不符、目录不存在、会话中 cwd 改变，都会明确降级。
+目录“已核验”只表示记录中的路径当前可访问，不证明对应进程仍运行。
+
+`home` 是原启动环境，不能从会话 cwd 猜测。Claude 支持可选的
+`settings_file`，用于原 CLI 的显式 `--settings` 绑定；索引器不读取其内容。
+直接发现的嵌套库没有可靠 HOME 时，不生成恢复命令。
+恢复建议固定原 HOME、CODEX_HOME/CLAUDE_CONFIG_DIR、cwd 和明确 UUID，
+使用 shell 参数转义，只能查看或复制。**本版发现器不调用原生 CLI 恢复，
+不把元数据或登记声明当作原生成功证据；当前恢复能力一律标未验证，
+不会显示“可恢复”。** 版本兼容、进程占用与认证也不从文件存在推断；
+登记不会让会话自动出现在提供方默认历史列表。
+
+扫描每来源最多 2000 目录项、200 文件、32 MiB，总单文件不超过 16 MiB、
+单行不超过 1 MiB、深度最多 5。操作员可降低这些预算；超限、不可读、
+损坏/部分 JSONL、变化中的文件、符号链接和未知布局均明确报告覆盖缺口，
+不把部分扫描标为全面发现。Codex 支持已观测的 rollout JSONL 主元数据
+及双 UUID 文件名；Claude 支持 projects 下主 UUID JSONL。
+未知格式、子 Agent 私有布局和 Copilot 为未覆盖/unsupported，不猜测兼容性。
+
+每级目录使用 `openat/O_NOFOLLOW`，拒绝跨符号链接及特殊文件，所有原生文件
+只读打开。Studio 的 `sessions.sqlite` 仅存 Profile、工作区映射与允许字段的
+最小索引，绝不保存消息正文、隐藏推理、认证内容或环境变量全集。
+默认 API 只披露操作员登记范围内的路径；越界 cwd 隐去，疑似凭据的路径组件
+打码，错误不回显原文件内容。原生目录与 Studio 数据目录必须分离；
+索引可以独立删除重建，删除索引不会删除任何原生会话。
+
+验证：
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
+python3 tests/workspace_browser.py --chromium /absolute/chrome --artifacts /tmp/new-workspace-browser
+node --check tools/studio/static/workspace.js
+```
+
+浏览器测试使用合成原生会话和普通 HTTP；它们证明 UI/索引与只读边界，
+不冒充真实模型或原生会话恢复成功。
+
+扫描统计与读取共用同一份 inode/大小/mtime 快照；原始 IO 层也限制读取大小，避免缓冲预读突破预算。检测到增长或截断会拒绝该文件。Linux `O_PATH` 句柄先固定 inode 并验证普通文件类型，再通过 `/proc/self/fd` 为同一 inode 打开数据流；特殊文件只可能取得元数据句柄，不打开数据流。已发现的 FIFO/socket/device 作为 `special_file` 覆盖缺口报告，类型替换则拒绝为 `not_private_regular`。非法 Unicode 路径与无法解码的目录名按 `invalid_path` 隔离，其他有效会话仍可展示。此路径需要 Linux 的 `O_PATH` 与可用的 `/proc/self/fd`；不可用时失败封闭。
