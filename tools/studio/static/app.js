@@ -9,6 +9,8 @@ if (fragment.has('token')) {
 const token = sessionStorage.getItem('devflower-token') || '';
 let graph, saved = {}, importedTask = null, compiled = null, meta;
 let editVersion = 0, compileRequest = 0, loadRequest = 0, starting = false;
+let draftGeneration = 0, designsRequest = 0, pollRequest = 0;
+const savesInFlight = new Set();
 function invalidate() { editVersion++; compiled = null; $('start').disabled = true; }
 function snapshotKey() { return JSON.stringify({document: graph, task: importedTask}); }
 function canStart() {
@@ -19,6 +21,11 @@ function canStart() {
 function invalidFields() { return $('inspector').querySelector('input:invalid,textarea:invalid'); }
 function checkFields() { if (invalidFields()) throw new Error('请先修正并提交当前参数，再编译或启动。'); }
 function refreshStart() { $('start').disabled = !canStart(); }
+function refreshSave() { $('save').disabled = mode !== 'design' || savesInFlight.has(draftGeneration); }
+function draftRevision() {
+  return saved.revision && saved.snapshot === JSON.stringify(graph) && !invalidFields()
+    ? `已保存版本 ${saved.revision.slice(0, 12)}` : '草稿未保存 · 保存创建不可变版本';
+}
 let mode = 'design', selection = null, selectedEdge = null, runId = null, runData = null;
 let zoom = 0.8, undoStack = [], redoStack = [], connecting = null, fileKind = '', busy = false;
 const states = {pending: '未开始', completed: '已完成', passed: '通过', running: '进程运行中',
@@ -167,7 +174,7 @@ function field(label, value, change, type = 'text') {
   box.append(input); return box;
 }
 function inspect() {
-  const box = $('inspector'); box.replaceChildren(); const doc = documentNow(); if (!doc) return;
+  const box = $('inspector'); box.replaceChildren(); const doc = documentNow(); if (!doc) { $('inspector-title').textContent = '运行快照'; return; }
   const node = doc.nodes.find(n => n.id === selection);
   $('inspector-title').textContent = node ? node.label : mode === 'run' ? '运行快照' : '流程设置';
   if (mode === 'run') {
@@ -209,51 +216,93 @@ function autoLayout(doc) {
 }
 function applyZoom() { $('world').style.transform = `scale(${zoom})`; $('surface').style.width = `${2000 * zoom}px`; $('surface').style.height = `${1400 * zoom}px`; $('zoom').textContent = `${Math.round(zoom * 100)}%`; }
 function switchMode(next) {
+  if (mode !== next) { ++pollRequest; busy = false; clearRunSnapshot(); }
   mode = next; selection = null; selectedEdge = null; connecting = null;
   $('design-tab').classList.toggle('selected', mode === 'design'); $('run-tab').classList.toggle('selected', mode === 'run');
   for (const id of ['save', 'compile', 'add-test', 'edge-kind', 'validate', 'export-graph', 'undo', 'redo']) $(id).disabled = mode === 'run';
   $('context').textContent = mode === 'run' ? '只读 · 实际配置与运行事件 · 每秒刷新' : 'B 模式 · 有界修复循环 · 原有门禁不可绕过';
-  $('revision').textContent = mode === 'run' ? `Controller run ${runId || '未选择'}` : saved.revision ? `已保存版本 ${saved.revision.slice(0, 12)}` : '未保存的本地草稿';
+  $('revision').textContent = mode === 'run' ? `Controller run ${runId || '未选择'}` : draftRevision();
   if (mode === 'design') { $('viewport').classList.remove('stale'); $('notice').classList.remove('error'); $('notice').textContent = '画布决定测试顺序及节点参数；启动仍须终端中的独立授权。草稿不是运行状态。'; }
-  refreshStart(); draw(); inspect();
+  refreshStart(); refreshSave(); draw(); inspect();
 }
 function download(name, value) { const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2) + '\n'], {type: 'application/json'})); const a = el('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
 async function designs() {
-  const list = await api('/api/workflows'); $('workflows').replaceChildren();
+  const request = ++designsRequest;
+  const list = await api('/api/workflows'); if (request !== designsRequest) return;
+  $('workflows').replaceChildren();
   if (!list.length) $('workflows').textContent = '尚未保存';
   for (const item of list) {
     const button = el('button', item.name); button.append(el('small', item.revision.slice(0, 12)));
-    button.onclick = () => attempt(async () => { invalidate(); const request = ++loadRequest; const version = editVersion; const data = await api(`/api/workflows/${item.id}`); if (request !== loadRequest || version !== editVersion) return; invalidate(); graph = data.document; saved = {id: data.id, revision: data.revision}; importedTask = null; compiled = null; undoStack = []; redoStack = []; switchMode('design'); notify('已加载画布版本。运行任务配置不随草稿存储；请重新导入 task.json。'); }); $('workflows').append(button);
+    button.onclick = () => attempt(async () => { invalidate(); const request = ++loadRequest; const version = editVersion; const data = await api(`/api/workflows/${item.id}`); if (request !== loadRequest || version !== editVersion) return; invalidate(); ++draftGeneration; graph = data.document; saved = {id: data.id, revision: data.revision, snapshot: JSON.stringify(graph)}; importedTask = null; compiled = null; undoStack = []; redoStack = []; switchMode('design'); notify('已加载画布版本。运行任务配置不随草稿存储；请重新导入 task.json。'); }); $('workflows').append(button);
   }
+}
+function clearRunSnapshot() {
+  runData = null;
+  $('timeline').replaceChildren(); $('rounds').replaceChildren(); $('round-label').textContent = '等待运行快照';
+  if (mode === 'run') { draw(); inspect(); $('notice').textContent = '等待所选运行的真实快照；不推断运行或验收结果。'; }
+}
+function selectRun(id) {
+  ++pollRequest; busy = false; runId = id; clearRunSnapshot();
+  $('connection').textContent = '正在读取所选运行'; $('connection').className = 'chip';
+  switchMode('run'); poll();
 }
 async function poll() {
   if (busy || !meta?.control_configured) return; busy = true;
+  const request = ++pollRequest; let id = runId;
+  const current = () => request === pollRequest && id === runId;
   try {
-    const result = await api('/api/runs'); $('runs').replaceChildren();
+    const result = await api('/api/runs'); if (!current()) return;
+    $('runs').replaceChildren();
     if (!result.runs.length) $('runs').textContent = result.available ? '尚无真实运行' : `等待状态库${result.launcher.controller_exit === null ? '' : ' · Controller exit ' + result.launcher.controller_exit}`;
     for (const run of result.runs) {
       const button = el('button', run.task_id, runId === run.id ? 'active' : '');
       button.append(el('small', `${run.state} · Round ${run.round}`)); button.title = run.id;
-      button.onclick = () => { runId = run.id; runData = null; switchMode('run'); poll(); };
-      $('runs').append(button);
+      button.onclick = () => selectRun(run.id); $('runs').append(button);
     }
-    if (!runId && mode === 'run' && result.runs.length) runId = result.runs[0].id;
-    if (runId) {
-      runData = await api(`/api/runs/${runId}`);
-      autoLayout(runData.graph);
-      if (mode === 'run') { $('revision').textContent = `Controller run ${runId}`; draw(); inspect(); $('notice').textContent = runData.message; $('notice').classList.toggle('error', runData.state === 'BLOCKED'); }
+    if (!id && mode === 'run' && result.runs.length) id = runId = result.runs[0].id;
+    if (id && mode === 'run') {
+      const snapshot = await api(`/api/runs/${id}`); if (!current()) return;
+      if (snapshot.id !== id) throw new Error('运行快照身份不匹配');
+      autoLayout(snapshot.graph); runData = snapshot;
+      $('revision').textContent = `Controller run ${snapshot.id}`;
+      draw(); inspect(); $('notice').textContent = snapshot.message; $('notice').classList.toggle('error', snapshot.state === 'BLOCKED');
       $('timeline').replaceChildren();
-      for (const event of runData.events.slice().reverse()) { const row = el('div', undefined, 'event'); row.append(el('time', new Date(event.at * 1000).toLocaleTimeString()), el('span', event.kind), el('small', event.round ? `Round ${event.round}` : `#${event.seq}`)); $('timeline').append(row); }
+      for (const event of snapshot.events.slice().reverse()) { const row = el('div', undefined, 'event'); row.append(el('time', new Date(event.at * 1000).toLocaleTimeString()), el('span', event.kind), el('small', event.round ? `Round ${event.round}` : `#${event.seq}`)); $('timeline').append(row); }
       $('rounds').replaceChildren();
-      for (const round of runData.rounds) { const row = el('div', undefined, 'round'); row.append(el('span', `Round ${round.round} · ${round.candidate?.slice(0, 8) || 'unknown'}`), el('span', round.verdict, 'tag')); $('rounds').append(row); }
-      $('round-label').textContent = `当前第 ${runData.round} 轮`;
+      for (const round of snapshot.rounds) { const row = el('div', undefined, 'round'); row.append(el('span', `Round ${round.round} · ${round.candidate?.slice(0, 8) || 'unknown'}`), el('span', round.verdict, 'tag')); $('rounds').append(row); }
+      $('round-label').textContent = `当前第 ${snapshot.round} 轮`;
     }
     $('connection').textContent = `已连接 · 读取 ${new Date().toLocaleTimeString()}`; $('connection').className = 'chip good'; $('viewport').classList.remove('stale');
     meta.launcher = result.launcher; refreshStart();
   } catch (error) {
+    if (!current()) return;
+    clearRunSnapshot();
     $('connection').textContent = '数据不可用 · 不推断运行'; $('connection').className = 'chip bad'; $('viewport').classList.add('stale');
     $('runs').textContent = error.message;
-  } finally { busy = false; }
+  } finally { if (request === pollRequest) busy = false; }
+}
+async function saveDraft() {
+  if (mode !== 'design' || savesInFlight.has(draftGeneration)) return;
+  checkFields();
+  const generation = draftGeneration, version = editVersion, snapshot = JSON.stringify(graph);
+  const identity = {id: saved.id, revision: saved.revision};
+  const current = () => generation === draftGeneration && saved.id === identity.id && saved.revision === identity.revision;
+  savesInFlight.add(generation); refreshSave();
+  try {
+    const value = await api('/api/workflows', {document: JSON.parse(snapshot), id: identity.id, expected: identity.revision});
+    if (current()) {
+      saved = {...value, snapshot};
+      if (mode === 'design') {
+        const unchanged = version === editVersion && snapshot === JSON.stringify(graph) && !invalidFields();
+        $('revision').textContent = unchanged ? draftRevision() : '草稿仍有未保存改动';
+        notify(unchanged ? '已保存不可变画布版本。当前运行不受影响。' : '请求中的版本已保存；当前仍有未保存改动。');
+      }
+    }
+    // A completed save may refresh history even after the user has moved to another draft.
+    await designs();
+  } catch (error) {
+    if (current() && mode === 'design') notify(error.message, true);
+  } finally { savesInFlight.delete(generation); refreshSave(); }
 }
 async function attempt(fn) { try { await fn(); } catch (error) { notify(error.message, true); } }
 function removeTest(node) {
@@ -269,7 +318,7 @@ $('add-test').onclick = () => { remember(); const id = `verify-${Date.now()}`;
   if (old) { const from = old.source; old.source = id; graph.edges.push({source: from, target: id, on: 'next'}); }
   selection = id; changed(); draw(); inspect(); };
 $('delete-edge').onclick = () => { if (selectedEdge === null || mode !== 'design') return; remember(); graph.edges.splice(selectedEdge, 1); selectedEdge = null; changed(); drawEdges(); highlight(); };
-$('new').onclick = () => { invalidate(); ++loadRequest; graph = clone(meta.template); saved = {}; importedTask = null; compiled = null; undoStack = []; redoStack = []; autoLayout(graph); switchMode('design'); };
+$('new').onclick = () => { invalidate(); ++loadRequest; ++draftGeneration; graph = clone(meta.template); saved = {}; importedTask = null; compiled = null; undoStack = []; redoStack = []; autoLayout(graph); switchMode('design'); };
 $('design-tab').onclick = () => switchMode('design'); $('run-tab').onclick = () => { switchMode('run'); poll(); };
 $('layout').onclick = () => { if (mode === 'design') { remember(); autoLayout(graph); changed(); } else if (runData) autoLayout(runData.graph); draw(); };
 $('zoom-out').onclick = () => { zoom = Math.max(.35, zoom - .1); applyZoom(); }; $('zoom-in').onclick = () => { zoom = Math.min(1.5, zoom + .1); applyZoom(); };
@@ -277,7 +326,7 @@ $('undo').onclick = () => { if (!undoStack.length || mode !== 'design') return; 
 $('redo').onclick = () => { if (!redoStack.length || mode !== 'design') return; undoStack.push(clone(graph)); graph = redoStack.pop(); changed(); draw(); inspect(); };
 window.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.target.matches('input,textarea')) { e.preventDefault(); $(e.shiftKey ? 'redo' : 'undo').click(); } if (e.key === 'Escape') { connecting = null; $('ghost').setAttribute('d', ''); } });
 $('validate').onclick = () => attempt(async () => { checkFields(); const result = await api('/api/validate', {document: graph}); notify(`校验通过 · ${result.order.length} 个执行节点。不是授权或正确性证明。`); });
-$('save').onclick = () => attempt(async () => { checkFields(); const value = await api('/api/workflows', {document: graph, id: saved.id, expected: saved.revision}); saved = value; $('revision').textContent = `已保存版本 ${value.revision.slice(0, 12)}`; await designs(); notify('已保存不可变画布版本。当前运行不受影响。'); });
+$('save').onclick = () => attempt(saveDraft);
 $('export-graph').onclick = () => attempt(async () => { checkFields(); download('workflow.json', graph); });
 $('compile').onclick = () => attempt(async () => {
   checkFields();
@@ -295,7 +344,7 @@ $('start').onclick = () => attempt(async () => {
   if (!canStart() || !confirm('仅启动操作员通过终端绑定并授权的这一份任务。可能产生模型调用费用。确认启动？') || !canStart()) return;
   const hash = compiled.config_sha256; starting = true; refreshStart();
   try { await api('/api/start', {config_sha256: hash}); } finally { invalidate(); starting = false; }
-  runId = null; switchMode('run'); notify('Controller 已启动，正在等待真实运行记录；不代表 Agent 或验收成功。'); await poll();
+  selectRun(null); notify('Controller 已启动，正在等待真实运行记录；不代表 Agent 或验收成功。');
 });
 for (const [id, kind] of [['import-graph', 'graph'], ['import-task', 'task']]) $(id).onclick = () => { fileKind = kind; $('file-input').value = ''; $('file-input').click(); };
 $('file-input').onchange = () => attempt(async () => {
@@ -309,7 +358,7 @@ $('file-input').onchange = () => attempt(async () => {
   if (request !== loadRequest || version !== editVersion) return;
   invalidate(); importedTask = kind === 'task' || kind === 'bind' ? data : null;
   if (kind === 'bind') { inspect(); notify('已绑定任务配置；当前画布和保存版本未改变。'); return; }
-  graph = next; saved = {}; compiled = null; undoStack = []; redoStack = []; autoLayout(graph); switchMode('design'); notify('已导入。仅保存画布，不保存 operator.json 或运行授权。');
+  ++draftGeneration; graph = next; saved = {}; compiled = null; undoStack = []; redoStack = []; autoLayout(graph); switchMode('design'); notify('已导入。仅保存画布，不保存 operator.json 或运行授权。');
 });
 $('refresh-designs').onclick = () => attempt(designs); $('refresh-runs').onclick = poll;
 async function initialize() {

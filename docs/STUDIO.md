@@ -71,7 +71,7 @@ python3 tools/devflower_studio.py \
 
 运行视图从**实际运行的 config**生成，不能用编辑中的草稿冒充本次执行。显示 Controller 状态、当前轮次、测试计数、当前候选、真实裁决、最近最多 200 条事件、最近审核轮次及交付收据。不显示原始 argv、prompt、授权、会话全文、隐藏推理、原始 stdout/stderr 或任意 artifact 文件。
 
-只有 host、boot ID、PID/start identity 与本机活进程匹配，才显示“进程运行中”。外机、过期记录或无法确认进程都显示“未证实”；数据库的 RUNNING 字符串不自动变成绿色活跃状态。断线会明确降级，不继续播放活跃连线。事件日志是阶段记录，不是模型思考或 token 流；UI 不猜测完成百分比。
+只有 host、boot ID、PID/start identity 与本机活进程匹配，才显示“进程运行中”。外机、过期记录或无法确认进程都显示“未证实”；数据库的 RUNNING 字符串不自动变成绿色活跃状态。快照请求绑定所选 run_id 和请求版本；切换运行立即清空旧快照，迟到响应和旧请求失败不会覆盖新选择。标题、节点、轮次和审核信息来自同一份已核对身份的快照。断线会清空过期节点与裁决并明确降级，不继续播放活跃连线。事件日志是阶段记录，不是模型思考或 token 流；UI 不猜测完成百分比。
 
 `READY`、`LOCAL_COMMITTED`、`PARTIAL_DELIVERY`、`CANCELLED` 含义与 Engine 一致。界面没有 resume/cancel/deliver/merge/授权写入端点；这些仍由现有 CLI 和真实用户 Gate 处理。
 
@@ -93,7 +93,7 @@ python3 tools/devflower_studio.py \
 
 ## 6. 安全与版本边界
 
-服务使用每次启动随机令牌、严格 Host/Origin/Fetch-Metadata 校验、无 CORS、CSP 和请求大小上限。API 错误不返回 Engine 异常正文、凭据或任意文件内容。读取 Controller 时不执行 SQL 写入；SQLite 的 WAL 读锁/共享内存机制不等于修改工作流权威状态。Studio 的独立 SQLite 只存不可变画布版本，乐观并发失败返回 409，不覆盖另一标签页的修改。
+服务使用每次启动随机令牌、严格 Host/Origin/Fetch-Metadata 校验、无 CORS、CSP 和请求大小上限。API 错误不返回 Engine 异常正文、凭据或任意文件内容。读取 Controller 时不执行 SQL 写入；SQLite 的 WAL 读锁/共享内存机制不等于修改工作流权威状态。Studio 的独立 SQLite 只存不可变画布版本，乐观并发失败返回 409，不覆盖另一标签页的修改。保存绑定发起时的草稿身份、版本和文档快照；同一草稿的保存串行，切换或新建后旧响应只刷新历史，不改变当前草稿身份。保存期间继续编辑仍显示未保存改动。
 
 这是单人、本地开发工具，不是面对不可信本机账户、恶意管理员或公网的完整隔离边界。不要在节点目标、标签或命令中输入凭据。私有源码外发依然须独立授权。前端不收集遥测。
 
@@ -104,6 +104,8 @@ python3 -m unittest discover -s tests -p test_studio.py -v
 node --check tools/studio/static/app.js
 # 定向竞态测试：真实 HTTP；启动状态使用显式夹具，不调用模型
 python3 tests/studio_races.py --chromium /usr/bin/chromium --artifacts /tmp/studio-races
+# 保存和监控身份竞态：真实 HTTP + SQLite 夹具，无模型调用
+python3 tests/studio_identity_races.py --chromium /usr/bin/chromium --artifacts /tmp/studio-identity-races
 # 可选浏览器测试（另行安装 Playwright 和可用 Chromium）：
 python3 tests/studio_browser.py --chromium /usr/bin/chromium
 ```
