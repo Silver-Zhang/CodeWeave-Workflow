@@ -29,6 +29,9 @@ class HostIsolation(unittest.TestCase):
 
     def test_A05_source_is_readonly_for_reviewer(self):
         p = self.work / 'file';p.write_text('fixed')
+        control, stdout, _ = execute([sys.executable, '-c', 'import pathlib;assert pathlib.Path("file").read_text()=="fixed";print("started")'],
+                                    self.work, self.home, read=[str(self.work)], backend='bwrap')
+        self.assertEqual(control['exit'], 0);self.assertEqual(stdout.strip(), b'started')
         r, _, _ = execute([sys.executable, '-c', 'import pathlib;pathlib.Path("file").write_text("changed")'],
                           self.work, self.home, read=[str(self.work)], backend='bwrap')
         self.assertNotEqual(r['exit'], 0);self.assertEqual(p.read_text(), 'fixed')

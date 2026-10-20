@@ -216,7 +216,7 @@ def resume(store, run):
                 check_tree(candidate, secrets | set().union(*(credentials(b['home']) for b in config['bindings'].values())))
                 scope_check(data['base'], frozen['entries'], config['scope'])
                 save(rd / 'candidate.json', frozen)
-                store.transition(run, 'VERIFYING', candidate=frozen, candidate_path=str(candidate))
+                store.transition(run, 'VERIFYING', candidate=frozen, candidate_round=number, candidate_path=str(candidate))
                 verification = verify(config, candidate, rd / 'verification', run, number, frozen['sha256'], data['acceptance_sha256'], store)
                 save(rd / 'verification.json', verification)
                 review_baseline = rd / 'baseline'

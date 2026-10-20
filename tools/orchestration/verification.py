@@ -54,18 +54,33 @@ def verify(config, candidate, artifacts, run, round_number, candidate_hash, acce
         argv = [x.replace('{artifacts}', str(artifacts)).replace('{result}', str(result_path)) for x in spec['argv']]
         if not any(str(result_path) in x for x in argv):
             raise Blocked('verification argv must bind {result}')
-        process, _, _ = execute(argv, candidate, artifacts / 'home', read=[str(candidate)], write=[str(artifacts)],
-            timeout=config['policy']['limits']['step_timeout_seconds'], cap=config['policy']['limits']['max_log_bytes'],
-            store=store, run=run)
-        counter = counts(result_path, spec['result_format'])
-        passed = process['exit'] == 0 and not any(process[k] for k in ('timeout', 'overflow', 'cancelled'))
-        passed = passed and counter['tests'] >= spec['min_cases'] and counter['skipped'] <= spec['max_skipped']
-        passed = passed and counter['failures'] == counter['errors'] == 0 and sum(counter[k] for k in ('failures', 'errors', 'skipped')) <= counter['tests']
-        if tree_hash(candidate) != candidate_hash:
-            raise Blocked('candidate changed during verification')
-        reports.append({'id': spec['id'], 'run_id': run, 'round': round_number,
-                        'candidate_sha256': candidate_hash, 'acceptance_sha256': acceptance_hash,
-                        'argv': argv, 'cwd': str(candidate), 'executor': 'controller-runner',
-                        'process': process, 'counts': counter, 'passed': bool(passed),
-                        'result_path': str(result_path), 'result_sha256': digest(result_path.read_bytes())})
+        binding = {'run_id': run, 'round': round_number, 'verification_id': spec['id'],
+                   'candidate_sha256': candidate_hash, 'acceptance_sha256': acceptance_hash}
+        operation = store.intent(run, 'VERIFICATION', binding) if store else None
+        try:
+            process, _, _ = execute(argv, candidate, artifacts / 'home', read=[str(candidate)], write=[str(artifacts)],
+                timeout=config['policy']['limits']['step_timeout_seconds'], cap=config['policy']['limits']['max_log_bytes'],
+                store=store, run=run, context={**binding, 'verification_operation_id': operation})
+            # Exit is observed before validation, and is never a PASS signal.
+            if store:
+                store.finish(operation, 'EXECUTED', process_operation_id=process['operation_id'])
+            counter = counts(result_path, spec['result_format'])
+            passed = process['exit'] == 0 and not any(process[k] for k in ('timeout', 'overflow', 'cancelled'))
+            passed = passed and counter['tests'] >= spec['min_cases'] and counter['skipped'] <= spec['max_skipped']
+            passed = passed and counter['failures'] == counter['errors'] == 0 and sum(counter[k] for k in ('failures', 'errors', 'skipped')) <= counter['tests']
+            if tree_hash(candidate) != candidate_hash:
+                raise Blocked('candidate changed during verification')
+            report = {'id': spec['id'], 'run_id': run, 'round': round_number, 'operation_id': operation,
+                      'candidate_sha256': candidate_hash, 'acceptance_sha256': acceptance_hash,
+                      'argv': argv, 'cwd': str(candidate), 'executor': 'controller-runner',
+                      'process': process, 'counts': counter, 'passed': bool(passed),
+                      'result_path': str(result_path), 'result_sha256': digest(result_path.read_bytes())}
+            if store:
+                # Only Controller-validated counters are published. No argv, path or source in these events.
+                store.finish(operation, 'VALIDATED', counts=counter, passed=bool(passed), result_sha256=report['result_sha256'])
+            reports.append(report)
+        except Exception:
+            if store:
+                store.finish(operation, 'VERIFICATION_BLOCKED')
+            raise
     return reports
