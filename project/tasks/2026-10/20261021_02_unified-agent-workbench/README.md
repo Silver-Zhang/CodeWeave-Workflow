@@ -6,7 +6,7 @@
 ## 2. 做法与证据
 源码HEAD仍465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0，最新origin/main仍61356ac07aca24382970b72de9607b1daff26767。本地完整未提交候选b1b2cfdf90a16e6347566f2e9123afb5648a46b785effa1dc59ce7e84aab1e11，127文件，预期Git tree d7528dd0915895ddd1c121e50cf81c40b3518b5e；不是HEAD tree，也尚未提交。
 
-当前候选完整自验：363 Python测试、6宿主隔离测试，失败/错误/Skip均0；check --baseline及6项JS语法检查退出0。7个普通Chromium/真实HTTP套件共110项检查（其中会话套件32条断言），均退出0，不冒充模型验收。新增协议/调度/存储/HTTP测试40项包含在363内。早期真实失败和测试脚本错误保留，最终通过不覆盖原记录。
+当前候选完整自验：363 Python测试、6宿主隔离测试，失败/错误/Skip均0；check --baseline及6项JS语法检查退出0。7个普通Chromium/真实HTTP套件共110项检查（其中会话套件32条断言），均退出0，不冒充模型验收。新增协议/调度/存储/HTTP测试40项包含在363内。附加git diff --check退出2：THIRD_PARTY_LICENSES.txt末尾多一空行，格式项待整理，未记为通过。早期真实失败和测试脚本错误保留，最终通过不覆盖原记录。
 
 真实Codex gpt-6.1-sol/xhigh完成21个回合：顺序2、实际源码修复1、并发汇合3、两轮循环4、五轮上限10、旧会话新运行1。两只读进程重叠81.774秒，汇合2/2且汇总只执行一次；两轮提前结束，五轮负例原始状态FAILED/10调用/达到上限，未伪称成功。同一节点跨轮UUID不变、初始化首次true随后false；新运行精确恢复原UUID并重新初始化一次。暂停/刷新/继续未重复启动。模型及effort无resolved字段时均记unknown。
 

@@ -37,7 +37,12 @@
     "baseline_exit": 0,
     "syntax_checks": 6,
     "source_unchanged": true,
-    "binding_sha256": "dd83185023d7606926d5e8e3d47e2257be49854647fdfe1cdaa615a75314011d"
+    "binding_sha256": "dd83185023d7606926d5e8e3d47e2257be49854647fdfe1cdaa615a75314011d",
+    "additional_whitespace_check": {
+      "exit": 2,
+      "finding": "THIRD_PARTY_LICENSES.txt extra blank line at EOF",
+      "status": "OPEN"
+    }
   },
   "native": {
     "successful_codex_turns": 21,
