@@ -10,7 +10,7 @@ from orchestration.common import Blocked
 from .graph import canonical, Invalid
 from .projection import Reader, Unavailable
 from .server import Conflict
-from .usable_graph import template, node, compile_plan
+from .usable_graph import template, node, compile_plan, upgrade_draft
 
 STATIC = Path(__file__).parent / "static"
 MAX_BODY = 262144
@@ -86,7 +86,7 @@ def handler(runtime, token):
                                          for key, cases in runtime.operator.get("verification_profiles", {}).items()],
                                      workspaces=runtime.db.listing("workspace"), drafts=runtime.db.listing("draft"), runs=runs)
                     elif path == "/api/template":
-                        value = template(query.get("kind", ["B"])[0])
+                        value = template(query.get("kind", ["blank"])[0])
                     elif path == "/api/node":
                         value = node(query.get("kind", ["developer"])[0])
                     elif path == "/api/sessions":
@@ -102,6 +102,8 @@ def handler(runtime, token):
                         value = runtime.open_workspace(data["path"])
                     elif path == "/api/draft" and set(data) == {"document", "id", "expected"}:
                         value = runtime.db.save_draft(data["document"], data["id"], data["expected"])
+                    elif path == "/api/migrate-workflow" and set(data) == {"document"}:
+                        value = upgrade_draft(data["document"])
                     elif path == "/api/compile" and set(data) == {"document"}:
                         value = compile_plan(data["document"])
                     elif path == "/api/issue" and set(data) == {"url"}:
@@ -115,7 +117,10 @@ def handler(runtime, token):
                     elif path == "/api/cancel" and set(data) == {"run_id"}:
                         value = runtime.cancel(data["run_id"])
                     elif path == "/api/approve-result" and set(data) == {"run_id", "answer"}:
+                        # Existing fixed C/G4 runs retain their original route.
                         value = runtime.approve_result(data["run_id"], data["answer"])
+                    elif path == "/api/approve-result" and set(data) == {"run_id", "answers", "expected"}:
+                        value = runtime.approve_result(data["run_id"], data["answers"], data["expected"])
                     else:
                         return self.respond(404, {"error": "Unknown route or unsupported fields"})
                 self.respond(200, value)

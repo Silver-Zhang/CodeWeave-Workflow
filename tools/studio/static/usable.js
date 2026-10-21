@@ -53,14 +53,18 @@ function options(select, values, selected) {
 }
 function loadDocument(document,saved=null) {
   state.addContext=null;closePanels();$('palette').hidden=true;$('toggle-palette').setAttribute('aria-expanded','false');
-  state.document=structuredClone(document);state.identity=crypto.randomUUID();state.version=0;state.saved=saved;state.selected=null;
+  // Migration applies to an editable copy only, never to a stored run snapshot.
+  const migrated=document.version===1;
+  document=structuredClone(document);if(migrated)document.version=2;
+  state.document=document;state.identity=crypto.randomUUID();state.version=0;state.saved=saved;state.selected=null;
   state.history=[structuredClone(document)];state.historyIndex=0;state.loadEpoch++;invalidatePreview();$('graph-status').textContent='尚未校验当前编辑版本';$('workflow-name').value=document.name;$('max-rounds').value=document.max_rounds;
-  $('save-state').textContent=saved?'已加载保存版本':'新草稿未保存';draw();canvas.fit();
+  $('save-state').textContent=migrated?'旧草稿已转为节点式，保存将创建新版本':saved?'已加载保存版本':'新草稿未保存';draw();canvas.fit();
+  if(migrated)notice('已将旧模板转换为可编辑的节点式草稿；历史运行和授权不变，启动前须重新确认。');
 }
-async function newDraft() {
-  const requested=$('template').value, identity=state.identity, version=state.version, request=++state.loadEpoch;
+async function newDraft(kind) {
+  const requested=typeof kind==='string'?kind:$('template').value, identity=state.identity, version=state.version, request=++state.loadEpoch;
   const document=await api('/api/template?kind='+encodeURIComponent(requested));
-  if(identity!==state.identity||version!==state.version||request!==state.loadEpoch)return; loadDocument(document);
+  if(identity!==state.identity||version!==state.version||request!==state.loadEpoch)return; loadDocument(document);$('template-library').open=false;
 }
 async function status() {
   const epoch=++state.statusEpoch,value=await api('/api/status');if(epoch!==state.statusEpoch)return;state.profiles=value.profiles;state.verificationProfiles=value.verification_profiles||[];state.drafts=value.drafts;
@@ -353,7 +357,7 @@ function renderNodeEvidence(open=true) {
   }
   if(n.type==='human_gate'||n.type==='authorization'){
     parent.append(text('p',n.confirmation||'人工确认状态见 Controller 证据'));
-    if(snapshot.human_gate){const button=text('button','填写本轮 G4 结果确认');button.addEventListener('click',()=>{$('monitor').closest('details').open=true;$('g4-answer')?.focus();});parent.append(button);}
+    if(snapshot.human_gate){const button=text('button','填写本轮结果节点确认');button.addEventListener('click',()=>{$('monitor').closest('details').open=true;document.querySelector('[data-result-answer]')?.focus();});parent.append(button);}
   }
   if(n.type==='delivery'){
     const receipt=n.delivery||(!snapshot.workflow_graph?snapshot.github_receipt:null);
@@ -376,7 +380,7 @@ function renderSnapshot(run,snapshot) {
   state.snapshot=snapshot;renderRunCanvas();
   $('run-title').textContent=`${run} · ${snapshot.state||'UNKNOWN'} · 当前轮次 ${snapshot.round??'未确认'}`;
   const renderKey=[run,snapshot.state,snapshot.round,snapshot.candidate].join(':');
-  if(snapshot.human_gate&&state.renderKey===renderKey&&$('g4-answer'))return;
+  if(snapshot.human_gate&&state.renderKey===renderKey&&document.querySelector('[data-result-answer]'))return;
   state.renderKey=renderKey;
   const parent=$('monitor');parent.replaceChildren();
   if(snapshot.reason)parent.append(text('p',snapshot.reason));
@@ -397,11 +401,18 @@ function renderSnapshot(run,snapshot) {
     const link=text('a','打开开发 PR');link.href=pr.url;link.target='_blank';link.rel='noopener noreferrer';parent.append(link);
   }
   if(snapshot.human_gate) {
-    const label=text('label','必填：请解释本轮候选的实际结果、适用边界，并确认此候选。'+snapshot.human_gate.question),answer=document.createElement('textarea'),approve=text('button','确认当前候选的 G4 结果解释');answer.id='g4-answer';
-    label.append(answer);parent.append(label,approve);
-    approve.addEventListener('click',async()=>{if(state.run!==run||approve.disabled)return;if(!answer.value.trim()||answer.value.length>4000){notice('请先填写本轮结果解释与确认（1–4000 字）。');answer.focus();return;}approve.disabled=true;try{
-      await api('/api/approve-result',{run_id:run,answer:answer.value});await poll();
-    }catch(e){notice(e.message);parent.append(text('p','结果确认可能已消费，请刷新核对；不要盲目重发。'));}});
+    const rule=snapshot.human_gate, modern=rule.mode==='node-results';
+    const gates=modern?rule.gates:[{id:'G4',question:rule.question}];
+    const answers=gates.map(g=>{const label=text('label',`${g.id} · ${g.question}`),input=document.createElement('textarea');input.required=true;input.maxLength=4000;input.dataset.resultAnswer=g.id;label.append(input);parent.append(label);return {id:g.id,input};});
+    const approve=text('button','确认当前候选的全部结果节点');parent.append(approve);
+    approve.addEventListener('click',async()=>{
+      if(state.run!==run||approve.disabled||state.snapshot?.candidate!==snapshot.candidate||state.snapshot?.round!==snapshot.round||state.snapshot?.contract_sha256!==snapshot.contract_sha256)return;
+      const missing=answers.find(x=>!x.input.value.trim()||x.input.value.length>4000);
+      if(missing){notice('请分别填写每个结果节点的解释与确认（1–4000 字）。');missing.input.focus();return;}
+      const payload=modern?{run_id:run,answers:answers.map(x=>({id:x.id,answer:x.input.value})),expected:{candidate_sha256:snapshot.candidate,acceptance_sha256:snapshot.contract_sha256,round:snapshot.round}}:{run_id:run,answer:answers[0].input.value};
+      approve.disabled=true;try{await api('/api/approve-result',payload);await poll();}
+      catch(e){notice(e.message);parent.append(text('p','结果确认可能已消费，请刷新核对；不要盲目重发。'));}
+    });
   }
   if(snapshot.candidate) {
     const diffButton=text('button','查看固定候选差异'),diffArea=document.createElement('pre');parent.append(diffButton,diffArea);
@@ -428,7 +439,7 @@ async function poll() {
 }
 act('open-workspace',async()=>{const epoch=++state.workspaceEpoch;const w=await api('/api/workspace',{path:$('workspace-path').value});if(epoch===state.workspaceEpoch)setWorkspace(w);});
 $('recent').addEventListener('change',()=>{const w=state.workspaces.find(w=>w.id===$('recent').value);if(w)setWorkspace(w);});
-act('new-draft',newDraft);act('save',saveDraft);
+act('new-blank',()=>newDraft('blank'));act('new-draft',()=>newDraft());act('save',saveDraft);
 $('drafts').addEventListener('change',()=>{const d=state.drafts.find(d=>d.id===$('drafts').value);if(d)loadDocument(d.document,{id:d.id,revision:d.revision});});
 $('workflow-name').addEventListener('input',()=>{state.document.name=$('workflow-name').value;changed();});
 $('max-rounds').addEventListener('change',()=>{state.document.max_rounds=Number($('max-rounds').value);changed();});

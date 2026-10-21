@@ -18,7 +18,7 @@ from orchestration.store import Store, alive, process_identity, lease
 from orchestration.trust import TrustedRelease
 from .graph import Invalid
 from .projection import Reader, Unavailable
-from .usable_graph import compile_plan, template
+from .usable_graph import compile_plan, governance, template
 from .usable_store import Storage
 from .usable_verification import specifications, validate_profiles
 from .workspace_sessions import WorkspaceSessions
@@ -200,6 +200,8 @@ class Runtime:
         if tree_hash(source["root"]) != committed_manifest_hash(source["root"], source["head"]):
             raise Blocked("Workspace contains ignored or uncommitted files; choose a clean isolated Development clone before authorization")
         plan = compile_plan(request["workflow"])
+        if plan["document"]["version"] != 2:
+            raise Invalid("Reload the legacy workflow as an editable v2 draft before starting a new task")
         task = request["task"]
         if not isinstance(task, dict) or set(task) != {"title", "body", "scope", "acceptance", "issue_url"}:
             raise Invalid("Task title, body, scope, acceptance and source reference required")
@@ -221,7 +223,7 @@ class Runtime:
         verification_ids = {}
         nodes = {n["id"]: n for n in plan["document"]["nodes"]}
         questions = []
-        final_question = None
+        rules = governance(plan)
         for key in plan["order"]:
             n = nodes[key]
             if n["type"] in ("developer", "planner", "reviewer"):
@@ -232,12 +234,9 @@ class Runtime:
                 verification_ids[key] = [v["id"] for v in contracts]
                 verifications.extend(contracts)
             elif n["type"] == "human_gate":
-                if plan["document"]["template"] == "C" and key == plan["order"][-2]:
-                    final_question = n["config"]["question"]
-                else:
+                if key in plan["initial_gates"]:
                     questions.append(n["config"]["question"])
-        mode = plan["document"]["template"]
-        policy = dict(schema_version=1, profile="dual-review", mode="B" if mode == "blank" else mode,
+        policy = dict(schema_version=1, profile="dual-review", mode=rules["mode"],
                       authorization_required=True,
                       agents={role: dict(adapter=("codex-cli" if role == "implementer" else "claude-cli"),
                                          session_policy="resume-bound" if bindings[role]["session_id"] else "new",
@@ -253,8 +252,8 @@ class Runtime:
                       studio_workflow=dict(document=plan["document"], sha256=plan["sha256"],
                                            verification_ids=verification_ids),
                       verification_isolation=self.operator.get("verification_isolation", "landlock"))
-        if final_question:
-            config["human_gate_policy"] = {"mode": "deferred-G4", "question": final_question}
+        if rules["result_policy"]:
+            config["human_gate_policy"] = rules["result_policy"]
         if delivery["pr"]:
             endpoint = (f"repos/{self.github.repository}/pulls?state=open&head="
                         + self.github.repository.split("/")[0] + ":" + source["branch"])
@@ -293,7 +292,10 @@ class Runtime:
                         controller_sha256=controller_hash(), source=source["root"], head=source["head"], branch=source["branch"],
                         approval_ref="studio-human:" + permit + ":" + expected, external_source_approved=True,
                         commit=config["policy"]["delivery"]["commit"], push=config["policy"]["delivery"]["push"])
-            if config["policy"]["mode"] == "C":
+            if config["studio_workflow"]["document"]["version"] == 2:
+                auth["human_events"] = [dict(gate="node:" + key, actor="user",
+                    evidence_ref=f"studio-human:{permit}:{key}") for key in value["workflow"]["initial_gates"]]
+            elif config["policy"]["mode"] == "C":
                 auth["human_events"] = [dict(gate=f"G{i+1}", actor="user", evidence_ref=f"studio-human:{permit}:{i+1}")
                                         for i in range(3)]
             save(folder / "human-receipt.json", receipt)
@@ -436,12 +438,14 @@ class Runtime:
         finally:
             store.db.close()
 
-    def approve_result(self, run, answer):
+    def approve_result(self, run, answer, expected=None):
         from orchestration.controller import approve_human_gate
         self.check_operator()
         store = Store(self.control)
         try:
-            approve_human_gate(store, run, answer, "studio-g4:" + secrets.token_hex(16))
+            rule = store.get(run)["data"]["config"].get("human_gate_policy", {})
+            prefix = "studio-result:" if rule.get("mode") == "node-results" else "studio-g4:"
+            approve_human_gate(store, run, answer, prefix + secrets.token_hex(16), expected=expected)
         finally:
             store.db.close()
         return self.launch(run)

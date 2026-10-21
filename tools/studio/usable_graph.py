@@ -64,7 +64,7 @@ def template(kind="B"):
     edges = [dict(source=a["id"], target=b["id"], on="next") for a, b in zip(nodes, nodes[1:])]
     if nodes:
         edges.append(dict(source="reviewer", target="developer", on="repair"))
-    return dict(version=1, name=f"{kind} starting template", template=kind,
+    return dict(version=2, name="自定义工作流" if kind == "blank" else f"{kind} 起始模板（可编辑）", template=kind,
                 max_rounds=5, nodes=nodes, edges=edges)
 
 
@@ -73,7 +73,7 @@ def draft(document):
         "version", "name", "template", "max_rounds", "nodes", "edges"
     }:
         raise Invalid("Unexpected workflow fields")
-    if document["version"] != 1 or document["template"] not in ("A", "B", "C", "blank"):
+    if type(document["version"]) is not int or document["version"] not in (1, 2) or document["template"] not in ("A", "B", "C", "blank"):
         raise Invalid("Unsupported workflow version/template")
     text(document["name"], 120)
     integer(document["max_rounds"], 1, 5)
@@ -159,9 +159,14 @@ def compile_plan(document):
     cursor = 0
     while cursor < len(kinds) and kinds[cursor] == "human_gate":
         cursor += 1
-    required_gates = 3 if document["template"] == "C" else 1
-    if cursor != required_gates:
-        raise Invalid(f"This template requires {required_gates} explicit initial Human Gate(s)")
+    initial_gates = order[:cursor]
+    if document["version"] == 1:
+        # Immutable legacy runs retain their exact historical authorization rules.
+        required_gates = 3 if document["template"] == "C" else 1
+        if cursor != required_gates:
+            raise Invalid(f"Legacy workflow requires {required_gates} initial Human Gate(s); migrate the draft before editing")
+    elif not initial_gates:
+        raise Invalid("At least one explicit initial authorization node is required, independently of templates")
     if cursor < len(kinds) and kinds[cursor] == "planner":
         cursor += 1
     if kinds[cursor:cursor + 1] != ["developer"]:
@@ -170,9 +175,20 @@ def compile_plan(document):
     first_test = cursor
     while cursor < len(kinds) and kinds[cursor] == "verifier":
         cursor += 1
-    tail = ["reviewer", "human_gate", "delivery"] if document["template"] == "C" else ["reviewer", "delivery"]
-    if cursor == first_test or kinds[cursor:] != tail:
-        raise Invalid("Developer → nonzero verification → independent Reviewer → optional C result gate → Delivery is mandatory")
+    if cursor == first_test or kinds[cursor:cursor + 1] != ["reviewer"]:
+        raise Invalid("Developer → nonzero verification → independent Reviewer is mandatory")
+    cursor += 1
+    result_start = cursor
+    while cursor < len(kinds) and kinds[cursor] == "human_gate":
+        cursor += 1
+    result_gates = order[result_start:cursor]
+    if kinds[cursor:] != ["delivery"]:
+        raise Invalid("Only explicit result-confirmation nodes may occur between Reviewer and Delivery")
+    if document["version"] == 1 and len(result_gates) != (1 if document["template"] == "C" else 0):
+        raise Invalid("Legacy result gates cannot be changed without migrating the draft")
+    if document["version"] == 2 and any(not nodes[key]["config"]["question"].strip()
+                                        for key in initial_gates + result_gates):
+        raise Invalid("Each authorization/result node requires a nonempty human question")
     developer = next(n for n in nodes.values() if n["type"] == "developer")
     reviewer = next(n for n in nodes.values() if n["type"] == "reviewer")
     if repairs != [(reviewer["id"], developer["id"])]:
@@ -191,4 +207,33 @@ def compile_plan(document):
             if n["type"] == "reviewer" and c["provider"] != "claude":
                 raise Invalid("Independent Reviewer execution currently supports Claude Code")
     return {"document": document, "order": order, "sha256": digest(document),
-            "max_rounds": document["max_rounds"], "runtime_gates": ["freeze", "verify", "independent-review", "delivery"]}
+            "max_rounds": document["max_rounds"], "initial_gates": initial_gates,
+            "result_gates": result_gates,
+            "runtime_gates": ["freeze", "verify", "independent-review", "delivery"]}
+
+
+def governance(plan):
+    """Derive authority from nodes, never from a v2 template's provenance label.
+
+    Engine mode B is a backward-compatible serialization value for v2, not a
+    selectable product mode. v1 is interpreted unchanged for existing runs.
+    """
+    document = plan["document"]
+    nodes = {n["id"]: n for n in document["nodes"]}
+    if document["version"] == 1:
+        mode = "B" if document["template"] == "blank" else document["template"]
+        result_policy = ({"mode": "deferred-G4", "question": nodes[plan["result_gates"][0]]["config"]["question"]}
+                         if plan["result_gates"] else None)
+    else:
+        mode = "B"
+        result_policy = ({"mode": "node-results", "gates": [
+            {"id": key, "question": nodes[key]["config"]["question"]} for key in plan["result_gates"]]}
+            if plan["result_gates"] else None)
+    return {"mode": mode, "result_policy": result_policy}
+
+
+def upgrade_draft(document):
+    """Explicit copy for editing only; never migrate a stored run/authorization."""
+    value = draft(document)
+    value["version"] = 2
+    return value

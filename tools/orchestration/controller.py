@@ -329,7 +329,7 @@ def resume(store, run):
                         blocked_fingerprint=fingerprint)
                     continue
                 if config.get('human_gate_policy') and not human_result_bound(store.get(run)['data']):
-                    store.transition(run, 'AWAITING_HUMAN', reason='C G4 requires actual human interpretation of this reviewed candidate')
+                    store.transition(run, 'AWAITING_HUMAN', reason='Explicit result nodes require human confirmation of this reviewed candidate')
                     return store.get(run)
                 store.transition(run, 'READY', reason='required verification and independent review passed')
                 return store.get(run)
@@ -369,7 +369,7 @@ def deliver_run(store, run, *, github=None):
             raise Blocked('run cancelled; delivery refused')
         config = binding_check(store, data)
         if config.get('human_gate_policy') and not human_result_bound(data):
-            raise Blocked('C G4 human result approval is missing or bound to another candidate')
+            raise Blocked('Human result approval (legacy C G4 or result nodes) is missing or bound to another candidate')
         if store.get(run)['state'] not in ('READY', 'LOCAL_COMMITTED', 'PARTIAL_DELIVERY'):
             raise Blocked('run is not ready for delivery')
         if not config['policy']['delivery']['commit'] or not data.get('isolation', {}).get('read_and_write_denied'):
@@ -412,20 +412,42 @@ def deliver_run(store, run, *, github=None):
 
 
 
+def _result_answers(rule, answers):
+    """Every post-review node has a distinct nonempty user response, in graph order."""
+    if not isinstance(answers, list) or len(answers) != len(rule['gates']):
+        return False
+    return all(isinstance(a, dict) and set(a) == {'id', 'answer'} and a['id'] == g['id']
+               and isinstance(a['answer'], str) and bool(a['answer'].strip()) and len(a['answer']) <= 4000
+               for a, g in zip(answers, rule['gates']))
+
+
 def human_result_bound(data):
     event = data.get('human_result', {})
-    return bool(event.get('actor') == 'user' and event.get('gate') == 'G4'
-                and event.get('candidate_sha256') == data.get('candidate', {}).get('sha256')
-                and event.get('acceptance_sha256') == data.get('acceptance_sha256')
-                and event.get('round') == data.get('round') and event.get('answer')
-                and event.get('approval_ref', '').startswith('studio-g4:'))
+    candidate = data.get('candidate', {}).get('sha256')
+    number = data.get('round')
+    if (not isinstance(event, dict) or not isinstance(candidate, str) or len(candidate) != 64
+            or type(number) is not int or number < 1 or type(event.get('round')) is not int
+            or event.get('actor') != 'user' or event.get('round') != number
+            or event.get('candidate_sha256') != candidate
+            or event.get('acceptance_sha256') != data.get('acceptance_sha256')):
+        return False
+    config = data.get('config', {})
+    rule = config.get('human_gate_policy', {})
+    if rule.get('mode') == 'node-results':
+        return bool(event.get('gate') == 'node-results'
+                    and event.get('workflow_sha256') == config['studio_workflow']['sha256']
+                    and _result_answers(rule, event.get('answers'))
+                    and isinstance(event.get('approval_ref'), str)
+                    and event['approval_ref'].startswith('studio-result:'))
+    # Do not rewrite, rehash, or reinterpret historical C/G4 receipts.
+    return bool(event.get('gate') == 'G4' and isinstance(event.get('answer'), str)
+                and event['answer'].strip() and isinstance(event.get('approval_ref'), str)
+                and event['approval_ref'].startswith('studio-g4:'))
 
 
-def approve_human_gate(store, run, answer, approval_ref):
+def approve_human_gate(store, run, answer, approval_ref, *, expected=None):
     """Trusted Studio caller, after its private browser capability is checked."""
-    if not isinstance(answer, str) or not answer.strip() or len(answer) > 4000:
-        raise Blocked('Actual human result interpretation is required')
-    if not isinstance(approval_ref, str) or not approval_ref.startswith('studio-g4:'):
+    if not isinstance(approval_ref, str) or not approval_ref.startswith(('studio-g4:', 'studio-result:')):
         raise Blocked('Explicit Studio human approval receipt required')
     initial = store.get(run)
     with lease(store.directory / (run + '.lock')), lease(Path(initial['data']['source']['common_dir']) / 'devflower-writer.lock'):
@@ -434,6 +456,18 @@ def approve_human_gate(store, run, answer, approval_ref):
         config = binding_check(store, data)
         if current['state'] != 'AWAITING_HUMAN' or not config.get('human_gate_policy') or not data.get('stable') or data.get('cancel_requested'):
             raise Blocked('Run is not waiting for this human result gate')
+        rule = config['human_gate_policy']
+        if rule.get('mode') == 'node-results':
+            if not approval_ref.startswith('studio-result:') or not _result_answers(rule, answer):
+                raise Blocked('Every result node requires its own actual human response')
+            if (not isinstance(expected, dict) or set(expected) != {'candidate_sha256', 'acceptance_sha256', 'round'}
+                    or type(expected['round']) is not int or expected['round'] != data['round']
+                    or expected['candidate_sha256'] != data['candidate']['sha256']
+                    or expected['acceptance_sha256'] != data['acceptance_sha256']):
+                raise Blocked('Result confirmation belongs to a different candidate, contract or round')
+        elif (not approval_ref.startswith('studio-g4:') or not isinstance(answer, str)
+              or not answer.strip() or len(answer) > 4000):
+            raise Blocked('Actual human result interpretation is required')
         if tree_hash(data['candidate_path']) != data['candidate']['sha256']:
             raise Blocked('Reviewed candidate changed before human interpretation')
         for evidence in data['verification']:
@@ -443,7 +477,11 @@ def approve_human_gate(store, run, answer, approval_ref):
         gate(run, data['round'], data['candidate']['sha256'], data['acceptance_sha256'],
              config['policy']['required_contracts'], data['verification'], data['implementation'], data['review'],
              data['history'], config['policy']['verification'])
-        receipt = dict(gate='G4', actor='user', answer=answer, approval_ref=approval_ref,
-                       candidate_sha256=data['candidate']['sha256'], acceptance_sha256=data['acceptance_sha256'], round=data['round'])
-        store.transition(run, 'READY', human_result=receipt, reason='Independent review and actual C G4 interpretation complete')
+        receipt = dict(actor='user', approval_ref=approval_ref, candidate_sha256=data['candidate']['sha256'],
+                       acceptance_sha256=data['acceptance_sha256'], round=data['round'])
+        if rule.get('mode') == 'node-results':
+            receipt.update(gate='node-results', answers=answer, workflow_sha256=config['studio_workflow']['sha256'])
+        else:
+            receipt.update(gate='G4', answer=answer)
+        store.transition(run, 'READY', human_result=receipt, reason='Independent review and explicit human result confirmation complete')
         return store.get(run)

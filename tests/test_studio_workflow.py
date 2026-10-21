@@ -455,7 +455,7 @@ class WorkflowTests(unittest.TestCase):
         run = store.create(data);store.transition(run, 'AWAITING_HUMAN')
         final = lambda: next(n for n in self.graph(run)['nodes'] if n['id'] == 'human-4')
         self.assertEqual(final()['status'], 'blocked')
-        receipt = dict(actor='user', gate='G4', round=1, candidate_sha256='a' * 64, acceptance_sha256='b' * 64, answer='实际结果解释', approval_ref='studio-g4:test-fixture')
+        receipt = dict(actor='user', gate='node-results', round=1, candidate_sha256='a' * 64, acceptance_sha256='b' * 64, answers=[dict(id='human-4', answer='实际结果解释')], workflow_sha256=config['studio_workflow']['sha256'], approval_ref='studio-result:test-fixture')
         store.transition(run, 'AWAITING_HUMAN', human_result=receipt)
         self.assertEqual(final()['status'], 'blocked')
         receipt['round'] = 2;store.transition(run, 'READY', human_result=receipt)

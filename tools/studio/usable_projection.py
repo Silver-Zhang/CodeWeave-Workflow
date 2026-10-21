@@ -118,7 +118,7 @@ def workflow_graph(run, snapshot, data, operations):
             elif state == phase or snapshot.get('recorded_state') == phase:
                 n['status'] = 'running' if n['agent']['alive'] else 'blocked'
         elif kind == 'human_gate':
-            final = plan['document']['template'] == 'C' and key == plan['order'][-2]
+            final = key in plan['result_gates']
             if final:
                 n['status'] = 'passed' if human_result_bound(data) and candidate else 'blocked' if state == 'AWAITING_HUMAN' else 'pending'
                 n['confirmation'] = '当前候选需填写结果解释并确认' if state == 'AWAITING_HUMAN' else '结果确认绑定当前候选和轮次'
