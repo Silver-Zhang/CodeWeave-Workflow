@@ -202,10 +202,11 @@ def compile_plan(document):
                 raise Invalid("At least one supported non-duplicate tool is required")
             if c["provider"] == "codex" and c["tools"] != ["native"]:
                 raise Invalid("Codex supports the native tool set inside the outer sandbox only")
-            if n["type"] == "developer" and c["provider"] != "codex":
-                raise Invalid("Developer execution currently supports Codex")
-            if n["type"] == "reviewer" and c["provider"] != "claude":
-                raise Invalid("Independent Reviewer execution currently supports Claude Code")
+            if document['version'] == 1 and ((n['type'] == 'developer' and c['provider'] != 'codex') or
+                                             (n['type'] == 'reviewer' and c['provider'] != 'claude')):
+                raise Invalid('Legacy role/provider bindings remain unchanged')
+            if n['type'] == 'developer' and c['provider'] == 'claude' and not set(c['tools']) & {'Bash', 'Write', 'Edit'}:
+                raise Invalid('Claude Developer requires an approved implementation tool')
     return {"document": document, "order": order, "sha256": digest(document),
             "max_rounds": document["max_rounds"], "initial_gates": initial_gates,
             "result_gates": result_gates,

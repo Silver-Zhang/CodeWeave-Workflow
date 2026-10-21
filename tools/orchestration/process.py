@@ -41,7 +41,7 @@ def stop(record):
 
 
 def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
-            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock', context=None, readonly_files=()):
+            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock', context=None, readonly_files=(), on_stdout=None):
     # Native session HOME persists; scratch is short enough for AF_UNIX sockets
     # and belongs to exactly one invocation. Cleanup cannot erase sessions.
     parent_scratch = tempfile.gettempdir()
@@ -49,11 +49,11 @@ def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
         parent_scratch = '/tmp'
     with tempfile.TemporaryDirectory(prefix='dfp-', dir=parent_scratch) as scratch:
         return _execute(argv, cwd, home, read, write, timeout, cap, store, run,
-                        input_text, env_extra, isolate, backend, context, readonly_files, scratch)
+                        input_text, env_extra, isolate, backend, context, readonly_files, scratch, on_stdout)
 
 
 def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
-             input_text, env_extra, isolate, backend, context, readonly_files, scratch):
+             input_text, env_extra, isolate, backend, context, readonly_files, scratch, on_stdout):
     if not argv or not isinstance(argv, list):
         raise Blocked('argv required')
     home = Path(home)
@@ -156,6 +156,8 @@ def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
                     stop(record)
                     break
                 buffers[name].extend(chunk)
+                if name == 'stdout' and on_stdout is not None:
+                    on_stdout(chunk)
             if overflow:
                 break
         if proc.poll() is None:
@@ -169,6 +171,10 @@ def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
             # A background child cannot turn an incomplete operation into success.
             stop(record)
             timed_out = True
+    except BaseException:
+        stop(record)
+        proc.wait(timeout=3)
+        raise
     finally:
         selector.close()
         for pipe in (proc.stdin, proc.stdout, proc.stderr):

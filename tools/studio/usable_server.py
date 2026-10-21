@@ -53,15 +53,25 @@ def handler(runtime, token):
                     raise PermissionError("Cross-origin request refused")
                 parsed = urlsplit(self.path)
                 path, query = parsed.path, parse_qs(parsed.query)
+                if any(len(values) != 1 for values in query.values()):
+                    raise Invalid('Duplicate query fields are unsupported')
                 files = {"/": ("usable.html", "text/html; charset=utf-8"),
                          "/usable.js": ("usable.js", "text/javascript; charset=utf-8"),
                          "/usable_canvas.js": ("usable_canvas.js", "text/javascript; charset=utf-8"),
+                         "/usable_sessions.js": ("usable_sessions.js", "text/javascript; charset=utf-8"),
                          "/usable.css": ("usable.css", "text/css; charset=utf-8")}
                 if not post and path in files:
                     name, mime = files[path]
                     return self.respond(200, (STATIC / name).read_bytes(), mime)
                 if not secrets.compare_digest(self.headers.get("Authorization", ""), "Bearer " + token):
                     raise PermissionError("Open the private URL printed by Stable")
+                session_only = getattr(runtime, 'session_only', False)
+                if session_only and path not in {'/api/status', '/api/template', '/api/node', '/api/workspace',
+                        '/api/sessions', '/api/session/history', '/api/session/operation', '/api/session/register',
+                        '/api/session/visibility', '/api/session/prepare', '/api/session/authorize', '/api/session/cancel',
+                        '/api/session/archive', '/api/session/delete', '/api/session/unarchive',
+                        '/api/draft', '/api/compile', '/api/migrate-workflow'}:
+                    raise Blocked('Development session host cannot authorize a Controller run, gate, deliver, or promote Stable')
                 data = {}
                 if post:
                     if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
@@ -77,11 +87,15 @@ def handler(runtime, token):
                 if not post:
                     if path == "/api/status":
                         runtime.check_operator()
-                        try:
-                            runs = Reader(runtime.control).list_runs()
-                        except Unavailable:
-                            runs = []
-                        value = dict(stable=runtime.trust.data["candidate_sha256"], profiles=runtime.profiles(),
+                        runs = []
+                        if not session_only:
+                            try:
+                                runs = Reader(runtime.control).list_runs()
+                            except Unavailable:
+                                pass
+                        value = dict(stable=None if session_only else runtime.trust.data["candidate_sha256"],
+                                     candidate=runtime.candidate_sha256 if session_only else None,
+                                     execution_context='development-sessions' if session_only else 'stable', profiles=runtime.profiles(),
                                      verification_profiles=[{"id": key, "cases": [c["id"] for c in cases]}
                                          for key, cases in runtime.operator.get("verification_profiles", {}).items()],
                                      workspaces=runtime.db.listing("workspace"), drafts=runtime.db.listing("draft"), runs=runs)
@@ -90,7 +104,18 @@ def handler(runtime, token):
                     elif path == "/api/node":
                         value = node(query.get("kind", ["developer"])[0])
                     elif path == "/api/sessions":
-                        value = runtime.sessions(query.get("workspace", [""])[0])
+                        if set(query) - {'workspace', 'hidden'}:
+                            raise Invalid('Unsupported session query fields')
+                        value = runtime.session_center.discover(query.get('workspace', [''])[0], query.get('hidden', ['false'])[0] == 'true')
+                    elif path == '/api/session/history':
+                        if set(query) - {'workspace', 'handle', 'query', 'limit'} or any(len(v) != 1 for v in query.values()):
+                            raise Invalid('History requires opaque session handles, never paths')
+                        value = runtime.session_center.history(query.get('workspace', [''])[0], query.get('handle', [''])[0],
+                            query.get('query', [''])[0], int(query.get('limit', ['100'])[0]))
+                    elif path == '/api/session/operation':
+                        if set(query) != {'workspace', 'id'}:
+                            raise Invalid('Operation identity and workspace required')
+                        value = runtime.session_center.operation(query['id'][0], query['workspace'][0])
                     elif path == "/api/run":
                         value = runtime.snapshot(query.get("id", [""])[0])
                     elif path == "/api/diff":
@@ -100,6 +125,18 @@ def handler(runtime, token):
                 else:
                     if path == "/api/workspace" and set(data) == {"path"}:
                         value = runtime.open_workspace(data["path"])
+                    elif path == '/api/session/register' and set(data) == {'workspace', 'provider', 'config_root'}:
+                        value = runtime.session_center.register(data['workspace'], data['provider'], data['config_root'])
+                    elif path == '/api/session/visibility' and set(data) == {'workspace', 'handle', 'hidden'}:
+                        value = runtime.session_center.visibility(data['workspace'], data['handle'], data['hidden'])
+                    elif path == '/api/session/prepare':
+                        value = runtime.session_center.prepare(data)
+                    elif path == '/api/session/authorize' and set(data) == {'permit', 'sha256', 'answer'}:
+                        value = runtime.session_center.launch(data['permit'], data['sha256'], data['answer'])
+                    elif path == '/api/session/cancel' and set(data) == {'workspace', 'id'}:
+                        value = runtime.session_center.cancel(data['workspace'], data['id'])
+                    elif path in ('/api/session/archive', '/api/session/delete', '/api/session/unarchive'):
+                        raise Blocked('Native archive/delete is unsupported; original files and sub-sessions are never modified. Use DevFlower hide/unhide.')
                     elif path == "/api/draft" and set(data) == {"document", "id", "expected"}:
                         value = runtime.db.save_draft(data["document"], data["id"], data["expected"])
                     elif path == "/api/migrate-workflow" and set(data) == {"document"}:
@@ -143,7 +180,7 @@ def handler(runtime, token):
 def serve(runtime, port):
     # Persistent private token survives service restart, never enters source,
     # HTTP responses, model homes, subprocess environment or access logs.
-    path = runtime.authority / "browser-token"
+    path = getattr(runtime, 'browser_directory', runtime.authority) / "browser-token"
     if path.exists():
         if path.is_symlink() or not path.is_file() or path.stat().st_nlink != 1:
             raise Blocked("Invalid browser capability file")

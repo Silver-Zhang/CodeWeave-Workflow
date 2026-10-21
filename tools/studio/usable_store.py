@@ -44,10 +44,32 @@ class Storage:
             raise Invalid("Unknown " + kind)
         return json.loads(row[0])
 
-    def listing(self, kind):
+    def listing(self, kind, *, filters=None, limit=100):
+        conditions, params = ['kind=?'], [kind]
+        for field, value in (filters or {}).items():
+            conditions.append('json_extract(data, ?) = ?')
+            params.extend(['$.' + field, value])
+        query = 'SELECT data FROM objects WHERE ' + ' AND '.join(conditions) + ' ORDER BY rowid DESC'
+        if limit is not None:
+            query += ' LIMIT ?'
+            params.append(limit)
         with self.db() as db:
-            rows = db.execute("SELECT data FROM objects WHERE kind=? ORDER BY rowid DESC LIMIT 100", (kind,)).fetchall()
+            rows = db.execute(query, params).fetchall()
         return [json.loads(row[0]) for row in rows]
+
+    def update(self, kind, key, changes, states=None):
+        """Merge atomically across the HTTP service and detached session worker."""
+        with self.lock, self.db() as db, db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT data FROM objects WHERE kind=? AND id=?', (kind, key)).fetchone()
+            if not row:
+                raise Invalid('Unknown ' + kind)
+            data = json.loads(row[0])
+            if states is not None and data.get('state') not in states:
+                raise Conflict('Operation state changed; reload before acting')
+            data.update(changes)
+            db.execute('UPDATE objects SET data=? WHERE kind=? AND id=?', (canonical(data).decode(), kind, key))
+        return data
 
     def save_draft(self, document, identity=None, expected=None):
         document = draft(document)

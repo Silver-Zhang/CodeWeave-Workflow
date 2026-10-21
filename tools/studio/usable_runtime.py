@@ -22,6 +22,8 @@ from .usable_graph import compile_plan, governance, template
 from .usable_store import Storage
 from .usable_verification import specifications, validate_profiles
 from .workspace_sessions import WorkspaceSessions
+from .session_center import SessionCenter
+from .session_sources import clean_path, opened, Refused
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -49,6 +51,7 @@ class Runtime:
         for p in (self.authority, self.storage, self.native):
             p.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.db = Storage(self.storage)
+        self.session_center = SessionCenter(self)
         self.check_operator()
         validate_profiles(self.operator.get("verification_profiles", {}))
         protected = [self.authority, self.storage, self.native, ROOT, self.github.config_dir, self.trust.record]
@@ -82,6 +85,25 @@ class Runtime:
         self.validate_source(row["path"])
         return row
 
+    def readable_directory(self, path):
+        try:
+            path = clean_path(path)
+            if path == '/' or path == str(Path.home()) or any(Path(path).is_relative_to(p) for p in
+                    ('/proc', '/sys', '/dev', '/etc', '/usr', '/bin', '/lib', '/lib64')):
+                raise Blocked('Choose a project directory; system roots and HOME are not workspace scan roots')
+            with opened(path, directory=True):
+                pass
+        except (OSError, Refused):
+            raise Invalid('Choose an accessible absolute local directory without symlinks; WSL/remote URIs are unsupported') from None
+        for protected in (self.authority, self.storage, self.native, ROOT, self.github.config_dir, self.trust.record):
+            if overlaps(path, protected):
+                raise Blocked('Workspace overlaps trusted runtime data')
+        for p in self.operator['profiles'].values():
+            for src, _ in p['readonly_files']:
+                if overlaps(path, src):
+                    raise Blocked('Workspace overlaps native authentication')
+        return path
+
     def validate_source(self, path):
         p = Path(path)
         if not p.is_absolute() or any(ord(x) < 32 for x in str(p)):
@@ -105,9 +127,16 @@ class Runtime:
 
     def open_workspace(self, path):
         self.check_operator()
-        actual = self.validate_source(path)
-        row = {"id": digest(actual["root"].encode())[:32], "path": actual["root"],
-               "branch": actual["branch"], "head": actual["head"], "repository": self.github.repository}
+        path = self.readable_directory(path)
+        try:
+            actual = self.validate_source(path)
+            row = dict(path=actual['root'], branch=actual['branch'], head=actual['head'],
+                       repository=self.github.repository, execution_allowed=True, execution_reason=None)
+        except Blocked as exc:
+            row = dict(path=path, branch=None, head=None, repository=None,
+                       execution_allowed=False, execution_reason=str(exc))
+        row.update(id=digest(row['path'].encode())[:32], environment='wsl' if os.environ.get('WSL_DISTRO_NAME') else 'local',
+                   unsupported_environments=['wsl-uri', 'remote-uri'])
         self.db.put("workspace", row["id"], row)
         return row
 
@@ -119,8 +148,8 @@ class Runtime:
                  "tools": ["native"] if p["provider"] == "codex" else ["Read", "Glob", "Grep", "Bash", "Write", "Edit"]}
                 for key, p in self.operator["profiles"].items()]
 
-    def owned_sessions(self, workspace):
-        project = self.project(workspace)
+    def owned_sessions(self, workspace, validate=True):
+        project = self.project(workspace) if validate else self.db.get('workspace', workspace)
         result = []
         seen = set()
         if (self.control / "state.sqlite").is_file():
@@ -144,19 +173,24 @@ class Runtime:
                             "model": binding["model"], "effort": binding["effort"],
                             "resume": row["state"] in ("COMPLETED", "CANCELLED", "READY"),
                             "native_records": str(Path(binding["home"]) / (".claude/projects" if binding.get("provider") == "claude" else ".codex/sessions"))}
+                    # Native sessions were created in isolated snapshots. Preserve
+                    # that original cwd; never pretend they ran in the source repo.
+                    execution_root = str(self.control / row['id'])
+                    item['execution_root'] = execution_root
+                    item['binding'] = binding
+                    if item['resume']:
+                        with closing(Store(self.control, readonly=True).db) as opdb:
+                            operations = opdb.execute('SELECT data FROM operations WHERE run=?', (row['id'],)).fetchall()
+                        from orchestration.process import group_alive
+                        if any(group_alive(json.loads(op['data']).get('process')) for op in operations):
+                            item['resume'] = False
                     report = data.get({"implementer": "implementation", "reviewer": "review", "planner": "plan"}[role], {})
                     item.update(resolved_model=report.get("resolved_model", "unknown"), resolved_effort=report.get("resolved_effort", "unknown"))
                     result.append(item)
         return result
 
     def sessions(self, workspace):
-        project = self.project(workspace)
-        # M0 discovery remains read-only and never infers process liveness.
-        directory = self.storage / "discovery"
-        directory.mkdir(exist_ok=True)
-        discovery = WorkspaceSessions(directory, project_roots=[project["path"]])
-        workspace_id = discovery.listing()["workspaces"][0]["id"]
-        return {"owned": self.owned_sessions(workspace), "discovery": discovery.snapshot(workspace_id)}
+        return self.session_center.discover(workspace)
 
     def agent_binding(self, node, project):
         c = node["config"]
@@ -174,12 +208,9 @@ class Runtime:
         if c["session"] == "new":
             home = str(self.native / secrets.token_hex(16))
         else:
-            matches = [s for s in self.owned_sessions(project["id"])
-                       if s["id"] == c["session"] and s["role"] == role and s["provider"] == p["provider"] and s["resume"]]
-            if len(matches) != 1:
-                raise Blocked("Session cannot be safely resumed for this project and role")
-            sid, home = matches[0]["id"], matches[0]["home"]
+            raise Blocked('A new Controller run has a new isolated cwd. Continue existing sessions in the exact-cwd Session Center, or resume their original run.')
         return dict(project=project["id"], role=role, provider=p["provider"], executable=p["executable"],
+                    runtime_profile=c['profile'],
                     home=home, read_paths=p["read_paths"], readonly_files=p["readonly_files"],
                     model=model, effort=effort, session_id=sid, isolation="bwrap",
                     external_sandbox=p["provider"] == "codex", tools=c["tools"],
@@ -238,7 +269,7 @@ class Runtime:
                     questions.append(n["config"]["question"])
         policy = dict(schema_version=1, profile="dual-review", mode=rules["mode"],
                       authorization_required=True,
-                      agents={role: dict(adapter=("codex-cli" if role == "implementer" else "claude-cli"),
+                      agents={role: dict(adapter=bindings[role]['provider'] + '-cli',
                                          session_policy="resume-bound" if bindings[role]["session_id"] else "new",
                                          model_policy="approved-local-binding") for role in ("implementer", "reviewer")},
                       limits=dict(max_review_rounds=plan["max_rounds"], max_infrastructure_retries=2,
@@ -357,7 +388,9 @@ class Runtime:
                     process = operation["data"].get("process")
                     result["current_agent"] = dict(role=context["agent_role"], provider=context.get("provider"),
                         process=process, alive=operation["status"] == "RUNNING" and alive(process),
-                        status=operation["status"])
+                        status=operation["status"], cwd=operation['data'].get('cwd'),
+                        tools=data['config']['bindings'].get(role, {}).get('tools', []),
+                        permission='snapshot-write' if role == 'implementer' else 'source-read-only')
                     request = next((o["data"] for o in operations if o["kind"] == "AGENT_REQUEST"
                                     and o["data"].get("role") == context["agent_role"]), {})
                     result["current_agent"].update(session_id=request.get("actual_session") or request.get("requested_session") or "unknown",

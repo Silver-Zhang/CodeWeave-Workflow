@@ -11,7 +11,7 @@ on:
       - 'examples/**'
       - '.github/workflows/usable.yml'
   push:
-    branches: ['main', 'flow/devflower-usable-v1', 'flow/template-governance-ci']
+    branches: ['main', 'flow/devflower-usable-v1', 'flow/template-governance-ci', 'flow/agent-workspace-vnext']
   workflow_dispatch:
 
 permissions:
@@ -66,6 +66,8 @@ jobs:
           node --check tools/studio/static/workspace.js
           node --check tools/studio/static/usable.js
           node --check tools/studio/static/usable_canvas.js
+          node --check tools/studio/static/usable_sessions.js
+          node --check tests/session_browser.cjs
       - name: Real host isolation probes
         shell: bash
         run: |
@@ -103,7 +105,7 @@ jobs:
         run: |
           set -euo pipefail
           status=0
-          for suite in studio_races studio_identity_races workspace_browser usable_browser template_browser; do
+          for suite in studio_races studio_identity_races workspace_browser usable_browser template_browser session_browser; do
             if ! python3 "tests/$suite.py" --chromium "$CHROMIUM" --playwright-module "$PLAYWRIGHT_MODULE" --artifacts "$RUNNER_TEMP/$suite"; then
               status=1
             fi
@@ -126,5 +128,7 @@ jobs:
             ${{ runner.temp }}/usable_browser/*.png
             ${{ runner.temp }}/template_browser/*results.json
             ${{ runner.temp }}/template_browser/*.png
+            ${{ runner.temp }}/session_browser/*results.json
+            ${{ runner.temp }}/session_browser/*.png
           retention-days: 7
           if-no-files-found: error

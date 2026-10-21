@@ -9,10 +9,11 @@ from pathlib import Path
 from .common import Blocked
 
 
-def credentials(home, extra_files=()):
+def credentials(home, extra_files=(), *, read_file=None):
     found = set()
     def walk(value, key=''):
-        sensitive = any(x in key.lower() for x in ('token', 'api_key', 'apikey', 'secret', 'authorization'))
+        sensitive = any(x in key.lower().replace('-', '_') for x in
+                        ('token', 'api_key', 'apikey', 'secret', 'authorization', 'password', 'passwd', 'cookie'))
         if isinstance(value, str) and sensitive and len(value) >= 8:
             found.add(value)
         elif isinstance(value, dict):
@@ -24,9 +25,11 @@ def credentials(home, extra_files=()):
     paths = [Path(home) / name for name in ('.codex/auth.json', '.claude/.credentials.json', '.claude/settings.json')]
     for path in paths + [Path(p) for p in extra_files]:
         try:
-            if path.is_file() and path.stat().st_size <= 4 * 1024 * 1024:
+            if read_file is not None:
+                walk(json.loads(read_file(path)))
+            elif path.is_file() and path.stat().st_size <= 4 * 1024 * 1024:
                 walk(json.loads(path.read_bytes()))
-        except (OSError, ValueError):
+        except (OSError, ValueError, RecursionError):
             continue
     return found
 

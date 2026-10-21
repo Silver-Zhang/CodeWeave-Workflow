@@ -260,7 +260,7 @@ def resume(store, run):
                 impl_prompt = (config['goal'] + '\nWork only in current source directory. No Git delivery. '
                     'Return the required JSON object. Prior review/verification feedback:\n' + json.dumps(data.get('feedback', {}))
                     + '\nPlanner guidance (not authorization): ' + json.dumps(data.get('plan', {}).get('report', {})))
-                implementation = agent_step(store, run, 'codex', config['bindings']['implementer'], limits,
+                implementation = agent_step(store, run, config['bindings']['implementer'].get('provider', 'codex'), config['bindings']['implementer'], limits,
                     impl_prompt, work, rd, impl_schema, sessions.get('implementer'))
                 validate(implementation['report'], IMPLEMENT_SCHEMA)
                 if implementation['report']['status'] != 'IMPLEMENTED':
@@ -301,7 +301,7 @@ def resume(store, run):
                           + '. Previous findings must be explicitly CLOSED with evidence when fixed: ' + json.dumps(data['history']))
                 (rd / 'acceptance.txt').write_bytes(Path(config['acceptance']).read_bytes())
                 save(rd / 'implementer-summary.json', implementation['report'])
-                review = agent_step(store, run, 'claude', config['bindings']['reviewer'], limits,
+                review = agent_step(store, run, config['bindings']['reviewer'].get('provider', 'claude'), config['bindings']['reviewer'], limits,
                     prompt, candidate, rd, review_schema, sessions.get('reviewer'))
                 sessions['reviewer'] = review['session_id']
                 validate(review['report'], schema('review-result'))
