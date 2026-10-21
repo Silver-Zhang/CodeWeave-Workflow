@@ -62,6 +62,38 @@ time.sleep(20)
         self.assertTrue(r['timeout'])
         p = self.work / 'marker'; before = p.read_bytes();time.sleep(.1);self.assertEqual(before, p.read_bytes())
 
+    def test_short_scratch_does_not_erase_persistent_home(self):
+        import json
+        home = self.base / ('long-' + 'x' * 110) / 'native-home'
+        home.mkdir(parents=True);(home / 'session').write_text('persistent')
+        code = "import os,socket,json;from pathlib import Path;p=Path(os.environ['TMPDIR']);s=socket.socket(socket.AF_UNIX);s.bind(str(p/'socket'));s.close();print(json.dumps(dict(tmp=str(p),home=os.environ['HOME'])))"
+        for backend in ('landlock', 'bwrap'):
+            with self.subTest(backend=backend):
+                r, out, err = execute([sys.executable, '-c', code], self.work, home,
+                                       read=[str(self.work)], backend=backend)
+                self.assertEqual(r['exit'], 0, err)
+                value = json.loads(out)
+                self.assertFalse(Path(value['tmp']).exists())
+                self.assertEqual(value['home'], str(home))
+                self.assertEqual((home / 'session').read_text(), 'persistent')
+
+    def test_operator_bound_verification_supports_nested_session(self):
+        from orchestration.common import tree_hash
+        from orchestration.verification import verify
+        from studio.usable_verification import specifications
+        from studio.usable_graph import node
+        python = str(Path(sys.executable).resolve())
+        cases = {"default": [dict(id="session", argv=[python, "-I", "-c",
+            "import subprocess,json;subprocess.run(['python3','-c','assert 6*7==42'],start_new_session=True,check=True);print(json.dumps(42))"],
+            stdin="", expected_json=42, read_paths=[])]}
+        config = dict(verification_isolation='bwrap', policy=dict(
+            verification=specifications(node('verifier'), cases),
+            limits=dict(step_timeout_seconds=10, max_log_bytes=1048576)))
+        reports = verify(config, self.work, self.base / 'reports', 'host-fixture', 1,
+                         tree_hash(self.work), 'a' * 64)
+        self.assertTrue(reports[0]['passed'])
+        self.assertEqual(reports[0]['counts'], dict(tests=1, failures=0, errors=0, skipped=0))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

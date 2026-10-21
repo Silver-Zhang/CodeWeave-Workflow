@@ -9,7 +9,7 @@ from pathlib import Path
 from .common import Blocked
 
 
-def credentials(home):
+def credentials(home, extra_files=()):
     found = set()
     def walk(value, key=''):
         sensitive = any(x in key.lower() for x in ('token', 'api_key', 'apikey', 'secret', 'authorization'))
@@ -21,8 +21,8 @@ def credentials(home):
         elif isinstance(value, list):
             for v in value:
                 walk(v, key)
-    for name in ('.codex/auth.json', '.claude/.credentials.json', '.claude/settings.json'):
-        path = Path(home) / name
+    paths = [Path(home) / name for name in ('.codex/auth.json', '.claude/.credentials.json', '.claude/settings.json')]
+    for path in paths + [Path(p) for p in extra_files]:
         try:
             if path.is_file() and path.stat().st_size <= 4 * 1024 * 1024:
                 walk(json.loads(path.read_bytes()))

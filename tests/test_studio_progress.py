@@ -10,7 +10,7 @@ import time
 import unittest
 from unittest.mock import patch
 from test_studio import task_fixture
-from orchestration.common import tree_hash
+from orchestration.common import tree_hash, digest
 from orchestration.store import Store
 from orchestration import verification
 from studio.graph import from_task, validate, Invalid
@@ -26,8 +26,11 @@ class ProgressTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp); source = base/'source'; source.mkdir(); (source/'fixed').write_text('fixed')
             control = base/'control'; config = task_fixture()
-            argv = [sys.executable, '-c', 'import sys,time,pathlib;time.sleep(.2);pathlib.Path(sys.argv[1]).write_text(sys.argv[2])', '{result}', json.dumps(dict(tests=1,failures=0,errors=0,skipped=0))]
-            config['policy']['verification'] = [dict(config['policy']['verification'][0], id=name, argv=argv, result_format='controller-json') for name in ('unit test', 'other test')]
+            python = str(Path(sys.executable).resolve())
+            argv = [python, '-I', '-c', 'import time;time.sleep(.2);print(42)']
+            config['policy']['verification'] = [dict(config['policy']['verification'][0], id=name, argv=argv,
+                result_format='controller-json', runner='json-assertion', stdin='', expected_json=42,
+                read_paths=[], dependency_sha256={python:digest(Path(python).read_bytes())}) for name in ('unit test', 'other test')]
             store = Store(control); candidate = tree_hash(source)
             run = store.create(dict(config=config, round=1, candidate={'sha256':candidate}, candidate_round=1, acceptance_sha256='b'*64))
             store.transition(run, 'VERIFYING'); entered = threading.Event(); release = threading.Event(); errors=[]

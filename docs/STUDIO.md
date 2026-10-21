@@ -1,5 +1,7 @@
 # DevFlower Studio 0.1
 
+完整的 Stable 工作区、可编辑任务授权及真实 Agent 入口见 [Usable v1](USABLE.md)。下文保留原有 Studio 0.1/M0 的兼容接口与使用说明。
+
 可运行的本地 Web 画布，不是 n8n 的 fork。独立 Python 标准库服务 + 原生 HTML/CSS/JavaScript/SVG，无 npm 构建、CDN、字体下载或第三方运行依赖。Controller 以最小增量记录验证操作身份和候选轮次；A/B/C、五阶段流程、Controller 授权与 Git 门禁保持原状。
 
 ## 1. 启动

@@ -17,6 +17,7 @@ from .sandbox import protect_controller
 from .store import Store, alive, lease
 from .verification import verify
 from .privacy import credentials, check_tree, redact
+from .trust import TrustedRelease
 
 IMPLEMENT_SCHEMA = {'type': 'object', 'additionalProperties': False,
                     'required': ['status', 'summary'], 'properties': {
@@ -34,18 +35,35 @@ def runtime_configs(config):
     out = {}
     for role, b in config['bindings'].items():
         home = Path(b['home'])
+        for source, destination in b.get('readonly_files', []):
+            out[role + ':overlay:' + destination] = digest(Path(source).read_bytes())
+        overlaid = {destination for _, destination in b.get('readonly_files', [])}
         for relative in ('.codex/config.toml', '.claude/settings.json'):
+            if relative in overlaid:
+                # bwrap may create an empty mountpoint in the dedicated HOME.
+                # Only the explicitly mounted source controls the effective settings.
+                continue
             p = home / relative
             if p.is_file():
                 out[role + ':' + relative] = digest(p.read_bytes())
     return out
 
 
-def start(control, config_path, authorization):
+def start(control, config_path, authorization, *, trust=None, deferred=False):
     config_path, authorization = Path(config_path).resolve(), Path(authorization).resolve()
     config = load(config_path)
     auth, source = authorized(config, authorization)
-    if (Path(source['root']) / 'tools/orchestration/controller.py').is_file():
+    if trust is not None:
+        if not isinstance(trust, TrustedRelease):
+            raise Blocked('externally approved Stable identity required')
+        trust.permits(source['root'], control)
+        if any(v.get('runner') not in ('exit-code', 'json-assertion') for v in config['policy']['verification']):
+            raise Blocked('Stable verification requires parent-owned assertions; candidate-reported counts are unsupported')
+        if config['policy']['mode'] == 'C' and not config.get('human_gate_policy'):
+            raise Blocked('Stable C runs require deferred post-review G4')
+    if config.get('human_gate_policy') and trust is None:
+        raise Blocked('staged human gates require independently accepted Stable')
+    if (Path(source['root']) / 'tools/orchestration/controller.py').is_file() and trust is None:
         raise Blocked('framework source requires external bootstrap; new controller cannot gate itself to READY')
     control, source_path = Path(control).resolve(), Path(source['root'])
     if control.is_relative_to(source_path) or source_path.is_relative_to(control):
@@ -56,10 +74,13 @@ def start(control, config_path, authorization):
     run = store.create({'config': config, 'config_path': str(config_path), 'authorization_path': str(authorization),
                         'authorization_sha256': digest(authorization.read_bytes()),
                         'acceptance_sha256': auth['acceptance_sha256'], 'controller_sha256': controller_hash(),
-                        'source': source, 'runtime_configs': runtime_configs(config),
+                        'source': source, 'runtime_configs': runtime_configs(config), 'stable': trust.binding() if trust else None,
                         'round': 0, 'history': config.get('prior_reviews', []), 'sessions': {}, 'reviews': [], 'cancel_requested': False})
-    resume(store, run)
-    return store.get(run)
+    if not deferred:
+        resume(store, run)
+    result = store.get(run)
+    store.db.close()
+    return result
 
 
 def binding_check(store, data):
@@ -74,18 +95,35 @@ def binding_check(store, data):
     if tree_hash(config['source'], config['excludes']) != data.get('base_hash', tree_hash(config['source'], config['excludes'])):
         raise Blocked('original source changed')
     control = store.directory
+    trust = TrustedRelease.bound(data['stable']) if data.get('stable') else None
+    if trust:
+        trust.permits(data['source']['root'], control)
     # No allowed runtime path may grant access to trusted control, source git or
     # another role's writable home. No broad /home, /tmp or root allowlists.
     protected = [Path(p).resolve() for p in (control, data['authorization_path'], data['config_path'],
                  data['source']['git_dir'], data['source']['common_dir'], data['source']['root'],
                  Path(__file__).resolve().parents[2])]
+    if trust:
+        protected.append(trust.record.resolve())
     homes = [Path(b['home']).resolve() for b in config['bindings'].values()]
-    if overlaps(*homes) or any(overlaps(a, b) for a in homes for b in protected):
+    if any(overlaps(a, b) for i, a in enumerate(homes) for b in homes[i+1:]) or any(overlaps(a, b) for a in homes for b in protected):
         raise Blocked('runtime home overlaps authority')
     for binding in config['bindings'].values():
+        for source, destination in binding.get('readonly_files', []):
+            p = Path(source)
+            if p.is_symlink() or not p.is_file() or any(overlaps(p, x) for x in protected + homes):
+                raise Blocked('credential source overlaps authority or runtime homes')
         for p in map(lambda x: Path(x).resolve(), binding['read_paths']):
             if any(overlaps(x, p) for x in protected + homes):
                 raise Blocked('read allowlist exposes authority or runtime homes')
+    credential_sources = [src for b in config['bindings'].values() for src, _ in b.get('readonly_files', [])]
+    for spec in config['policy']['verification']:
+        for path, expected in spec.get('dependency_sha256', {}).items():
+            if digest(Path(path).read_bytes()) != expected:
+                raise Blocked('Approved verifier dependency changed')
+        for path in spec.get('read_paths', []):
+            if any(overlaps(path, x) for x in protected + homes + credential_sources):
+                raise Blocked('Verifier allowlist exposes authority or runtime homes')
     return config
 
 
@@ -141,7 +179,9 @@ def resume(store, run):
                 store.transition(run, 'CANCELLED')
                 return store.get(run)
             config = binding_check(store, data)
-            secrets = set().union(*(credentials(b['home']) for b in config['bindings'].values()))
+            if initial['state'] == 'AWAITING_HUMAN':
+                return initial
+            secrets = set().union(*(credentials(b['home'], [x[0] for x in b.get('readonly_files', [])]) for b in config['bindings'].values()))
             for b in config['bindings'].values():
                 # Session identity locks are shared by any run using this runtime home.
                 stack.enter_context(lease(Path(b['home']).parent / (digest(str(Path(b['home']).resolve()).encode()) + '.session.lock')))
@@ -177,7 +217,7 @@ def resume(store, run):
                 raise Blocked('baseline snapshot changed')
             check_tree(baseline, secrets)
             protected = [Path(data['authorization_path']), Path(data['config_path']), Path(data['source']['common_dir']) / 'config']
-            backends = {b.get('isolation', 'landlock') for b in config['bindings'].values()} | {'landlock'}
+            backends = {b.get('isolation', 'landlock') for b in config['bindings'].values()} | {config.get('verification_isolation', 'landlock')}
             proofs = [isolation_probe(store.directory, work, base_dir / ('probe-' + backend), backend, protected) for backend in sorted(backends)]
             isolation = {'read_and_write_denied': all(p['read_and_write_denied'] for p in proofs), 'proofs': proofs}
             store.transition(run, 'PREFLIGHT', isolation=isolation)
@@ -185,6 +225,21 @@ def resume(store, run):
                 # resume never auto-delivers; separate deliver rechecks the gate.
                 store.transition(run, 'PARTIAL_DELIVERY' if any(o['kind'] == 'COMMIT' for o in store.operations(run)) else 'READY')
                 return store.get(run)
+            if 'planner' in config['bindings'] and not data.get('plan'):
+                planning = base_dir / 'planning'
+                planning.mkdir(exist_ok=True)
+                plan_schema = planning / 'plan.schema.json'
+                save(plan_schema, IMPLEMENT_SCHEMA)
+                store.transition(run, 'PLANNING')
+                b = config['bindings']['planner']
+                plan = agent_step(store, run, b.get('provider', 'codex'), b, config['policy']['limits'],
+                    'Plan this approved task without editing source. Return status IMPLEMENTED with your concise plan, or BLOCKED.\n' + config['goal'],
+                    baseline, planning, plan_schema, data['sessions'].get('planner'))
+                validate(plan['report'], IMPLEMENT_SCHEMA)
+                if plan['report']['status'] != 'IMPLEMENTED' or tree_hash(baseline) != data['base_hash']:
+                    raise Blocked('planner blocked or baseline changed')
+                sessions = dict(data['sessions'], planner=plan['session_id'])
+                store.transition(run, 'PREFLIGHT', plan=plan, sessions=sessions)
             while True:
                 data = store.get(run)['data']
                 if data['cancel_requested']:
@@ -203,17 +258,18 @@ def resume(store, run):
                 limits = config['policy']['limits']
                 store.transition(run, 'IMPLEMENTING', round=number)
                 impl_prompt = (config['goal'] + '\nWork only in current source directory. No Git delivery. '
-                    'Return the required JSON object. Prior review/verification feedback:\n' + json.dumps(data.get('feedback', {})))
+                    'Return the required JSON object. Prior review/verification feedback:\n' + json.dumps(data.get('feedback', {}))
+                    + '\nPlanner guidance (not authorization): ' + json.dumps(data.get('plan', {}).get('report', {})))
                 implementation = agent_step(store, run, 'codex', config['bindings']['implementer'], limits,
                     impl_prompt, work, rd, impl_schema, sessions.get('implementer'))
                 validate(implementation['report'], IMPLEMENT_SCHEMA)
                 if implementation['report']['status'] != 'IMPLEMENTED':
                     raise Blocked('implementer BLOCKED; no verification/review or automatic repair of infrastructure failure')
                 sessions['implementer'] = implementation['session_id']
-                store.transition(run, 'SNAPSHOTTING', sessions=sessions)
+                store.transition(run, 'SNAPSHOTTING', sessions=sessions, implementation=implementation, implementation_round=number)
                 candidate = rd / 'candidate'
                 frozen = snapshot(work, candidate, baseline=data['base'])
-                check_tree(candidate, secrets | set().union(*(credentials(b['home']) for b in config['bindings'].values())))
+                check_tree(candidate, secrets | set().union(*(credentials(b['home'], [x[0] for x in b.get('readonly_files', [])]) for b in config['bindings'].values())))
                 scope_check(data['base'], frozen['entries'], config['scope'])
                 save(rd / 'candidate.json', frozen)
                 store.transition(run, 'VERIFYING', candidate=frozen, candidate_round=number, candidate_path=str(candidate))
@@ -235,8 +291,8 @@ def resume(store, run):
                           f'{rd / "acceptance.txt"}, candidate source in {candidate}, baseline_path={review_baseline} baseline_sha256={data["base_hash"]}, '
                           f'{rd / "changes.diff"}, and {rd / "verification.json"}. '
                           'Independently design representative negative cases. '
-                          'You have read-only tools; dynamic tests already executed by controller-runner are not yours. '
-                          'If further dynamic evidence is necessary return BLOCKED and specify commands in limitations. '
+                          'Source/evidence are read-only. Use available tools to construct independent negative cases in the writable scratch directory; '
+                          'controller-runner tests are not your own tests. If essential tests cannot execute return BLOCKED with the missing evidence. '
                           f'Then compare {rd / "implementer-summary.json"}. Return only the review JSON schema. '
                           f'run_id={run} round={number} candidate_sha256={frozen["sha256"]} '
                           f'acceptance_sha256={data["acceptance_sha256"]}. Required contracts: '
@@ -272,6 +328,9 @@ def resume(store, run):
                         feedback={'review': review['report'], 'verification': verification, 'gate': str(exc)},
                         blocked_fingerprint=fingerprint)
                     continue
+                if config.get('human_gate_policy') and not human_result_bound(store.get(run)['data']):
+                    store.transition(run, 'AWAITING_HUMAN', reason='C G4 requires actual human interpretation of this reviewed candidate')
+                    return store.get(run)
                 store.transition(run, 'READY', reason='required verification and independent review passed')
                 return store.get(run)
     except (Blocked, OSError, ValueError, KeyError, TypeError, subprocess.TimeoutExpired) as exc:
@@ -299,7 +358,7 @@ def agent_step(store, run, kind, binding, limits, prompt, cwd, artifacts, output
     raise Blocked('infrastructure retry exhausted')
 
 
-def deliver_run(store, run):
+def deliver_run(store, run, *, github=None):
     data = store.get(run)['data']
     with lease(store.directory / (run + '.lock')), lease(Path(data['source']['common_dir']) / 'devflower-writer.lock'):
         current = store.get(run)
@@ -309,6 +368,8 @@ def deliver_run(store, run):
                 store.transition(run, 'CANCELLED')
             raise Blocked('run cancelled; delivery refused')
         config = binding_check(store, data)
+        if config.get('human_gate_policy') and not human_result_bound(data):
+            raise Blocked('C G4 human result approval is missing or bound to another candidate')
         if store.get(run)['state'] not in ('READY', 'LOCAL_COMMITTED', 'PARTIAL_DELIVERY'):
             raise Blocked('run is not ready for delivery')
         if not config['policy']['delivery']['commit'] or not data.get('isolation', {}).get('read_and_write_denied'):
@@ -322,6 +383,18 @@ def deliver_run(store, run):
                 raise Blocked('verification evidence changed after review')
         if Path(config['source']).resolve() == Path(__file__).resolve().parents[2]:
             raise Blocked('controller cannot approve/deliver its own source')
+        if github is not None:
+            if not data.get('stable'):
+                raise Blocked('GitHub delivery requires an externally accepted Stable runtime')
+            if any(overlaps(github.config_dir, p) for p in [store.directory, Path(config['source']),
+                    *[Path(b['home']) for b in config['bindings'].values()]]):
+                raise Blocked('GitHub credentials overlap source or model authority')
+            gate(run, data['round'], data['candidate']['sha256'], data['acceptance_sha256'],
+                 config['policy']['required_contracts'], data['verification'], data['implementation'], data['review'],
+                 data['history'], config['policy']['verification'])
+            from .github_delivery import deliver_github
+            store.transition(run, 'COMMITTING')
+            return deliver_github(store, run, github)
         targets = config.get('delivery_targets', [])
         if not targets or Path(targets[0]['root']).resolve() != Path(config['source']).resolve() or targets[0]['branch'] != data['source']['branch']:
             raise Blocked('delivery source target does not match reviewed repository')
@@ -336,3 +409,41 @@ def deliver_run(store, run):
              config['policy']['verification'])
         store.transition(run, 'COMMITTING')
         return deliver(store, run, data['candidate_path'], targets, config['policy']['delivery']['push'], data['candidate']['sha256'])
+
+
+
+def human_result_bound(data):
+    event = data.get('human_result', {})
+    return bool(event.get('actor') == 'user' and event.get('gate') == 'G4'
+                and event.get('candidate_sha256') == data.get('candidate', {}).get('sha256')
+                and event.get('acceptance_sha256') == data.get('acceptance_sha256')
+                and event.get('round') == data.get('round') and event.get('answer')
+                and event.get('approval_ref', '').startswith('studio-g4:'))
+
+
+def approve_human_gate(store, run, answer, approval_ref):
+    """Trusted Studio caller, after its private browser capability is checked."""
+    if not isinstance(answer, str) or not answer.strip() or len(answer) > 4000:
+        raise Blocked('Actual human result interpretation is required')
+    if not isinstance(approval_ref, str) or not approval_ref.startswith('studio-g4:'):
+        raise Blocked('Explicit Studio human approval receipt required')
+    initial = store.get(run)
+    with lease(store.directory / (run + '.lock')), lease(Path(initial['data']['source']['common_dir']) / 'devflower-writer.lock'):
+        current = store.get(run)
+        data = current['data']
+        config = binding_check(store, data)
+        if current['state'] != 'AWAITING_HUMAN' or not config.get('human_gate_policy') or not data.get('stable') or data.get('cancel_requested'):
+            raise Blocked('Run is not waiting for this human result gate')
+        if tree_hash(data['candidate_path']) != data['candidate']['sha256']:
+            raise Blocked('Reviewed candidate changed before human interpretation')
+        for evidence in data['verification']:
+            p = Path(evidence['result_path'])
+            if p.is_symlink() or not p.is_file() or digest(p.read_bytes()) != evidence['result_sha256']:
+                raise Blocked('Verification evidence changed before human interpretation')
+        gate(run, data['round'], data['candidate']['sha256'], data['acceptance_sha256'],
+             config['policy']['required_contracts'], data['verification'], data['implementation'], data['review'],
+             data['history'], config['policy']['verification'])
+        receipt = dict(gate='G4', actor='user', answer=answer, approval_ref=approval_ref,
+                       candidate_sha256=data['candidate']['sha256'], acceptance_sha256=data['acceptance_sha256'], round=data['round'])
+        store.transition(run, 'READY', human_result=receipt, reason='Independent review and actual C G4 interpretation complete')
+        return store.get(run)

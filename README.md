@@ -17,6 +17,8 @@
 
 Agent 先读 [AGENTS.md](AGENTS.md)，存在项目实例时再读 `project/STATUS.md` 与 `project/AGENT_CONTEXT.md`；任务只按需读 §1/§3/§4。详细规则见 [WORKFLOW.md](WORKFLOW.md)。
 
+需要在本机打开项目、配置工作流并驱动真实 Agent 时，见 [Stable Studio 使用说明](docs/USABLE.md)。原有画布和只读会话发现见 [Studio](docs/STUDIO.md)。
+
 ## 开始一个项目
 
 需要 Python 3.11+ 和 Git，无第三方 Python 依赖。先在干净的工作流 clone 中确认远端与基线，再创建 `project/<slug>` 分支：

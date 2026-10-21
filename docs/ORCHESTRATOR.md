@@ -61,11 +61,18 @@ source, head, branch, approval_ref, external_source_approved, commit, push`。
 模型发送源码的独立授权。项目配置不能自行签发授权，操作员必须独立审查。
 此文件处于 Agent 无权访问的控制边界外，运行时捕获其原字节哈希。
 
-验证 argv 必须用 `{result}` 绑定本轮唯一机器结果路径；`{artifacts}` 可用于
-其他输出。结果格式是 JUnit 或 controller-json，后者恰有非负整数
-`tests/failures/errors/skipped`。min_cases 至少 1；必需条款不可 Skip。
-命令在冻结候选内执行，只有隔离 artifacts 可写。机器结果是证据之一，
-审核仍需检查测试和实现是否被削弱。模型给出的路径及命令不会自动执行。
+执行门禁使用可信父进程拥有的 `json-assertion` 或 `exit-code` runner。
+JSON 断言由操作员预先登记命令、stdin、expected_json 与只读依赖及哈希；
+子进程只返回观测数据，父进程比较预期值、计数并写入唯一结果文件。
+每项断言必须实际执行；命令检查只计一项，不冒充 unittest 用例数量。
+候选进程不接收结果路径，也不能写权威 artifacts。审核报告同时提供绑定的
+输入、预期结果与依赖哈希，便于独立检查断言是否覆盖任务要求。
+
+旧 JUnit/controller-json 自报计数记录仍可读取和展示，但不能用于新的
+run/resume 执行门禁。请使用 `examples/orchestrator/prepare.py` 的父进程
+断言示例或 [Stable Studio](USABLE.md) 的注册方式；不要沿用历史设计示例
+中的自报计数命令。默认模板断言只证明模板行为，业务任务必须增加专用断言。
+模型给出的路径及命令不会自动执行。
 
 每轮在审核区提供哈希核对的只读原始基线副本、候选清单及受控生成的 changes.diff；diff 中的基线路径在审核沙箱内实际可读，审核后再次核对其哈希；审核先读源码与实际差异，再对照实施说明。审核报告使用既有 review-result schema。必需合同必须有 PASS 和已知证据
 引用（验证 id 或 source-inspection）；历史必需缺陷必须显式 CLOSED。

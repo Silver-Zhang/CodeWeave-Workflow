@@ -73,9 +73,11 @@ class Fixture(unittest.TestCase):
         for b in policy['agents'].values():
             b['session_policy'] = 'new'
         policy['limits'].update(step_timeout_seconds=30, max_log_bytes=65536)
-        policy['verification'] = [{'id': 'unit', 'argv': [sys.executable, '-c',
-            'import pathlib,json,sys; good="42" in pathlib.Path("value.py").read_text(); pathlib.Path(sys.argv[1]).write_text(json.dumps(dict(tests=1,failures=0 if good else 1,errors=0,skipped=0)))', '{result}'],
-            'result_format': 'controller-json', 'min_cases': 1, 'max_skipped': 0}]
+        python = str(Path(sys.executable).resolve())
+        policy['verification'] = [dict(id='unit', argv=[python, '-I', '-c',
+            'import json,runpy;print(json.dumps(runpy.run_path("value.py")["VALUE"]))'],
+            stdin='', expected_json=42, read_paths=[], dependency_sha256={python:digest(Path(python).read_bytes())},
+            runner='json-assertion', result_format='controller-json', min_cases=1, max_skipped=0)]
         self.config = {'task_id': 'fixture', 'project': 'fixture', 'source': str(self.source),
             'acceptance': str(self.acceptance), 'goal': 'Set VALUE to 42', 'scope': ['value.py'], 'excludes': [],
             'policy': policy, 'bindings': {role: {'project': 'fixture', 'role': role, 'executable': str(self.fake),
@@ -98,6 +100,15 @@ class Fixture(unittest.TestCase):
 
 
 class AuthorityTests(Fixture):
+    def test_F1_legacy_reporter_rejected_before_any_agent_or_store(self):
+        spec=self.config['policy']['verification'][0]
+        for key in ('runner','stdin','expected_json','read_paths','dependency_sha256'):spec.pop(key)
+        spec['argv']=[sys.executable,'-c','raise RuntimeError("must not execute")','{result}']
+        self.authorize()
+        with self.assertRaisesRegex(Blocked,'parent-owned assertions'):
+            controller.start(self.control,self.config_path,self.auth_path)
+        self.assertFalse(self.control.exists())
+
     def test_A01_missing_or_modified_authorization(self):
         with self.assertRaises(FileNotFoundError):
             authorized(self.config, self.base / 'absent')
@@ -461,6 +472,14 @@ class GateTests(unittest.TestCase):
 
     def check(self):
         return gate('r', 1, 'a'*64, 'b'*64, ['unit'], self.verification, self.impl, self.review)
+
+    def test_F6_closed_current_required_finding_needs_known_evidence(self):
+        finding=dict(id='required', severity='P1',status='CLOSED',title='fixed',contract_ids=['unit'],evidence_refs=[])
+        self.review['report']['findings']=[finding]
+        for refs in ([],['invented']):
+            finding['evidence_refs']=refs
+            with self.assertRaisesRegex(Blocked,'known evidence'):self.check()
+        finding['evidence_refs']=['unit'];self.assertTrue(self.check())
 
     def test_A08_accept_not_sufficient(self):
         self.assertTrue(self.check())
