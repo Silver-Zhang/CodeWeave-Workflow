@@ -1,15 +1,15 @@
 # DevFlower 当前开发上下文
 
-当前 Issue #9 为 Draft 已发布、最终验收待决策。任务 tasks/2026-10/20261021_01_agent-workspace-vnext；五节 README 与 evidence.json 汇总结论，原始证据仅本地 archives/devflower-vnext-20261021，不通读历史。
+当前新任务：tasks/2026-10/20261021_02_unified-agent-workbench，依据2026-10-21完整产品升级卡，状态BLOCKED。先读本README与evidence.json，不通读旧历史。原始任务卡、源码冻结、日志、截图、实际会话在本机archives/devflower-workbench-20261021。
 
-main 基线 61356ac07aca24382970b72de9607b1daff26767 / tree 10a19a6d8fe34633ffbc667a33ac518eb7f248dd。源码 worktree development/agent-workspace-vnext，flow/agent-workspace-vnext 提交 465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0 已推送读回，候选 74c7c3d8776a9736556850b632274afe7118e693e70126dd5e2b028d9213704e / tree 087d124f2259b7562e5abfec3d4e9bbda533c16e。Draft PR #10 https://github.com/Silver-Zhang/DevFlower/pull/10 ，未合并。研发记录仅 records 的 project/devflower，不整分支合回 main。
+工作树：development/agent-workspace-vnext（flow/agent-workspace-vnext），HEAD与origin仍465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0；有本任务完整staged=0的未提交修改及新增文件，禁止reset/clean/覆盖。最终本地候选b1b2cfdf90a16e6347566f2e9123afb5648a46b785effa1dc59ce7e84aab1e11，127文件，预期Git tree d7528dd0915895ddd1c121e50cf81c40b3518b5e（不是HEAD tree）。main/origin最新仍61356ac07aca24382970b72de9607b1daff26767。三个worktree/分支保留，不擅自清理。
 
-Claude deepseek-flash[1m]/high，实际模型同名、resolved effort unknown；Codex gpt-6.1-sol/xhigh。真实 run f3b645cedd914b9285f8284fbbc738bd 固定旧 Stable 5816 监督，已停止 BLOCKED。main 准入 1 轮 + 开发 4 轮总预算已尽；开发 R1/R2 NEEDS_CORRECTION，R3/R4 ACCEPT_WITH_LIMITATIONS，F1/F2/F3 CLOSED、20 合同 PASS。323 Python+6 隔离+18 固定断言通过，真实原生/API16及普通 Chromium9；实际 Development 另有4原生回合与9浏览器检查。原始失败、裁决与执行者区别保留。
+当前候选自验：363 Python+6宿主隔离+110普通Chromium检查（7套件，含32会话断言），全退出0/零失败零Skip；check --baseline及6项语法通过。40新增协议测试含在363内。真实Codex gpt-6.1-sol/xhigh成功21回合；并发重叠81.774秒，汇合2/2仅汇总一次；两轮提前退出及五轮10调用终止；精确UUID跨轮与旧会话新运行初始化通过。各原生运行具有自己的候选身份，不把旧动态证据当成最终源码ACCEPT。
 
-2026-10-21 用户明确批准按当前有限接受提交/推送/Draft PR 和记录同步，使用外部正常 Git 操作；没有恢复旧 run、改变硬 ACCEPT gate 或自签 Stable。首次 HTTPS 推送缺 workflow scope 被拒，后以本机既有 SSH 正常推送；未修改全局认证或远端配置。旧授权基线 d971 与新已提交候选不同，不能直接复用其 resume。
+Claude保持deepseek-flash[1m]/high。分析进程和固定外部源码审核均真实503 no available channel；源码审核PID3594968/session140b1101-df30-4b88-a8cc-6547cdb865d1，192.866秒/exit1/no timeout。resolved model/effort unknown，无源码裁决；外部监督BLOCKED。原生HOME/config/cwd/恢复资料见reviews/round-1/session.json（本地），不复制全局HOME或认证。本新任务启动过1次源码审核，完成裁决0；不继续无界重试。
 
-旧 Stable 33915 与用户 34235 保留。Development 会话预览 41053 启动：python3 /home/workspace/DevFlower/archives/devflower-vnext-20261021/real-workspace-acceptance/open-studio.py 。支持真实历史查看、managed 新建/精确续聊；外部导入/多 cwd 只读。原生 archive/delete、任意并行 DAG/子 Agent、Copilot、远程 URI unsupported。Controller/GitHub/Stable 批准 API 禁用；私有 URL/token 不入库或聊天，不复制整个 HOME。
+未关闭：WB-UI-01冻结运行高级预算显示草稿24而实际冻结/执行10；WB-EXT-01无可信实际验证/交付profile；真实v3原生停止未补测；跨Provider分析、开发—Claude修复复审和最终独立审核仍缺。源码未commit/push，PR10保持Draft及旧465内容。记录允许正常project/devflower同步，原始会话、日志、截图不上传。当前不能声称READY、用户验收或Stable晋升。
 
-新 RC 均为不可执行晋升提案 approved=false。额外严格服务浏览器试验失败未改写为 PASS；尚无独立真人 GUI 最终验收或新 Stable 晋升。不得把 Draft 等同 READY_TO_MERGE，不自动合并/force/tag/release/删除远端分支。
+本机唯一新版入口：python3 /home/workspace/DevFlower/.local/open-workbench.py，当前产品http://127.0.0.1:42571/，明确Development；私有URL/token不入库或聊天。旧34235、33915 Stable及41053旧会话预览保留；不覆盖当前Stable。源码使用React Flow，前端依赖缓存只在本机archive/ui/node_modules，静态构建与许可证在源码，不向CodeWeave/RMC写入。
 
-按用户授权删除4个本地旧flow分支，全部可从main到达；当前仅main、flow/agent-workspace-vnext、project/devflower，3个worktree保留，原生会话/历史证据不删。不reset/clean，不改CodeWeave/RMC。后续审阅Draft和限制后另行决定正式准入，当前不自动进入下一阶段。
+旧任务20261021_01_agent-workspace-vnext原五轮预算已尽、运行f3b645…BLOCKED；其R1/R2 NEEDS_CORRECTION、R3/R4 ACCEPT_WITH_LIMITATIONS及用户明确批准的465a31f/088832b Draft发布保持原意。不得恢复旧运行或借其有限接受批准本次新源码。新任务恢复需实际新证据，先修未关项、固定候选、自验并真实Claude复审；main合并与Stable最终批准仍由用户另行决定。

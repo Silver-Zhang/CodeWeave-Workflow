@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "20261021_02_unified-agent-workbench",
+  "date": "2026-10-21",
+  "mode": "B",
+  "status": "阻塞",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/agent-workspace-vnext",
+      "base": "465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/9",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/10"
+    }
+  ]
+}

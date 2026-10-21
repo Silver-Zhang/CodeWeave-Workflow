@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "task": "20261021_02_unified-agent-workbench",
+  "status": "BLOCKED",
+  "source": {
+    "branch": "flow/agent-workspace-vnext",
+    "head": "465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0",
+    "candidate_sha256": "b1b2cfdf90a16e6347566f2e9123afb5648a46b785effa1dc59ce7e84aab1e11",
+    "prospective_git_tree": "d7528dd0915895ddd1c121e50cf81c40b3518b5e",
+    "files": 127,
+    "committed": false,
+    "pushed": false
+  },
+  "tests": {
+    "python": {
+      "tests": 363,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit": 0
+    },
+    "host": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit": 0
+    },
+    "ordinary_chromium": {
+      "checks": 110,
+      "suites": 7,
+      "failures": 0,
+      "skipped": 0,
+      "exit": 0,
+      "synthetic_native_data": true
+    },
+    "baseline_exit": 0,
+    "syntax_checks": 6,
+    "source_unchanged": true,
+    "binding_sha256": "dd83185023d7606926d5e8e3d47e2257be49854647fdfe1cdaa615a75314011d"
+  },
+  "native": {
+    "successful_codex_turns": 21,
+    "requested_codex_model": "gpt-6.1-sol",
+    "requested_codex_effort": "xhigh",
+    "resolved_model": "unknown",
+    "resolved_effort": "unknown",
+    "parallel_overlap_seconds": 81.774,
+    "run_summaries": [
+      {
+        "run": "efcc69853133c40ebe2fc0e777d1e4d6",
+        "candidate_sha256": "96da3fa6fd23ab56a95b1c199eea4995b9a48ab6ef63ca01cc8a40d4a361354c",
+        "state": "COMPLETED",
+        "native_calls": 2,
+        "reason": null
+      },
+      {
+        "run": "f6cae968aed65bb56f7bc4c68be551af",
+        "candidate_sha256": "65c056da2f091a459c7b0a61f8d2328633a3fd14ed5b9d0848f6818f07342d6f",
+        "state": "COMPLETED",
+        "native_calls": 1,
+        "reason": null
+      },
+      {
+        "run": "0f0db9db04126dc53a4f85e39c0e4cf9",
+        "candidate_sha256": "94ff7bf0408f3dfc5a11198f496ab8e1f32cf33977ca66775b2214c2afbda077",
+        "state": "COMPLETED",
+        "native_calls": 3,
+        "reason": null
+      },
+      {
+        "run": "7aea4fe6ba2e20323f48e665816e310f",
+        "candidate_sha256": "e0868e910a8fe26284b4a4d5ff2736b3c06a88de9a5c88ea7a6dffaafa6551bc",
+        "state": "COMPLETED",
+        "native_calls": 4,
+        "reason": null
+      },
+      {
+        "run": "43ad9b7704d7696f5e93cee1196572c8",
+        "candidate_sha256": "b1b2cfdf90a16e6347566f2e9123afb5648a46b785effa1dc59ce7e84aab1e11",
+        "state": "FAILED",
+        "native_calls": 10,
+        "reason": "循环达到最大轮数，仍未满足退出条件"
+      },
+      {
+        "run": "5e5bd97f6ad4299e34796380b290273a",
+        "candidate_sha256": "b1b2cfdf90a16e6347566f2e9123afb5648a46b785effa1dc59ce7e84aab1e11",
+        "state": "COMPLETED",
+        "native_calls": 1,
+        "reason": null
+      }
+    ],
+    "raw_proof_sha256": "87b005bfe2815e662b7e81412b0cb0145588442ff489a26a6563570955579ca3"
+  },
+  "review": {
+    "source_audit_invocations": 1,
+    "completed_source_verdicts": 0,
+    "actual_service_failures": 2,
+    "requested_model": "deepseek-flash[1m]",
+    "requested_effort": "high",
+    "resolved_model": "unknown",
+    "resolved_effort": "unknown",
+    "native_session_id": "140b1101-df30-4b88-a8cc-6547cdb865d1",
+    "pid": 3594968,
+    "exit": 1,
+    "seconds": 192.866,
+    "timeout": false,
+    "source_verdict": null,
+    "supervisor_status": "BLOCKED",
+    "reason": "503 deepseek-flash no available upstream channel",
+    "source_unchanged": true,
+    "credentials_unchanged": true,
+    "record_sha256": "042841d4cabbda324f528f78fd750adb5c7168071e4f6955ac0ef7e9546f4d91"
+  },
+  "open_findings": [
+    "WB-UI-01 frozen advanced budget reflects draft",
+    "WB-EXT-01 no trusted external verify/delivery profile configured",
+    "actual v3 native cancellation acceptance incomplete",
+    "cross-provider analysis and fresh independent source verdict missing"
+  ],
+  "raw_artifacts_local_only": true,
+  "stable_promoted": false,
+  "pr": "https://github.com/Silver-Zhang/DevFlower/pull/10",
+  "ready_to_merge": false
+}
