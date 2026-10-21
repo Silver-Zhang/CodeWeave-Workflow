@@ -1,13 +1,15 @@
-# DevFlower 开发上下文
+# DevFlower 当前开发上下文
 
-源码DevFlower/；记录records/project/（project/devflower）；原始证据archives/devflower-usable-v1-20261020/。不向源码根目录写过程文档，不进入CodeWeave/RMC。
+当前 Issue #9 为 Draft 已发布、最终验收待决策。任务 tasks/2026-10/20261021_01_agent-workspace-vnext；五节 README 与 evidence.json 汇总结论，原始证据仅本地 archives/devflower-vnext-20261021，不通读历史。
 
-当前任务tasks/2026-10/20261020_04_devflower-usable-v1，Issue6/B，已完成技术验收。网页画布优先，CLI产品及桌面/VSCode后续。单个PR7到main，Ready for review且CLEAN、未合并。不得自动开始下一阶段。
+main 基线 61356ac07aca24382970b72de9607b1daff26767 / tree 10a19a6d8fe34633ffbc667a33ac518eb7f248dd。源码 worktree development/agent-workspace-vnext，flow/agent-workspace-vnext 提交 465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0 已推送读回，候选 74c7c3d8776a9736556850b632274afe7118e693e70126dd5e2b028d9213704e / tree 087d124f2259b7562e5abfec3d4e9bbda533c16e。Draft PR #10 https://github.com/Silver-Zhang/DevFlower/pull/10 ，未合并。研发记录仅 records 的 project/devflower，不整分支合回 main。
 
-源码c9fc36d8c7a3892e97a7e439eb682a0ca9b52990已推送且干净，treeb6733f39b9d13dcabc6a1c089242d55800120825，候选5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821。255+6+66外部宿主回归全过。原review5代码ACCEPT但整体false保持；同候选closure最终ACCEPT、issue6_complete=true，关闭G1–G3，真实PNG/原生/PR证据已审，未开第6轮代码审核。
+Claude deepseek-flash[1m]/high，实际模型同名、resolved effort unknown；Codex gpt-6.1-sol/xhigh。真实 run f3b645cedd914b9285f8284fbbc738bd 固定旧 Stable 5816 监督，已停止 BLOCKED。main 准入 1 轮 + 开发 4 轮总预算已尽；开发 R1/R2 NEEDS_CORRECTION，R3/R4 ACCEPT_WITH_LIMITATIONS，F1/F2/F3 CLOSED、20 合同 PASS。323 Python+6 隔离+18 固定断言通过，真实原生/API16及普通 Chromium9；实际 Development 另有4原生回合与9浏览器检查。原始失败、裁决与执行者区别保留。
 
-产品run9c2ee39b5bb0489abede911e8f9319f4用旧Stable1d2a4fa9完成真实开发/受控故障/自动修复复审/PR创建，原始负面意见和超时保留。新图run4180b07d383c433ebef1b930d34f0acf用Stable5816证明六节点/7+6验证/真实Agent映射；其原始AWL/BLOCKED不变，可选P3 F-R1保留，不混称该run交付成功。
+2026-10-21 用户明确批准按当前有限接受提交/推送/Draft PR 和记录同步，使用外部正常 Git 操作；没有恢复旧 run、改变硬 ACCEPT gate 或自签 Stable。首次 HTTPS 推送缺 workflow scope 被拒，后以本机既有 SSH 正常推送；未修改全局认证或远端配置。旧授权基线 d971 与新已提交候选不同，不能直接复用其 resume。
 
-完整外部审核的HOME/config/cwd/UUID和原生恢复文件只留本地。先用档案根resume-deepseek-review.py --round 5 --describe，再按输出恢复，不用--last；两个实际run的native-session-locations.json保存各自精确身份。Codex请求gpt-6.1-sol/xhigh，Claude实际deepseek-flash[1m]请求max，未知resolved保持unknown。云端仅保存结论摘要和必要证据哈希，不含原始会话。
+旧 Stable 33915 与用户 34235 保留。Development 会话预览 41053 启动：python3 /home/workspace/DevFlower/archives/devflower-vnext-20261021/real-workspace-acceptance/open-studio.py 。支持真实历史查看、managed 新建/精确续聊；外部导入/多 cwd 只读。原生 archive/delete、任意并行 DAG/子 Agent、Copilot、远程 URI unsupported。Controller/GitHub/Stable 批准 API 禁用；私有 URL/token 不入库或聊天，不复制整个 HOME。
 
-正式已审Stable标准服务及打开入口在usable-v1-local-deployment/，保存历史存储与会话。旧studio-final-run验证服务44415已替换，历史证据不覆写。用户委托仅限本Issue的Codex GUI操作，不假称人工点击/独立人类体验验收；未来任务仍需具体授权。当前停止代码开发，下一步人工PR评审/合并决定。
+新 RC 均为不可执行晋升提案 approved=false。额外严格服务浏览器试验失败未改写为 PASS；尚无独立真人 GUI 最终验收或新 Stable 晋升。不得把 Draft 等同 READY_TO_MERGE，不自动合并/force/tag/release/删除远端分支。
+
+按用户授权删除4个本地旧flow分支，全部可从main到达；当前仅main、flow/agent-workspace-vnext、project/devflower，3个worktree保留，原生会话/历史证据不删。不reset/clean，不改CodeWeave/RMC。后续审阅Draft和限制后另行决定正式准入，当前不自动进入下一阶段。

@@ -1,11 +1,13 @@
 # 当前状态
 
-Issue #6 可视化画布版技术验收完成。最终独立Claude同候选补证ACCEPT、issue6_complete=true，无未关必需缺陷。PR #7 https://github.com/Silver-Zhang/DevFlower/pull/7 已Ready for review，OPEN/CLEAN，未合并main。
+Issue #9 / 20261021_01_agent-workspace-vnext：已发布 Draft PR #10，最终验收待决策。
 
-flow/devflower-usable-v1本地与远端c9fc36d8c7a3892e97a7e439eb682a0ca9b52990一致；tree b6733f39b9d13dcabc6a1c089242d55800120825；候选5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821。源码干净，main仍28cced14f5733dae293c237dbeb7bf9a842af71b。
+源码 flow/agent-workspace-vnext 提交 465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0 已推送并读回；PR https://github.com/Silver-Zhang/DevFlower/pull/10 ，base main，保持 Draft、未合并。
 
-最终宿主255 Python+6隔离+66 Chromium，全0失败/错误/Skip，baseline及4语法exit0。实际产品run9c2ee39b…完成开发→故障反馈→自动修复复审→PR交付。新图run4180b07d…证明六保存节点、7+6计数和真实原生进程；其自身仍ACCEPT_WITH_LIMITATIONS/BLOCKED，不覆写。可选P3 F-R1异常轮次类型加固保留，整体审核认定非必需缺陷。
+最终候选 74c7c3d8776a9736556850b632274afe7118e693e70126dd5e2b028d9213704e / tree 087d124f2259b7562e5abfec3d4e9bbda533c16e；323 Python、6 宿主、18 固定断言及必需 Chromium/真实 native 检查通过，F1/F2/F3 全关。
 
-正式固定Stable标准服务已启用，原生会话/保存画布/历史运行保留，未启动新任务。打开：python3 /home/workspace/DevFlower/archives/devflower-usable-v1-20261020/usable-v1-local-deployment/open-studio.py 。后续任务仍需具体合同/授权，本次断言不代表未来任务验收。
+Claude 原始裁决 ACCEPT_WITH_LIMITATIONS；原自动 gate 仍 BLOCKED，5 轮预算已尽。用户于 2026-10-21 另行明确批准本候选 Draft 提交/推送/PR 和 project/devflower 档案同步，不改判、不放宽产品 gate、不晋升 Stable。
 
-下一步仅人工体验/PR评审与合并决定。用户主观易用性验收不冒充已完成；不自动合并、删除分支、Tag/Release，不进入CLI/桌面/VSCode或CodeWeave/RMC下一阶段。原始负面证据均保留，细节见本任务五节README。
+本地旧 flow 分支清理 4 个，均已包含在 main。仅保留 main、当前 flow、project/devflower；会话和证据完整。原始日志/截图/会话仍本地。现用 Stable 不变，Development session-only 预览入口见任务 README。
+
+下一步：审阅 Draft 与保留限制，另行决定最终验收、正式准入及 Stable 晋升；不自动合并 main、不续开审核或开发。

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "20261021_01_agent-workspace-vnext",
+  "date": "2026-10-21",
+  "mode": "B",
+  "status": "待决策",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/agent-workspace-vnext",
+      "base": "61356ac07aca24382970b72de9607b1daff26767",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/9",
+      "result": "465a31f523fc265b1bcbcd0ecdef6eca06a6e0e0",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/10"
+    }
+  ]
+}

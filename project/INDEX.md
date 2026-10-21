@@ -4,6 +4,7 @@
 
 | 日期 | 任务 | 模式 | 状态 |
 |---|---|---|---|
+| 2026-10-21 | [20261021_01_agent-workspace-vnext](tasks/2026-10/20261021_01_agent-workspace-vnext/README.md) | B | 待决策 |
 | 2026-10-20 | [20261020_04_devflower-usable-v1](tasks/2026-10/20261020_04_devflower-usable-v1/README.md) | B | 已完成 |
 | 2026-10-20 | [20261020_03_workspace-session-m0](tasks/2026-10/20261020_03_workspace-session-m0/README.md) | B | 已完成 |
 | 2026-10-20 | [20261020_02_studio-v01-final-stability](tasks/2026-10/20261020_02_studio-v01-final-stability/README.md) | B | 已完成 |
