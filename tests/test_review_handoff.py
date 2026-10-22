@@ -161,6 +161,21 @@ class HandoffTests(unittest.TestCase):
             h.export(self.source, self.source / 'review.zip', *self.pins())
         self.assertFalse((self.source / 'review.zip').exists())
 
+    def test_export_refuses_oversized_generated_receipt_before_output(self):
+        pins = self.pins()
+        with patch.object(h, 'MAX_FILE', 256), self.assertRaises(h.Refused):
+            h.export(self.source, self.output, *pins)
+        self.assertFalse(self.output.exists())
+
+    def test_export_refuses_oversized_generated_manifest_before_output(self):
+        for i in range(8):
+            (self.source / (str(i) + 'x' * 100)).write_bytes(b'x')
+        pins = self.pins()
+        self.assertGreater(len(h.canonical(h.manifest(h.collect(self.source)))), 512)
+        with patch.object(h, 'MAX_FILE', 512), self.assertRaises(h.Refused):
+            h.export(self.source, self.output, *pins)
+        self.assertFalse(self.output.exists())
+
     def test_output_is_exclusive_and_temporary_file_removed(self):
         self.output.write_bytes(b'existing user file')
         with self.assertRaises(FileExistsError):

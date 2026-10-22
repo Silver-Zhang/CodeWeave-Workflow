@@ -206,6 +206,10 @@ def export(root, output, expected, tree, count):
     if manifest(collect(root)) != manifest(files):
         raise Refused('Source changed between snapshots')
     payloads = {'manifest.json': canonical(manifest(files)), 'handoff.json': canonical(info)}
+    # Metadata is a ZIP member too. The receiver applies MAX_FILE to every
+    # member, so do not report a successful export it must later refuse.
+    if any(len(raw) > MAX_FILE for raw in payloads.values()):
+        raise Refused('Generated metadata exceeds member budget')
     payloads.update({'source/' + name: raw for name, (_, raw) in files.items()})
     with directory(output.parent) as parent:
         if os.stat('.', dir_fd=parent).st_mode & 0o002:
