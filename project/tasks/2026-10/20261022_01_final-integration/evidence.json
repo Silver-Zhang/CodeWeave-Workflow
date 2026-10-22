@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "task_id": "4a334bebcd084649a4274aaa9dd9aaa7",
+  "state": "IN_PROGRESS",
+  "pr11": {
+    "pr_head": "54529b477466dae2db37fec0f3a85fe2c019a4bd",
+    "main_head": "0a24331da65678b86448cc4a51bb2127a38cda32",
+    "main_tree": "e7804dc723aa09beca82be387db0f97807c84799",
+    "review_verdict": "ACCEPT_WITH_LIMITATIONS"
+  },
+  "published_original": {
+    "head": "ec82c982a470b5e8494444ccb3f02631f43659d1",
+    "tree": "84070e9471b27e27135ec05df39e61764473e403",
+    "candidate_sha256": "e194382a7e84b309d7d91034a5d093dee1daa10b6bda69b74be954b943bf8f3c",
+    "files": 130,
+    "remote_verified": true
+  },
+  "published_integrated": {
+    "head": "0d7ed91abb721dfb0afef9f626cb5968feebe29c",
+    "git_tree": "a92c19d809913616ffe053162201dbfb299def6f",
+    "candidate_sha256": "cb9a4c6bf0097b228dee3a5ec79ea08e76e9ace8e9e428df9c1740a3ae0ac00a",
+    "build_reproducible": true
+  },
+  "pending_product_candidate": {
+    "candidate_sha256": "e56b2c2cc5fe0911471cdeaa2a9d6d72b7c3d077ec32223948db23ab1fa2641c",
+    "files": 133,
+    "published": false,
+    "sidebar_independent_tests": 3,
+    "sidebar_failures": 3
+  },
+  "product_cycle": {
+    "run": "00ad822256916abac8a81686b5148981",
+    "controller_candidate": "e194382a7e84b309d7d91034a5d093dee1daa10b6bda69b74be954b943bf8f3c",
+    "developer_uuid": "01a163ab-fb7d-79e0-b791-6fd4d80e0c31",
+    "developer_exit": 0,
+    "developer_tests": 109,
+    "review_uuid": "840ad1e2-2562-4338-b530-e13f7f238e22",
+    "first_native_audit": "timeout700;FAILED",
+    "recovery1": "API502;exit1;no verdict",
+    "recovery2": "IN_PROGRESS"
+  },
+  "pr10_merge": false,
+  "stable_promotion": false,
+  "raw_evidence": "local archives only"
+}
