@@ -145,10 +145,10 @@ class Scheduler:
         with ThreadPoolExecutor(max_workers=2, thread_name_prefix='df-read') as pool:
             while True:
                 run = self.controls()
-                states = {k: self.db.get('activation', a['id']) for k, a in states.items()}
                 for future, key in list(futures.items()):
                     if future.done():
                         future.result(); del futures[future]
+                states = {k: self.db.get('activation', a['id']) for k, a in states.items()}
                 if all(s['state'] in DONE for s in states.values()): break
                 if run.get('paused'):
                     if run['state'] != 'PAUSED':

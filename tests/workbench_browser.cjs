@@ -80,5 +80,17 @@ await test('delayed-session-history-isolated-and-http-search-truthful',async p=>
  const text=await p.locator('.execution-result').allTextContents();assert.equal(text.length,2);assert(!text.join('').includes('dialog-A'));
  const response=await p.request.get(access.url+'/api/history?'+new URLSearchParams({workspace:access.workspace,handle:access.sessions['dialog-B'].handle,query:'final answer 2'}),{headers:{Authorization:'Bearer '+access.token}});assert.equal(response.status(),200);const history=await response.json();assert.deepEqual(history.execution_results.map(r=>r.text),['SYNTHETIC dialog-B final answer 2']);assert.equal(history.messages.length,0);
 });
+await test('non-loop-results-use-first-human-round',async p=>{
+ await openWorkspace(p);
+ await p.locator('.session-main').filter({hasText:'Synthetic dialog-plain'}).click();
+ const rows=p.locator('.execution-result');await until(async()=>await rows.count()===1);
+ const text=await rows.first().innerText();
+ assert(/轮次\s+1\s+·/.test(text),'Non-loop completed results must show human round 1, matching the actual-input group');
+ assert(!/轮次\s+0\s+·/.test(text),'Internal zero must not be shown as a human round');
+ assert((await p.locator('.request-group').first().innerText()).includes('第 1 轮'));
+ await p.locator('.session-main').filter({hasText:'Synthetic dialog-A'}).click();
+ await until(async()=>await rows.count()===2);
+ assert(/轮次\s+1\s*\/\s*1/.test(await rows.first().innerText()),'Nested loop path must retain its actual 1 / 1 round');
+});
 await browser.close();console.log(JSON.stringify({tests:results.length,failures:results.filter(r=>!r.passed).length,skipped:0}));process.exitCode=results.some(r=>!r.passed)?1:0;
 })().catch(e=>{console.error(String(e));process.exitCode=1;browser?.close();});

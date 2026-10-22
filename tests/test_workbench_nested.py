@@ -18,6 +18,23 @@ from studio.workbench_scheduler import Scheduler
 from studio.workbench_store import WorkbenchStore
 
 
+class CompletesOnDone:
+    def __init__(self,fn,args):self.fn=fn;self.args=args;self.completed=False;self.error=None
+    def done(self):
+        if not self.completed:
+            try:self.fn(*self.args)
+            except BaseException as exc:self.error=exc
+            self.completed=True
+        return True
+    def result(self):
+        assert self.completed
+        if self.error:raise self.error
+class CompletionWindowPool:
+    def __init__(self,**kwargs):pass
+    def __enter__(self):return self
+    def __exit__(self,*args):return False
+    def submit(self,fn,*args):return CompletesOnDone(fn,args)
+
 class NestedRoundTests(unittest.TestCase):
     def nested_graph(self):
         profiles={'a':{'provider':'codex','model':'synthetic','effort':'high'},'b':{'provider':'claude','model':'synthetic','effort':'high'}}
@@ -141,6 +158,18 @@ class NestedRoundTests(unittest.TestCase):
                 origin=store.get('activation',event['activation'])
                 self.assertEqual(event['source'],origin['node'])
                 self.assertEqual(event['iteration_path'],origin['iteration_path'])
+
+    def test_completed_future_cannot_leave_a_stale_activation_snapshot(self):
+        graph=examples({'code':{'provider':'codex','model':'synthetic','effort':'high'},'review':{'provider':'claude','model':'synthetic','effort':'high'}})[0]
+        graph['nodes']=[n for n in graph['nodes'] if n['id']!='review'];graph['edges']=[dict(id='in',source='start',target='analyze'),dict(id='out',source='analyze',target='result')]
+        with tempfile.TemporaryDirectory() as temp:
+            store=WorkbenchStore(Path(temp)/'flow.sqlite');rt=SimpleNamespace(flow=store,check_operator=lambda:None)
+            store.put('run','window',dict(id='window',state='QUEUED',task='actual scheduling-window regression',graph=validate_graph(graph),created_at=time.time(),paused=False,cancel_requested=False))
+            calls=[]
+            def execute(node,key,inputs,prefix,iteration):calls.append(key);return {'answer':'completed exactly in the scheduling window','result':{'accepted':True}}
+            with patch('studio.workbench_scheduler.ThreadPoolExecutor',CompletionWindowPool),patch('studio.workbench_scheduler.time.sleep',lambda _:None):Scheduler(rt,'window',execute).run_graph()
+            row=store.get('run','window');self.assertEqual(row['state'],'COMPLETED',row.get('reason'));self.assertEqual(len(calls),1,'a completed side effect must never be repeated')
+            self.assertEqual(row['output']['answer'],'completed exactly in the scheduling window')
 
 
 if __name__=='__main__':unittest.main()
