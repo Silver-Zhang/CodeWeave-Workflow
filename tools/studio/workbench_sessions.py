@@ -1,5 +1,6 @@
 """Names and reversible lifecycle metadata; native records are never rewritten."""
 from __future__ import annotations
+from collections import Counter
 import json
 import os
 from pathlib import Path
@@ -17,10 +18,79 @@ from .session_sources import opened
 class WorkbenchSessions:
     def __init__(self, runtime): self.rt=runtime;self.db=runtime.flow
 
+    def matching_chats(self,workspace,row):
+        """A UUID alone is not a session: keep its provider, HOME and cwd exact."""
+        p,native=row['profile'],row['native']
+        if row.get('ambiguous') or not row.get('authorized_read',True) or not p.get('home') or native.get('cwd_changed'):return {}
+        if p['config_root']!=str(Path(p['home'])/('.'+p['provider'])):return {}
+        return {c['id']:c for c in self.db.list('node-session') if
+            c.get('workspace')==workspace and c.get('cwd')==native['cwd'] and
+            c['binding'].get('provider')==p['provider'] and c['binding'].get('home')==p['home'] and
+            c['binding'].get('session_id')==native['session_id'] and
+            c['binding'].get('project',workspace)==workspace}
+
+    def matching_operation(self,workspace,row,operation):
+        if not row or not row['profile'].get('home') or row.get('ambiguous'):return False
+        try:stored=self.rt.db.get('session-operation',operation['id'])
+        except Invalid:return False
+        p,native=row['profile'],row['native'];binding=stored['binding']
+        return (stored['workspace']==workspace and stored['cwd']==native['cwd'] and
+            binding.get('provider')==p['provider'] and binding.get('home')==p['home'] and
+            p['config_root']==str(Path(p['home'])/('.'+p['provider'])) and
+            (operation.get('session_id') or operation.get('requested_session'))==native['session_id'])
+
+    def related_activations(self,workspace,row):
+        p=row['profile']
+        chats=self.matching_chats(workspace,row)
+        runs={r['id']:r for r in self.db.list('run') if r.get('workspace')==workspace}
+        related=[]
+        for a in self.db.list('activation'):
+            c=chats.get(a.get('chat_key'));run=runs.get(a.get('run'))
+            if (c and run and c.get('run')==a.get('run') and c.get('node')==a.get('node') and
+                    a.get('provider')==p['provider']):related.append((a,c))
+        return sorted(related,key=lambda pair:(pair[0].get('started_at',0),
+            pair[0].get('iteration_path') or [pair[0].get('iteration',0)],pair[0]['id']))
+
+    def execution_results(self,workspace,row,related,messages,query,secrets):
+        """Display confirmed output.answer, never promote a native tool payload.
+
+        Controller-owned completion state/receipts remain authoritative. Reading
+        this projection does not reconcile, recover, or change any run state.
+        """
+        from orchestration.privacy import redact
+        native_answers=Counter(m['text'].strip() for m in messages if m['role']=='assistant')
+        results=[];run_states={}
+        for a,chat in related:
+            output=a.get('output')
+            if a.get('kind')!='agent' or a.get('state')!='COMPLETED' or not isinstance(output,dict):continue
+            receipt=output.get('receipt');binding=chat['binding']
+            if not isinstance(receipt,dict) or not isinstance(output.get('answer'),str):continue
+            if (receipt.get('session_id')!=row['native']['session_id'] or
+                    receipt.get('requested_model')!=binding.get('model') or
+                    receipt.get('requested_effort')!=binding.get('effort') or
+                    'receipt' in a and a['receipt']!=receipt):continue
+            process=receipt.get('process')
+            if not isinstance(process,dict) or process.get('exit')!=0 or any(
+                    process.get(k) is not False for k in ('timeout','cancelled','overflow')):continue
+            text=safe_text(redact(output['answer'],secrets)).strip()
+            if not text or query and query.casefold() not in text.casefold():continue
+            # Codex usually records its JSON final as ordinary native text.
+            # Count matches rather than collapsing identical answers across rounds.
+            if native_answers[text]:
+                native_answers[text]-=1
+                continue
+            if a['run'] not in run_states:run_states[a['run']]=self.rt.snapshot(a['run'])['state']
+            result={k:a.get(k) for k in ('id','run','node','name','iteration','iteration_path','started_at','finished_at')}
+            if isinstance(result.get('name'),str):result['name']=safe_text(redact(result['name'],secrets))
+            result.update(source='structured_execution_result',text=text,provider=binding['provider'],
+                session_id=receipt['session_id'],state='COMPLETED',run_state=run_states[a['run']])
+            results.append(result)
+        return results
+
     def title(self, row):
         try:
             native=self.rt.db.get('session-handle',row['handle'])
-            if native['workspace']!=row['workspace_id'] or not native.get('authorized_read'):raise Invalid('历史不属于本工作区')
+            if native['workspace']!=row['workspace_id'] or not native.get('authorized_read') or native.get('ambiguous'):raise Invalid('历史不属于本工作区或身份不唯一')
             first=None;title=None
             with opened(native['native']['path']) as fd:
                 with os.fdopen(os.dup(fd),'rb') as stream:
@@ -63,35 +133,37 @@ class WorkbenchSessions:
             internal=None
             try:internal=self.rt.db.get('session-handle',handle)
             except Invalid:pass
-            related=[a for a in self.db.list('node-session') if a['workspace']==workspace and (
-                a['binding'].get('session_id')==row['session_id'] or internal and a['binding']['home']==internal['profile'].get('home'))]
+            related=list(self.matching_chats(workspace,internal).values()) if internal else []
+            actual=[a for a,_ in self.related_activations(workspace,internal)] if internal else []
+            # Old caches may have been derived from another HOME's same UUID.
+            # Invalidate derived data once; explicit user aliases stay separate.
+            title_binding=digest(canonical(['exact-native-v2',workspace,row['profile_id'],
+                internal['profile'].get('home') if internal else None,row['provider'],row['cwd'],row['session_id']]))
             title=meta.get('alias')
             if not title:
-                try:title=self.db.get('session-title',handle)['title']
+                try:
+                    cached=self.db.get('session-title',handle)
+                    title=cached.get('title') if cached.get('binding')==title_binding else None
                 except Invalid:
                     title=None
                 if not title or title.startswith(('## 本次运行初始化','# AGENTS.md instructions','Role:')):
-                    activations=[a for a in self.db.list('activation') if any(a.get('chat_key')==c['id'] for c in related)]
-                    title=next((c.get('name') for c in related if c.get('name')),None) or next((a.get('name') for a in activations if a.get('name')),None) or self.title(row)
-                    self.db.put('session-title',handle,{'id':handle,'title':title})
+                    title=next((c.get('name') for c in related if c.get('name')),None) or next((a.get('name') for a in actual if a.get('name')),None) or self.title(row)
+                    self.db.put('session-title',handle,{'id':handle,'title':title,'binding':title_binding})
             title=title or '新对话'
-            running=next((o for o in operations if o.get('session_id')==row['session_id'] and o['state'] not in ('COMPLETED','FAILED','CANCELLED')),None)
+            running=next((o for o in operations if o['state'] not in ('COMPLETED','FAILED','CANCELLED') and self.matching_operation(workspace,internal,o)),None)
             busy=False
-            if row.get('resume'):
+            if internal and internal['profile'].get('home'):
                 try:
-                    project=self.rt.session_center.workspace(workspace);internal=self.rt.db.get('session-handle',handle)
-                    binding,_=self.rt.session_center._binding(internal,project)
-                    busy=bool(binding and self.busy(binding,row['session_id']))
+                    busy=self.busy({'home':internal['profile']['home']},row['session_id'])
                 except (Invalid,Blocked):busy=True
-            actual=[a for a in self.db.list('activation') if any(a.get('chat_key')==c['id'] for c in related)]
             latest=max(actual,key=lambda a:a.get('started_at',0)) if actual else None
             named=dict(row,title=title,collection=meta.get('collection','active'),alias_only=bool(meta.get('alias')),
                 display_state=running['state'] if running else 'BUSY' if busy else '运行未确认',busy=busy,
-                node=related[0]['node'] if related else None,
+                node=latest['node'] if latest else related[0]['node'] if related else None,
                 choices={'resume':bool(row.get('resume')) and not busy and not meta.get('native_archived'),
                          'context_new':row['capabilities'].get('read',False),'fork':row['provider']=='codex' and bool(row.get('resume')) and not busy,
                          'view':True},native_archived=meta.get('native_archived',False))
-            if latest and not busy:
+            if latest and not busy and not running:
                 from orchestration.process import group_alive
                 named['display_state']='运行未确认' if latest['state'] in ('RUNNING','STARTING') and not group_alive(latest.get('process')) else latest['state']
             if not query or query.casefold() in (title+' '+row['provider']).casefold():result.append(named)
@@ -157,13 +229,21 @@ class WorkbenchSessions:
                     if isinstance(value,dict) and isinstance(value.get('reply'),str):text=value['reply']
                 except ValueError:pass
             messages.append(dict(m,text=text))
-        sid=row['native']['session_id'];chats=[c['id'] for c in self.db.list('node-session') if c['workspace']==workspace and c['binding'].get('session_id')==sid]
+        related=self.related_activations(workspace,row)
         groups=[{k:a.get(k) for k in ('id','node','name','iteration','state','initialization_included','actual_request','actual_request_sha256','receipt')}
-                for a in self.db.list('activation') if a.get('chat_key') in chats]
+                for a,_ in related]
         from orchestration.privacy import credentials,redact
         from .session_center import credential_bytes
         extra=[src for p in self.rt.operator['profiles'].values() for src,_ in p.get('readonly_files',[])]
         secrets=credentials(row['profile']['home'] or row['profile']['config_root'],extra,read_file=credential_bytes)
+        # JSON reply decoding can introduce escaped credential bytes. Search and
+        # deduplication must use the final, redacted display text, not its envelope.
+        messages=[dict(m,text=safe_text(redact(m['text'],secrets))) for m in messages]
+        if query:messages=[m for m in messages if query.casefold() in m['text'].casefold()]
+        groups=redact(groups,secrets)
+        for group in groups:
+            if isinstance(group.get('actual_request'),str):group['actual_request']=safe_text(group['actual_request'])
+        execution_results=self.execution_results(workspace,row,related,messages,query,secrets)
         activity=[]
         with opened(row['native']['path']) as fd:
             with os.fdopen(os.dup(fd),'rb') as stream:
@@ -188,7 +268,7 @@ class WorkbenchSessions:
                         activity.append(dict(value,content=safe_text(text[:4000]),truncated=len(text)>4000))
                     activity=activity[-100:]
         # No thinking/reasoning payloads or full protocol envelopes cross this boundary.
-        return dict(result,messages=messages,groups=groups,activity=activity)
+        return dict(result,messages=messages,execution_results=execution_results,groups=groups,activity=activity)
 
     def change(self,workspace,handle,action,*,name='',answer=''):
         self.rt.check_operator()

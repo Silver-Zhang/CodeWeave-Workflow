@@ -39,6 +39,31 @@ function NodeCard({data,selected}){
 }
 const nodeTypes={workbench:NodeCard};
 
+function retainCanvasMeasurements(previous,nodes,changes=[]){
+ const live=new Map(nodes.map(n=>[n.id,n.data.node.kind]));
+ const removed=new Set(changes.filter(c=>c.type==='remove').map(c=>c.id));
+ const next=new Map([...previous].filter(([id,value])=>!removed.has(id)&&live.has(id)&&live.get(id)===value.kind));
+ for(const c of changes){
+  if(c.type!=='dimensions'||removed.has(c.id)||!live.has(c.id))continue;
+  const {width,height}=c.dimensions||{};
+  if(!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)continue;
+  const before=next.get(c.id);
+  if(before?.measured.width!==width||before?.measured.height!==height)
+   next.set(c.id,{kind:live.get(c.id),measured:{width,height}});
+ }
+ return next.size===previous.size&&[...next].every(([id,value])=>previous.get(id)===value)?previous:next;
+}
+function MeasuredCanvas({nodes,onNodesChange,...props}){
+ // Measurements belong to this mounted canvas, never the canonical graph.
+ const [measurements,setMeasurements]=useState(()=>new Map());
+ useEffect(()=>{setMeasurements(old=>retainCanvasMeasurements(old,nodes))},[nodes]);
+ const measuredNodes=nodes.map(n=>{const size=measurements.get(n.id);return size?.kind===n.data.node.kind?{...n,measured:size.measured}:n});
+ return <ReactFlow {...props} nodes={measuredNodes} onNodesChange={changes=>{
+  setMeasurements(old=>retainCanvasMeasurements(old,nodes,changes));
+  onNodesChange(changes);
+ }}/>;
+}
+
 function App(){
  const [status,setStatus]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[workspace,setWorkspace]=useState(null);
  const [graph,setGraph]=useState(null),[draft,setDraft]=useState(null),[dirty,setDirty]=useState(false),[busy,setBusy]=useState('');
@@ -49,7 +74,7 @@ function App(){
  const [task,setTask]=useState(''),[preview,setPreview]=useState(null),[confirm,setConfirm]=useState(''),[run,setRun]=useState(null),[viewMode,setViewMode]=useState('draft'),[snapshot,setSnapshot]=useState(null),[events,setEvents]=useState([]),[connection,setConnection]=useState('connected');
  const [edge,setEdge]=useState(null),[draftList,setDraftList]=useState(false),[message,setMessage]=useState(''),[chatProfile,setChatProfile]=useState(''),[chatPreview,setChatPreview]=useState(null),[chatOperation,setChatOperation]=useState(null),[newChat,setNewChat]=useState(false),[copyContext,setCopyContext]=useState(null),[chatView,setChatView]=useState('dialog'),[terminalPlan,setTerminalPlan]=useState(null);
  const [lifecycle,setLifecycle]=useState(null),[rename,setRename]=useState(''),[lifeAnswer,setLifeAnswer]=useState(''),[reduce,setReduce]=useState(matchMedia('(prefers-reduced-motion: reduce)').matches);
- const generation=useRef(0),graphRef=useRef(null),workspaceRef=useRef(null),currentRun=useRef(null),pollVersion=useRef(0),lastSequence=useRef(0),dragged=useRef(0),loadingHistory=useRef({}),savePending=useRef(false),canvasRef=useRef(null),sessionsVersion=useRef(0),loaded=useRef(false);
+ const generation=useRef(0),graphRef=useRef(null),workspaceRef=useRef(null),currentRun=useRef(null),pollVersion=useRef(0),lastSequence=useRef(0),dragged=useRef(0),loadingHistory=useRef({}),savePending=useRef(false),canvasRef=useRef(null),sessionsVersion=useRef(0),loaded=useRef(false),restoreChat=useRef(null);
  const guard=async fn=>{try{setError('');await fn()}catch(e){setError(e.message);if(e.node){const parts=e.node.split('/');setLoopPath(parts.slice(0,-1));setViewMode('draft');setSelected(parts.at(-1));setPinned(true);setTab('canvas')}}};
  const changeGraph=useCallback(updater=>{setGraph(prev=>{const next=typeof updater==='function'?updater(clone(prev)):updater;graphRef.current=next;return next});setDirty(true)},[]);
  const newDocument=g=>{generation.current++;setGraph(clone(g));graphRef.current=clone(g);setDraft(null);setDirty(true);setSelected(null);setLoopPath([]);setTab('canvas');setViewMode('draft');setLibrary(false);setDraftList(false)};
@@ -60,16 +85,16 @@ function App(){
 function hydrate(s){if(loaded.current){setStatus(s);return;}
 setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
   let saved;try{saved=JSON.parse(localStorage.getItem('devflower-workbench-view')||'null')}catch{}
-  const chosen=s.workspaces.find(w=>w.id===saved?.workspace);if(chosen){setWorkspace(chosen);workspaceRef.current=chosen}
+  const chosen=s.workspaces.find(w=>w.id===saved?.workspace);if(chosen){setWorkspace(chosen);workspaceRef.current=chosen;restoreChat.current=saved?.chat||null;if(['active','archived','trash'].includes(saved?.sessionView))setSessionView(saved.sessionView)}
   const initial=saved?.graph?.version===3?saved.graph:s.examples[0];setGraph(initial);graphRef.current=initial;setDraft(saved?.draft||null);setDirty(Boolean(saved?.dirty));setTask(saved?.task||'');
   if(saved?.run){setRun(saved.run);currentRun.current=saved.run;setViewMode('run');}loaded.current=true;
 
 }
  function historyReplace(){window.history.replaceState({},'',location.pathname)}
  useEffect(()=>{const connect=()=>{if(!location.hash)return;guard(async()=>{accessToken=location.hash.slice(1);await api('/api/connect',{});localStorage.setItem(ACCESS_KEY,accessToken);historyReplace();const s=await api('/api/status');hydrate(s)})};window.addEventListener('hashchange',connect);return()=>window.removeEventListener('hashchange',connect)},[]);
- useEffect(()=>{if(loaded.current&&graph)localStorage.setItem('devflower-workbench-view',JSON.stringify({graph,draft,dirty,workspace:workspace?.id,run,task}))},[graph,draft,dirty,workspace,run,task]);
+ useEffect(()=>{if(loaded.current&&graph)localStorage.setItem('devflower-workbench-view',JSON.stringify({graph,draft,dirty,workspace:workspace?.id,run,task,chat:restoreChat.current||(chats.some(c=>c.handle===tab)?tab:null),sessionView}))},[graph,draft,dirty,workspace,run,task,tab,sessionView]);
  useEffect(()=>{document.documentElement.dataset.reduce=reduce?'true':'false'},[reduce]);
- const refreshSessions=useCallback(async()=>{const w=workspaceRef.current;if(!w)return;const id=w.id;const version=++sessionsVersion.current;const r=await api(`/api/sessions?workspace=${id}&view=${sessionView}&query=${encodeURIComponent(search)}`);if(workspaceRef.current?.id===id&&version===sessionsVersion.current){setSessions(r.sessions);setChats(old=>old.map(c=>({...c,...(r.sessions.find(s=>s.handle===c.handle)||{})})))}return r.sessions},[sessionView,search]);
+ const refreshSessions=useCallback(async()=>{const w=workspaceRef.current;if(!w)return;const id=w.id;const version=++sessionsVersion.current;const r=await api(`/api/sessions?workspace=${id}&view=${sessionView}&query=${encodeURIComponent(search)}`);if(workspaceRef.current?.id===id&&version===sessionsVersion.current){setSessions(r.sessions);setChats(old=>old.map(c=>({...c,...(r.sessions.find(s=>s.handle===c.handle)||{})})));const restored=r.sessions.find(s=>s.handle===restoreChat.current);if(restored){restoreChat.current=null;await openChat(restored)}}return r.sessions},[sessionView,search]);
  useEffect(()=>{guard(refreshSessions)},[workspace,refreshSessions]);
  useEffect(()=>{if(!run)return;const id=run;currentRun.current=id;lastSequence.current=0;setEvents([]);let active=true,inFlight=false,controller;
   async function poll(){if(!active||inFlight)return;inFlight=true;controller=new AbortController();const version=++pollVersion.current;const timeout=setTimeout(()=>controller.abort(),5000);
@@ -86,7 +111,7 @@ setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
    catch(e){if(active)setError(e.message)}};const timer=setInterval(tick,1000);tick();return()=>{active=false;clearInterval(timer)}
  },[chatOperation?.id,workspace?.id]);
  async function loadFolders(path){setFolderLoading(true);try{setPicker(await api('/api/folders'+(path?'?path='+encodeURIComponent(path):'')))}finally{setFolderLoading(false)}}
- async function chooseFolder(){const w=await api('/api/workspace',{path:picker.path});workspaceRef.current=w;setWorkspace(w);setSessions([]);setChats([]);setTab('canvas');currentRun.current=null;setRun(null);setSnapshot(null);setEvents([]);setViewMode('draft');setPicker(null);setNotice('已打开 '+w.path+'；打开目录不会自动授予写入权限')}
+ async function chooseFolder(){const w=await api('/api/workspace',{path:picker.path});restoreChat.current=null;workspaceRef.current=w;setWorkspace(w);setSessions([]);setChats([]);setTab('canvas');currentRun.current=null;setRun(null);setSnapshot(null);setEvents([]);setViewMode('draft');setPicker(null);setNotice('已打开 '+w.path+'；打开目录不会自动授予写入权限')}
  async function openChat(s){setTab(s.handle);setChats(old=>old.some(x=>x.handle===s.handle)?old:[...old,s]);setChatView('dialog');setNewChat(false);await fetchHistory(s)}
  async function fetchHistory(s,q=''){const w=workspaceRef.current?.id;if(!w)return;const v=uid();loadingHistory.current[s.handle]=v;const r=await api(`/api/history?workspace=${w}&handle=${s.handle}&query=${encodeURIComponent(q)}`);if(workspaceRef.current?.id===w&&loadingHistory.current[s.handle]===v){setHistory(old=>({...old,[s.handle]:r.messages}));setChatDetails(old=>({...old,[s.handle]:r}))}}
  const displayedGraph=viewMode==='run'?snapshot?.run.graph:graph;
@@ -96,6 +121,7 @@ setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
  const updateNode=(key,value)=>updateCurrent(g=>{const n=g.nodes.find(n=>n.id===selected);n[key]=value});
  useEffect(()=>{if(!rf||!canvasRef.current)return;let frame;const observer=new ResizeObserver(()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{frame=requestAnimationFrame(()=>rf.fitView({padding:.16,duration:0}))})});observer.observe(canvasRef.current);return()=>{observer.disconnect();cancelAnimationFrame(frame)}},[rf,loopPath.join('/')]);
  const pathPrefix=loopPath.length?loopPath.join('/')+'/':'';
+ const canvasKey=JSON.stringify([workspace?.id,generation.current,viewMode,viewMode==='run'?run:null,loopPath]);
  const activationFor=id=>viewMode==='run'?snapshot?.nodes?.filter(a=>a.node===pathPrefix+id).sort((a,b)=>{const x=a.iteration_path||[a.iteration],y=b.iteration_path||[b.iteration];for(let i=0;i<Math.max(x.length,y.length);i++){if((x[i]||0)!==(y[i]||0))return (y[i]||0)-(x[i]||0)}return (b.started_at||0)-(a.started_at||0)})[0]:null;
  const rfNodes=(currentGraph?.nodes||[]).map(n=>({id:n.id,type:'workbench',position:n.position||{x:0,y:0},selected:n.id===selected,data:{node:n,activation:((a)=>a&&(connection==='unknown'||snapshot?.state==='RECOVERY_REQUIRED')&&!['COMPLETED','FAILED','SKIPPED','CANCELLED'].includes(a.state)?{...a,state:'RECOVERY_REQUIRED'}:a)(activationFor(n.id)),openLoop:id=>{setLoopPath(p=>[...p,id]);setSelected(null)}}}));
  const rfEdges=(currentGraph?.edges||[]).map(e=>{const sent=events.filter(v=>['handoff-sent','handoff-received'].includes(v.kind)&&v.edge===e.id&&v.source===pathPrefix+e.source).at(-1);return {...e,type:'smoothstep',markerEnd:{type:MarkerType.ArrowClosed,width:18,height:18},label:e.label||(e.when==='true'?'满足':e.when==='false'?'否则':''),animated:!reduce&&Boolean(sent)&&Date.now()/1000-sent.at<1.4,className:sent?'edge-delivered':'',style:{stroke:sent?'#a6c3ff':'#67718d',strokeWidth:1.8}}});
@@ -124,13 +150,13 @@ setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
     {notice&&<div className="notice"><span>{notice}</span><button aria-label="关闭提示" onClick={()=>setNotice('')}><X size={13}/></button></div>}
     {tab==='canvas'?<><div className="canvas-toolbar"><div className="workflow-title"><Workflow size={16}/><input aria-label="工作流名称" readOnly={viewMode==='run'} value={(viewMode==='run'?snapshot?.run.graph?.name:graph?.name)||''} onChange={e=>changeGraph(g=>{g.name=e.target.value;return g})}/><span className="dirty">{dirty?'未保存改动':'已保存'}</span></div>{run&&<button onClick={()=>{setViewMode(v=>v==='run'?'draft':'run');setSelected(null);setLoopPath([])}}>{viewMode==='run'?'编辑草稿':'查看本次运行'}</button>}<select aria-label="历史运行" value={run||''} onChange={e=>{const id=e.target.value||null;currentRun.current=id;setSnapshot(null);setEvents([]);setRun(id);setViewMode(id?'run':'draft');setLoopPath([]);setSelected(null)}}><option value="">草稿 / 选择运行</option>{status.runs.filter(r=>r.workspace===workspace?.id).map(r=><option key={r.id} value={r.id}>{new Date(r.created_at*1000).toLocaleTimeString()} · {r.task.slice(0,20)}</option>)}</select><Btn icon={Plus} disabled={viewMode==='run'} onClick={()=>setPalette(!palette)}>添加节点</Btn><Btn icon={Workflow} onClick={()=>setLibrary(!library)}>示例</Btn><Btn icon={FolderOpen} onClick={()=>setDraftList(!draftList)}>工作流</Btn><Btn icon={Save} disabled={busy==='save'} onClick={()=>guard(save)}>保存</Btn></div>
     {loopPath.length>0&&<div className="loop-breadcrumb"><button onClick={()=>{setLoopPath(p=>p.slice(0,-1));setSelected(null)}}><ChevronLeft size={15}/>返回外层</button><span>循环组：{loopPath.join(' / ')} · 每轮独立输入</span></div>}
-    <div className="canvas-area" ref={canvasRef} data-testid="canvas"><ReactFlow key={loopPath.join('/')} nodes={rfNodes} edges={rfEdges} nodeTypes={nodeTypes} onInit={setRf} colorMode="dark" fitView minZoom={.15} maxZoom={2} nodeDragThreshold={6} attributionPosition="bottom-left"
+    <div className="canvas-area" ref={canvasRef} data-testid="canvas"><MeasuredCanvas key={canvasKey} nodes={rfNodes} edges={rfEdges} nodeTypes={nodeTypes} onInit={setRf} colorMode="dark" fitView minZoom={.15} maxZoom={2} nodeDragThreshold={6} attributionPosition="bottom-left"
      onNodesChange={changes=>{const positions=changes.filter(c=>c.type==='position'&&c.position);const removes=changes.filter(c=>c.type==='remove').map(c=>c.id);if(positions.length||removes.length)updateCurrent(g=>{for(const p of positions){const n=g.nodes.find(x=>x.id===p.id);if(n)n.position=p.position}g.nodes=g.nodes.filter(n=>!removes.includes(n.id));g.edges=g.edges.filter(e=>!removes.includes(e.source)&&!removes.includes(e.target))})}}
      onEdgesChange={changes=>{const ids=changes.filter(c=>c.type==='remove').map(c=>c.id);if(ids.length)updateCurrent(g=>g.edges=g.edges.filter(e=>!ids.includes(e.id)))}}
      onConnect={c=>updateCurrent(g=>g.edges.push({...c,id:uid('e'),transfer:'result',when:'always'}))}
      onNodeDragStart={()=>{dragged.current=Infinity;setSelected(null)}} onNodeDragStop={()=>{dragged.current=Date.now()+150}}
      onNodeClick={(e,n)=>{if(Date.now()<dragged.current)return;setSelected(n.id);setEdge(null);setConfigTab('basic');const box=e.currentTarget.getBoundingClientRect();setAnchor({x:Math.min(innerWidth-440,Math.max(260,box.right+12)),y:Math.min(innerHeight-450,Math.max(120,box.top))})}}
-     onPaneClick={()=>{if(!pinned)setSelected(null);setEdge(null)}} onEdgeClick={(e,edge)=>{setEdge(edge.id);setSelected(null)}}><Background gap={24} size={1} color="#303748"/><Controls showInteractive={false}/><MiniMap nodeColor="#526a9a" maskColor="rgba(12,16,24,.7)"/></ReactFlow>
+     onPaneClick={()=>{if(!pinned)setSelected(null);setEdge(null)}} onEdgeClick={(e,edge)=>{setEdge(edge.id);setSelected(null)}}><Background gap={24} size={1} color="#303748"/><Controls showInteractive={false}/><MiniMap nodeColor="#526a9a" maskColor="rgba(12,16,24,.7)"/></MeasuredCanvas>
      {!workspace&&<div className="onboarding"><span className="eyebrow">从一个想法开始</span><h1>让 Agent 在画布上协作</h1><p>打开工作区，配置对话与流程，<br/>在同一处看到每一步真实执行。</p><Btn icon={FolderOpen} className="primary" onClick={()=>guard(()=>loadFolders())}>打开工作区</Btn><ol><li>选择文件夹</li><li>添加 Agent</li><li>连接并运行</li></ol></div>}
      {palette&&<div className="palette floating"><h3>添加节点<button onClick={()=>setPalette(false)}><X size={14}/></button></h3>{Object.entries(KINDS).map(([k,[label,Icon]])=><button key={k} onClick={()=>addNode(k)}><Icon size={18}/><span>{label}</span><Plus size={13}/></button>)}</div>}
      {library&&<div className="example-library floating"><h3>可运行示例<button onClick={()=>setLibrary(false)}><X size={14}/></button></h3><p>配置真实 Agent 后执行。示例没有模拟进度。</p>{status.examples.map((g,i)=><button key={g.name} onClick={()=>newDocument(g)}><span className="example-number">0{i+1}</span><span><strong>{g.name}</strong><small>{['逐步完成分析与复核','两路真实只读并发，再等待汇合','复用同一节点会话，满足条件提前结束'][i]}</small></span><ChevronRight size={15}/></button>)}</div>}
@@ -139,6 +165,7 @@ setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
     <section className="conversation"><div className="conversation-toolbar"><strong>{activeChat?.title||'新会话'}</strong><div><button className={chatView==='dialog'?'active':''} onClick={()=>setChatView('dialog')}>对话视图</button><button className={chatView==='terminal'?'active':''} onClick={()=>{setChatView('terminal');setTerminalPlan(null);if(activeChat)guard(async()=>setTerminalPlan(await api(`/api/terminal?workspace=${workspace.id}&handle=${activeChat.handle}`)))}}>原生终端</button>{activeChat&&<button onClick={()=>guard(()=>fetchHistory(activeChat))} aria-label="刷新历史"><RefreshCw size={15}/></button>}</div></div>
      {chatView==='terminal'?<div className="terminal-explanation"><Terminal size={30}/><h2>原生会话环境</h2><p>在本机终端使用下方打开方式。启动器重新检查原 HOME、目录、UUID 和占用，并获取与工作流相同的锁；工作区保持只读。普通续聊可直接使用对话视图。</p>{terminalPlan&&<><p>{terminalPlan.mode}</p><pre>{terminalPlan.command}</pre><button onClick={()=>guard(async()=>{await navigator.clipboard.writeText(terminalPlan.command);setNotice('已复制安全原生恢复命令')})}>复制打开命令</button></>}<details><summary>原生恢复详情（高级）</summary><dl><dt>工具</dt><dd>{activeChat?.provider}</dd><dt>会话</dt><dd>{activeChat?.session_id}</dd><dt>cwd</dt><dd>{activeChat?.cwd}</dd><dt>恢复能力</dt><dd>{activeChat?.choices?.resume?'本软件可核验原环境后恢复':'原环境/空闲性未获验证；可选上下文新建，原记录不变'}</dd></dl></details></div>:
      <div className="messages">{newChat&&tab==='new'?<div className="empty-chat"><MessageSquare size={38}/><h2>开始一次真正的 Agent 对话</h2><p>{copyContext?'将选定的可见上下文复制到新会话；这是新建，不是恢复。':'选择工具并发送消息。权限预览后才会启动原生 Agent。'}</p></div>:(history[tab]||[]).map((m,i)=><article className={'message '+m.role} key={i}><span className="message-role">{m.role==='user'?'你':'Agent'}</span><Markdown remarkPlugins={[remarkGfm]} skipHtml>{m.text}</Markdown></article>)}
+      {activeChat&&(chatDetails[activeChat.handle]?.execution_results||[]).length>0&&<section aria-label="结构化执行结果"><p>以下为工作流已完成回合的结构化执行结果，按执行时间排序；不属于原生文本消息，也不代表审核或交付批准。</p>{chatDetails[activeChat.handle].execution_results.map(r=><article className="message execution-result" key={r.id} data-result-id={r.id}><span className="message-role">结构化执行结果 · {r.provider==='claude'?'Claude Code':'Codex'}</span><small>运行 {r.run} · 节点 {r.node} · 轮次 {(r.iteration_path?.length?r.iteration_path:[r.iteration]).join(' / ')} · 流程{statusText(r.run_state)}</small><Markdown remarkPlugins={[remarkGfm]} skipHtml>{r.text}</Markdown></article>)}</section>}
       {activeChat&&(chatDetails[activeChat.handle]?.groups||[]).map(a=><details className="request-group" key={a.id}><summary>{a.initialization_included?'初始化 + 本轮输入':'本轮输入'} · 第 {a.iteration||1} 轮 · {statusText(a.state)}</summary><h4>实际发送内容（凭据脱敏）</h4><pre>{a.actual_request||a.request}</pre></details>)}
       {activeChat&&(chatDetails[activeChat.handle]?.activity||[]).length>0&&<details className="request-group"><summary>工具活动（默认折叠，已脱敏）</summary>{chatDetails[activeChat.handle].activity.map((a,i)=><details key={i}><summary>{a.name}{a.truncated?' · 已截断':''}</summary><pre>{a.content}</pre></details>)}</details>}{chatOperation&&(tab==='new'||chatOperation.session_id===activeChat?.session_id)&&<div className="operation-status"><Badge state={chatOperation.state}/><span>{chatOperation.model} · requested {chatOperation.effort} / resolved {chatOperation.receipt?.resolved_effort||'unknown'}</span>{chatOperation.reply&&<Markdown skipHtml>{chatOperation.reply}</Markdown>}{chatOperation.reason&&<p>{chatOperation.reason}</p>}</div>}
      </div>}

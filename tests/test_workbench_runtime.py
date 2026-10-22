@@ -5,6 +5,7 @@ import copy,json,os,sys,threading,time,unittest
 from unittest.mock import patch
 from urllib.request import Request,urlopen
 from urllib.error import HTTPError
+from urllib.parse import urlencode
 sys.path[:0]=[str(Path(__file__).resolve().parents[1]/'tools'),str(Path(__file__).resolve().parent)]
 from orchestration.common import Blocked,canonical,digest,save,tree_hash
 from studio.graph import Invalid
@@ -27,6 +28,214 @@ def fixture(owner):
     # Reuse the old filesystem-fixture builder without adding a production API.
     rt.sessions=rt.session_center.discover
     return base,rt
+
+
+def structured_session(base,rt,label='synthetic-structured',provider='claude',native_answers=False):
+    """Persist the scheduler's real record shapes; no CLI/model acceptance is claimed.
+
+    Both sessions deliberately share a UUID. HOME/profile must keep them apart.
+    Claude records reproduce StructuredOutput plus 'No response requested.'.
+    """
+    home=rt.native/label;sid=test_agent_sessions.SID;workspace=base.project['id']
+    path=test_agent_sessions.native(home/('.'+provider),provider,base.source)
+    binding=dict(rt.operator['profiles']['default-'+provider],home=str(home),session_id=sid)
+    rt.db.put('chat-profile',label,dict(workspace=workspace,binding=binding))
+    run=label+'-run';chat=label+'-chat';node='loop/analyze'
+    rt.flow.put('run',run,dict(id=run,workspace=workspace,state='COMPLETED',created_at=10,
+        graph=examples(rt.operator['profiles'])[0],task='Synthetic structured session '+label))
+    rt.flow.put('node-session',chat,dict(id=chat,run=run,node=node,workspace=workspace,
+        cwd=str(base.source),binding=binding,initialized=True))
+    records=[]
+    for turn in (1,2):
+        answer=f'SYNTHETIC {label} final answer {turn}'
+        report=dict(reply=answer,summary='Synthetic transport fixture',accepted=False,result_json='{}',artifacts=[],evidence=[],issues=[],next='')
+        if provider=='claude':
+            records.extend([dict(type='user',sessionId=sid,message=dict(role='user',content=f'SYNTHETIC question {turn}')),
+                dict(type='assistant',sessionId=sid,message=dict(role='assistant',content=[
+                    dict(type='thinking',thinking='HIDDEN_RESULT_REASONING'),
+                    dict(type='tool_use',name='StructuredOutput',input=report)])),
+                dict(type='assistant',sessionId=sid,message=dict(role='assistant',content='No response requested.'))])
+            if native_answers:records.append(dict(type='assistant',sessionId=sid,message=dict(role='assistant',content=json.dumps(report))))
+        else:
+            records.extend([dict(type='response_item',payload=dict(type='message',role='user',content=[dict(type='input_text',text=f'SYNTHETIC question {turn}')])),
+                dict(type='response_item',payload=dict(type='reasoning',summary='HIDDEN_RESULT_REASONING'))])
+            if native_answers:records.append(dict(type='response_item',payload=dict(type='message',role='assistant',phase='final_answer',content=[dict(type='output_text',text=json.dumps(report))])))
+        receipt=dict(session_id=sid,requested_model=binding['model'],requested_effort=binding['effort'],
+            resolved_model='unknown',resolved_effort='unknown',raw_report_sha256=digest(canonical(report)),
+            process=dict(exit=0,timeout=False,cancelled=False,overflow=False))
+        output=dict(answer=answer,summary=report['summary'],result={},receipt=receipt)
+        aid=label+f'-turn-{turn}'
+        completion=dict(run=run,activation=aid,chat_key=chat,session_id=sid,output=output,
+            source_before='synthetic-source',source_after='synthetic-source')
+        completion_file=rt.storage/'flow-artifacts'/run/aid/'completion.json'
+        completion_file.parent.mkdir(parents=True,exist_ok=True);save(completion_file,completion)
+        rt.flow.put('activation',aid,dict(id=aid,run=run,node=node,name='Synthetic '+label,kind='agent',
+            chat_key=chat,provider=provider,state='COMPLETED',iteration=turn,iteration_path=[1,turn],
+            started_at=10+turn*2,finished_at=11+turn*2,output=output,receipt=receipt,
+            completion_sha256=digest(canonical(completion)),actual_request=f'SYNTHETIC request {turn}'))
+    with path.open('a') as stream:stream.write(''.join(json.dumps(r)+'\n' for r in records))
+    rows=rt.session_center.discover(workspace,True)['discovery']['sessions']
+    row=next(r for r in rows if rt.db.get('session-handle',r['handle'])['profile']['home']==str(home))
+    return path,row
+
+
+class SidebarIdentityTests(unittest.TestCase):
+    def setUp(self):
+        self.base,self.rt=fixture(self);self.w=self.base.project['id'];self.manager=WorkbenchSessions(self.rt)
+    def rows(self):return {r['handle']:r for r in self.manager.listing(self.w)['sessions']}
+    def running_operation(self,label):
+        chat=self.rt.flow.get('node-session',label+'-chat')
+        self.rt.db.put('session-operation',label+'-operation',dict(id=label+'-operation',workspace=self.w,
+            binding=chat['binding'],cwd=chat['cwd'],permission='read',state='RUNNING',created_at=time.time(),
+            native_session=test_agent_sessions.SID,worker={}))
+    def test_sidebar_titles_keep_same_uuid_homes_and_providers_separate(self):
+        sessions=[]
+        for provider in ('claude','codex'):
+            for suffix in ('A','B'):
+                label=provider+'-'+suffix;_,row=structured_session(self.base,self.rt,label,provider);sessions.append((row,label))
+        rows=self.rows()
+        for row,label in sessions:self.assertEqual(rows[row['handle']]['title'],'Synthetic '+label)
+    def test_sidebar_state_and_node_belong_to_exact_native_home(self):
+        _,a=structured_session(self.base,self.rt,'sidebar-A');_,b=structured_session(self.base,self.rt,'sidebar-B')
+        self.rt.flow.change('node-session','sidebar-B-chat',dict(node='other/review'))
+        for turn in (1,2):self.rt.flow.change('activation','sidebar-B-turn-'+str(turn),dict(node='other/review'))
+        self.rt.flow.change('activation','sidebar-B-turn-2',dict(state='CANCELLED',started_at=999))
+        rows=self.rows()
+        self.assertEqual((rows[a['handle']]['display_state'],rows[a['handle']]['node']),('COMPLETED','loop/analyze'))
+        self.assertEqual((rows[b['handle']]['display_state'],rows[b['handle']]['node']),('CANCELLED','other/review'))
+    def test_legacy_derived_title_is_refreshed_without_changing_explicit_alias(self):
+        _,a=structured_session(self.base,self.rt,'cache-A');_,b=structured_session(self.base,self.rt,'cache-B')
+        self.rt.flow.put('session-title',a['handle'],dict(id=a['handle'],title='Synthetic cache-B'))
+        self.rt.flow.put('session-meta',b['handle'],dict(id=b['handle'],workspace=self.w,collection='active',alias='My explicit alias'))
+        rows=self.rows();self.assertEqual(rows[a['handle']]['title'],'Synthetic cache-A');self.assertEqual(rows[b['handle']]['title'],'My explicit alias')
+    def test_active_operation_does_not_cross_provider_or_home(self):
+        _,a=structured_session(self.base,self.rt,'operation-A','codex');_,b=structured_session(self.base,self.rt,'operation-B','claude')
+        self.running_operation('operation-B')
+        # Synthetic transport records only; no real model/process acceptance.
+        with patch('studio.session_center.alive',return_value=True):rows=self.rows()
+        self.assertEqual(rows[a['handle']]['display_state'],'COMPLETED');self.assertEqual(rows[b['handle']]['display_state'],'RUNNING')
+    def test_current_operation_is_not_replaced_by_completed_workflow_history(self):
+        _,row=structured_session(self.base,self.rt,'current-operation');self.running_operation('current-operation')
+        with patch('studio.session_center.alive',return_value=True):rows=self.rows()
+        self.assertEqual(rows[row['handle']]['display_state'],'RUNNING')
+
+
+class StructuredHistoryTests(unittest.TestCase):
+    def setUp(self):
+        self.base,self.rt=fixture(self);self.w=self.base.project['id'];self.manager=WorkbenchSessions(self.rt)
+    def test_two_round_outputs_are_distinct_from_native_history_and_survive_reload(self):
+        for provider in ('claude','codex'):
+            with self.subTest(provider=provider):
+                path,row=structured_session(self.base,self.rt,provider,provider)
+                before=path.read_bytes()
+                history=self.manager.history(self.w,row['handle'])
+                results=history.get('execution_results',[])
+                self.assertEqual([r['text'] for r in results],[f'SYNTHETIC {provider} final answer {t}' for t in (1,2)])
+                self.assertEqual([r['iteration_path'] for r in results],[[1,1],[1,2]])
+                self.assertTrue(all(r['source']=='structured_execution_result' and r['run']==provider+'-run' and r['node']=='loop/analyze' for r in results))
+                self.assertEqual(history['messages'],self.manager.history(self.w,row['handle'])['messages'])
+                self.assertEqual(results,WorkbenchSessions(self.rt).history(self.w,row['handle'])['execution_results'])
+                self.assertFalse(any('final answer' in m['text'] for m in history['messages']))
+                self.assertNotIn('HIDDEN_RESULT_REASONING',json.dumps(history))
+                self.assertEqual(path.read_bytes(),before)
+    def test_same_uuid_in_different_homes_and_reordered_switches_never_mix(self):
+        _,a=structured_session(self.base,self.rt,'session-A');_,b=structured_session(self.base,self.rt,'session-B')
+        for row,label in ((a,'session-A'),(b,'session-B'),(a,'session-A')):
+            results=self.manager.history(self.w,row['handle']).get('execution_results',[])
+            self.assertEqual([r['text'] for r in results],[f'SYNTHETIC {label} final answer {t}' for t in (1,2)])
+    def test_binding_and_activation_identity_must_match_exactly(self):
+        _,row=structured_session(self.base,self.rt)
+        chat=self.rt.flow.get('node-session','synthetic-structured-chat')
+        activation=self.rt.flow.get('activation','synthetic-structured-turn-1')
+        changes=[('workspace','another-workspace'),('cwd',str(self.base.root)),('run','other-run'),('node','other/node')]
+        for field,value in changes+ [('binding',dict(chat['binding'],**{k:v})) for k,v in (
+            ('home',str(self.base.root/'other-home')),('provider','codex'),('session_id',test_agent_sessions.OTHER))]:
+            with self.subTest(field=field,value=value):
+                self.rt.flow.put('node-session',chat['id'],dict(chat,**{field:value}))
+                self.assertEqual(self.manager.history(self.w,row['handle']).get('execution_results',[]),[])
+        self.rt.flow.put('node-session',chat['id'],chat)
+        for changes in ({'provider':'codex'},{'run':'other-run'},{'node':'other/node'}):
+            with self.subTest(changes=changes):
+                self.rt.flow.put('activation',activation['id'],dict(activation,**changes))
+                self.assertEqual(len(self.manager.history(self.w,row['handle']).get('execution_results',[])),1)
+        self.rt.flow.put('activation',activation['id'],activation)
+        self.assertEqual(len(self.manager.history(self.w,row['handle']).get('execution_results',[])),2)
+    def test_failed_cancelled_unconfirmed_and_bad_receipts_never_supply_answers(self):
+        _,row=structured_session(self.base,self.rt)
+        a=self.rt.flow.get('activation','synthetic-structured-turn-1')
+        bad=[dict(a,state=s) for s in ('FAILED','CANCELLED','RUNNING','STARTING','RECOVERY_REQUIRED')]
+        for change in ({'session_id':test_agent_sessions.OTHER},{'requested_model':'other-model'},
+                       {'process':dict(a['receipt']['process'],exit=1)},
+                       {'process':dict(a['receipt']['process'],cancelled=True)},
+                       {'process':dict(a['receipt']['process'],timeout=True)},
+                       {'process':dict(a['receipt']['process'],overflow=True)}):
+            bad.append(dict(a,output=dict(a['output'],receipt=dict(a['receipt'],**change))))
+        bad.extend([dict(a,output={'answer':'unconfirmed'}),dict(a,receipt=dict(a['receipt'],session_id=test_agent_sessions.OTHER))])
+        for value in bad:
+            with self.subTest(state=value['state'],output=value['output']):
+                self.rt.flow.put('activation',a['id'],value)
+                results=self.manager.history(self.w,row['handle']).get('execution_results',[])
+                self.assertEqual([r['text'] for r in results],['SYNTHETIC synthetic-structured final answer 2'])
+    def test_native_final_text_is_preserved_without_duplicate_result_body(self):
+        _,row=structured_session(self.base,self.rt,'native','codex',native_answers=True)
+        history=self.manager.history(self.w,row['handle'])
+        self.assertEqual([m['text'] for m in history['messages'] if m['role']=='assistant'],[f'SYNTHETIC native final answer {t}' for t in (1,2)])
+        self.assertEqual(history.get('execution_results'),[])
+        # A query matching only a protocol/summary field must not show a different reply.
+        self.assertEqual(self.manager.history(self.w,row['handle'],'Synthetic transport fixture')['messages'],[])
+    def test_repeated_answers_remain_separate_and_runs_sort_by_execution_time(self):
+        _,row=structured_session(self.base,self.rt)
+        first=self.rt.flow.get('activation','synthetic-structured-turn-1')
+        second=self.rt.flow.get('activation','synthetic-structured-turn-2')
+        self.rt.flow.change('activation',second['id'],dict(output=dict(second['output'],answer=first['output']['answer'])))
+        # INSERT OR REPLACE order is deliberately unrelated to execution order.
+        self.rt.flow.put('activation',first['id'],first)
+        history=self.manager.history(self.w,row['handle'])
+        self.assertEqual([r['id'] for r in history['execution_results']],[first['id'],second['id']])
+        self.assertEqual([r['text'] for r in history['execution_results']],[first['output']['answer']]*2)
+        # A completed earlier round stays a real answer if a later node/run fails;
+        # its displayed workflow status must not claim workflow success.
+        self.rt.flow.change('run',first['run'],dict(state='FAILED'))
+        self.assertTrue(all(r['run_state']=='FAILED' for r in self.manager.history(self.w,row['handle'])['execution_results']))
+        chat=self.rt.flow.get('node-session','synthetic-structured-chat')
+        run=self.rt.flow.get('run',first['run'])
+        self.rt.flow.put('run','resumed-run',dict(run,id='resumed-run',state='COMPLETED'))
+        self.rt.flow.put('node-session','resumed-chat',dict(chat,id='resumed-chat',run='resumed-run'))
+        self.rt.flow.put('activation','earlier',dict(first,id='earlier',run='resumed-run',chat_key='resumed-chat',started_at=1))
+        self.assertEqual([r['id'] for r in self.manager.history(self.w,row['handle'])['execution_results']],['earlier',first['id'],second['id']])
+    def test_persisted_results_survive_runtime_restart_and_native_archive(self):
+        path,row=structured_session(self.base,self.rt,'archive','codex')
+        before=self.manager.history(self.w,row['handle'])['execution_results']
+        restarted=WorkbenchRuntime(self.rt.operator_file,self.rt.operator_sha256,self.rt.candidate_sha256,self.rt.policy_file,self.rt.policy_sha)
+        self.assertEqual(WorkbenchSessions(restarted).history(self.w,row['handle'])['execution_results'],before)
+        home=Path(self.rt.flow.get('node-session','archive-chat')['binding']['home'])
+        archived=home/'.codex/archived_sessions'/path.name;archived.parent.mkdir(parents=True)
+        with patch.object(self.manager,'rpc',side_effect=lambda *args:path.rename(archived)):
+            self.manager.change(self.w,row['handle'],'native_archive',answer='Synthetic owned archive only')
+        self.assertEqual(self.manager.history(self.w,row['handle'])['execution_results'],before)
+    def test_search_uses_only_redacted_visible_answer_and_groups_stay_advanced(self):
+        _,row=structured_session(self.base,self.rt)
+        secret='synthetic-secret-value-123456'
+        # An explicit fixture credential, never a real model credential.
+        home=Path(self.rt.flow.get('node-session','synthetic-structured-chat')['binding']['home'])
+        save(home/'.claude/.credentials.json',{'token':secret})
+        a=self.rt.flow.get('activation','synthetic-structured-turn-1')
+        self.rt.flow.change('activation',a['id'],dict(output=dict(a['output'],answer='Visible credential '+secret+' api_key=sk-synthetic-longvalue'),actual_request='Request '+secret))
+        history=self.manager.history(self.w,row['handle'],'Visible credential')
+        self.assertEqual([r['text'] for r in history.get('execution_results',[])],['Visible credential [REDACTED] api_key=[REDACTED]'])
+        self.assertNotIn(secret,json.dumps(history));self.assertNotIn('HIDDEN_RESULT_REASONING',json.dumps(history))
+        self.assertEqual(self.manager.history(self.w,row['handle'],secret).get('execution_results'),[])
+        self.assertEqual(self.manager.history(self.w,row['handle'],'Synthetic transport fixture').get('execution_results'),[])
+        self.assertEqual(len(history['groups']),2);self.assertTrue(history['activity'])
+    def test_decoding_native_reply_cannot_bypass_credential_redaction(self):
+        path,row=structured_session(self.base,self.rt,'redact-native','codex',native_answers=True)
+        home=Path(self.rt.flow.get('node-session','redact-native-chat')['binding']['home'])
+        save(home/'.codex/auth.json',{'token':'synthetic-credential-123456'})
+        # JSON escapes are decoded only for the visible reply, then redacted again.
+        encoded='{"reply":"Visible \\u0073ynthetic-credential-123456"}'
+        with path.open('a') as stream:stream.write(json.dumps(dict(type='response_item',payload=dict(type='message',role='assistant',phase='final_answer',content=[dict(type='output_text',text=encoded)])))+'\n')
+        history=self.manager.history(self.w,row['handle'])
+        self.assertNotIn('synthetic-credential-123456',json.dumps(history))
 
 
 class RuntimeTests(unittest.TestCase):
@@ -216,5 +425,13 @@ class HttpTests(unittest.TestCase):
         for path in ('/api/shell','/api/approve-stable','/api/authorize-run'):
             with self.assertRaises(HTTPError) as e:self.get(path)
             self.assertEqual(e.exception.code,400)
+    def test_structured_results_reload_search_and_session_switch_over_real_http(self):
+        _,a=structured_session(self.base,self.rt,'http-A');_,b=structured_session(self.base,self.rt,'http-B')
+        for row,label in ((a,'http-A'),(a,'http-A'),(b,'http-B'),(a,'http-A')):
+            with self.get('/api/history?'+urlencode(dict(workspace=self.base.project['id'],handle=row['handle']))) as response:history=json.load(response)
+            self.assertEqual([r['text'] for r in history.get('execution_results',[])],[f'SYNTHETIC {label} final answer {t}' for t in (1,2)])
+            self.assertEqual(len({r['id'] for r in history['execution_results']}),2)
+        with self.get('/api/history?'+urlencode(dict(workspace=self.base.project['id'],handle=a['handle'],query='final answer 2'))) as response:history=json.load(response)
+        self.assertEqual([r['text'] for r in history['execution_results']],['SYNTHETIC http-A final answer 2'])
 
 if __name__=='__main__':unittest.main()
