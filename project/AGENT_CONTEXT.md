@@ -1,11 +1,13 @@
 # DevFlower 当前开发上下文
 
-当前任务tasks/2026-10/20261022_01_final-integration，先读其五节README/evidence.json。完整用户原文、A–L合同和Issue9固定在本机archives/devflower-final-integration-20261022/full-final-contract.txt；原20261021_02的R1–R5/BLOCKED不变，不开第六轮。新产品最多5轮，每步基础设施最多2次重试。
+先读tasks/2026-10/20261022_01_final-integration的五节README/evidence.json。原文/A–L/K/Issue9及完整证据在本机archives/devflower-final-integration-20261022。旧a026五轮/BLOCKED不改；新4a334beb最多5源码轮已用完，最终原始R5 ACCEPT_WITH_LIMITATIONS，旧Gate BLOCKED。不得暗中续第6轮或转换裁决。
 
-main工作树DevFlower已干净快进至0a24331/treee7804dc；PR11已单独正常合并（原始ACCEPT_WITH_LIMITATIONS，全部当前合同PASS/问题关闭/CI成功），不能套用到产品PR10。Source development/agent-workspace-vnext / flow/agent-workspace-vnext已正常推送0d7ed91，含e194完整130文件源码ec82c98、普通main merge和CI画布/重建检查；当前另7个本任务未提交修复路径，保护所有修改。records独立project/devflower；不要改CodeWeave/RMC，不reset/clean/force。
+main工作树DevFlower干净0a24331/treee7804dc，PR11独立正常合并。development/agent-workspace-vnext在flow/agent-workspace-vnext，9399476/tree7abf177/candidate1fc1e7/133文件已正常push读回，PR10仍Draft。源分支不含project历史；记录在records的project/devflower。保护所有worktree/HOME/原生历史/认证/用户修改，不reset/clean/force、不改CodeWeave/RMC、不删除project分支。
 
-真实K新任务：CUA目录窗口、画布提交并启动run00ad8222…，不可变e194运行器是被测对象，外部旧固定原语监督。隔离product-cycle/development中实际Codex session01a163ab-fb7d-79e0-b791-6fd4d80e0c31实现会话结构化回答投影，原23失败→65工作台+44会话通过，755.02秒/exit0。host构建后e33c0a4e/tree4efae18d，130文件；浏览器10首次1画布不可见超时，源码不变复跑10/10。Host独立sidebar_cases.py三项失败：同UUID不同HOME串用名称/状态、派生缓存。尚未关闭，不能宣布K通过。
+真实产品修复含结构化回答、跨HOME侧栏身份、独立画布尺寸缓存、普通首轮显示。R4独立审核发现真实调度竞态；R5真实Codex只移动states读取至Future退休后。Claude真实线程反例旧基线失败、候选通过且副作用一次，候选20/20；源码3发现CLOSED，仍不授予整版K。
 
-Claude Opus5-5[1m]/high，准确审核UUID840ad1e2-2562-4338-b530-e13f7f238e22，HOME本任务final-native/native/3454d97076ab0cd38c96cc29f9585f7a，cwd本任务product-cycle/development。原画布审核700秒到限/FAILED，无裁决；准确恢复1exit1/583.229秒/真实502，无裁决；最后恢复2正在reviews/product-k-r1-recovery2执行，不可再无限重试。原生文件唯一、进程退出和完整e33只读副本均有证明；不使用--last。物理底层和resolved effort unknown。当前独立审核从readonly冻结clone读取；不要变动该clone以破坏source_unchanged，Root可在独立Source S继续本任务，保持版本层级明确。
+最终425 Python/6宿主/118浏览器、Baseline/语法/独立逐字节构建通过，0失败错误Skip。最终版本6d35e34f分析、d337627c原生恢复均真实双Provider完成，同HOME/cwd/UUID；14协议核对、90ea7e0b原生停止10检查通过。晚到证据未获新独立判断，R5关于未重跑的原文保留。审核UUID de7963e4-fcdb-4218-ae3b-4c7cb5709953，实际HOME/cwd/native位置见本地stable-product-final/native-session-locations.json，准确恢复入口.local/resume-final-review.py。
 
-用户最新明确准许隐私检查后的未批准源码到Draft，以及分别满足条件后的普通merge和main同步。PR10仍必须完整同源自验、真实完整K、独立硬ACCEPT和当前HEAD/tree/CI一致；不足保持Draft。新Controller不能自批，外部固定监督组织。Stable晋升未授权，保留所有HOME/工作树/原始失败，不删project分支。Raw logs/截图/native仅本地，公开记录只摘要。唯一推荐入口待最终本机部署后核验；原.local/open-workbench.py仍指旧Development，不要冒称当前新版或Stable。
+Claude请求DeepSeek Flash[1m]/high，物理中转后端与生效effort unknown；CLI自报分列。Opus超时/两次502、全部原始负面报告、沙箱限制、观察器误断言和host生成缓存恢复保留。无源码OPEN或4机器PASS不能代替整体硬ACCEPT。
+
+K尚缺硬ACCEPT→正确最终Gate→真实新开发PR/读回；Draft源码送审例外不冒充K。当前预览external_steps为空，verify/delivery节点安全关闭。本次自举由原批准Stable5816，不由新Controller自批。批准不变、未晋升。入口.local/open-workbench.py已验证Development1fc；.local/open-stable.py已验证旧Stable。后续必须明确区分新任务与本轮已结束预算/裁决。

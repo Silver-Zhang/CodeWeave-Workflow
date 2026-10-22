@@ -1,45 +1,223 @@
 {
   "schema_version": 1,
   "task_id": "4a334bebcd084649a4274aaa9dd9aaa7",
-  "state": "IN_PROGRESS",
-  "pr11": {
-    "pr_head": "54529b477466dae2db37fec0f3a85fe2c019a4bd",
-    "main_head": "0a24331da65678b86448cc4a51bb2127a38cda32",
-    "main_tree": "e7804dc723aa09beca82be387db0f97807c84799",
-    "review_verdict": "ACCEPT_WITH_LIMITATIONS"
+  "state": "BLOCKED",
+  "source_budget": {
+    "task_id": "4a334bebcd084649a4274aaa9dd9aaa7",
+    "max_source_rounds": 5,
+    "old_task": "a026ef48f030c5725d7f6cfab7951e71",
+    "old_task_status": "BLOCKED;5 rounds ended, unchanged",
+    "source_rounds": [
+      {
+        "round": 1,
+        "scope": "real structured product response correction",
+        "candidate_sha256": "e33c0a4e47e4187a5e86f69a3f401298710967c964f6ad5bcf238f52b26bfc0a",
+        "status": "NO_VERDICT",
+        "original": "product-k-r1-original",
+        "infra_retries": [
+          "product-k-r1-recovery1",
+          "product-k-r1-recovery2"
+        ],
+        "stop": "Opus timeout then two upstream502, no third retry"
+      },
+      {
+        "round": 2,
+        "scope": "product correction and canvas visibility",
+        "review": "product-k-r2-deepseek",
+        "candidate_sha256": "02deda08456dc657ed4892cb0b2b3344d1b87e899422463f09466dbd11cd0d37",
+        "verdict": "NEEDS_CORRECTION",
+        "required_open": [
+          "CANVAS-VISIBILITY"
+        ],
+        "nonrequired_open": [
+          "CANVAS-REGRESSION-COVERAGE-GAP"
+        ],
+        "model": "deepseek-flash[1m]",
+        "requested_effort": "high",
+        "resolved_model": "unknown",
+        "resolved_effort": "unknown",
+        "session_id": "6c53981f-e8f5-41a6-bd0d-26830d80f68c",
+        "exit": 0
+      },
+      {
+        "round": 3,
+        "candidate_sha256": "b1e2355213d6a30a1dfb31c82d1a212fa0d57c8d8032f5a7ce23fcbc6dbd73e7",
+        "verdict": "ACCEPT_WITH_LIMITATIONS",
+        "raw_report": "reviews/product-k-r3-recovery2/independent-verdict.json",
+        "infra_attempts": [
+          "product-k-r3-corrected",
+          "product-k-r3-recovery1",
+          "product-k-r3-recovery2"
+        ],
+        "infra_note": "first two CLI schema dialect rejection before any model request; last actual valid call",
+        "same_candidate_evidence_judgments": [
+          "reviews/product-k-r3-recovery2/complete-evidence-and-developer-comparison/verdict.json",
+          "reviews/product-k-r3-recovery2/provenance-source-reconciliation/verdict.json"
+        ],
+        "all_raw_judgments_preserved": true,
+        "old_gate_actual_result": "BLOCKED: ACCEPT_WITH_LIMITATIONS is not ACCEPT",
+        "gate_receipt": "gates/source-limited-verdict/receipt.json"
+      },
+      {
+        "round": 4,
+        "task_run": "b6e189937ed947be9fb7dfc9d7f9d474",
+        "task_internal_round": 1,
+        "state": "BLOCKED",
+        "candidate_sha256": "e34a6641497565ced166a63516ca88d74923e298a779b046ade5314104b6a388",
+        "verdict": "NEEDS_CORRECTION",
+        "raw_report": "stable-product-cycle/observations/final.json",
+        "real_stable": true,
+        "scope": "real product plain-round label defect; uncovered scheduler race",
+        "max_internal_rounds": 1,
+        "old_ended_tasks_untouched": true
+      },
+      {
+        "round": 5,
+        "task_run": "432d3d68d05c46de887dd6c1cada1b59",
+        "task_internal_round": 1,
+        "state": "BLOCKED",
+        "candidate_sha256": "1fc1e7dfa26df617b90d2b5d6a8ca698bbe27fd6897b90808e31d5253b2fb000",
+        "verdict": "ACCEPT_WITH_LIMITATIONS",
+        "raw_report": "/home/workspace/DevFlower/archives/devflower-final-integration-20261022/stable-product-final/authority/control/432d3d68d05c46de887dd6c1cada1b59/round-1/review.json",
+        "real_stable": true,
+        "scope": "whole product source review plus real scheduling-window repair",
+        "max_internal_rounds": 1,
+        "old_ended_tasks_untouched": true,
+        "process_exit": 0,
+        "seconds": 773.442,
+        "required_open": [],
+        "final_gate_reason": "review verdict: ACCEPT_WITH_LIMITATIONS",
+        "source_budget_exhausted": true
+      }
+    ]
   },
-  "published_original": {
-    "head": "ec82c982a470b5e8494444ccb3f02631f43659d1",
-    "tree": "84070e9471b27e27135ec05df39e61764473e403",
-    "candidate_sha256": "e194382a7e84b309d7d91034a5d093dee1daa10b6bda69b74be954b943bf8f3c",
-    "files": 130,
-    "remote_verified": true
-  },
-  "published_integrated": {
-    "head": "0d7ed91abb721dfb0afef9f626cb5968feebe29c",
-    "git_tree": "a92c19d809913616ffe053162201dbfb299def6f",
-    "candidate_sha256": "cb9a4c6bf0097b228dee3a5ec79ea08e76e9ace8e9e428df9c1740a3ae0ac00a",
-    "build_reproducible": true
-  },
-  "pending_product_candidate": {
-    "candidate_sha256": "e56b2c2cc5fe0911471cdeaa2a9d6d72b7c3d077ec32223948db23ab1fa2641c",
+  "source": {
+    "candidate_sha256": "1fc1e7dfa26df617b90d2b5d6a8ca698bbe27fd6897b90808e31d5253b2fb000",
+    "explicit_paths": [
+      "tests/test_workbench_nested.py",
+      "tests/workbench_browser.cjs",
+      "tests/workbench_browser.py",
+      "tools/studio/static/workbench.js",
+      "tools/studio/workbench_scheduler.py",
+      "tools/studio/workbench_ui/index.jsx"
+    ],
     "files": 133,
-    "published": false,
-    "sidebar_independent_tests": 3,
-    "sidebar_failures": 3
+    "git_tree": "7abf177293267f64272100530259080b8627db9d",
+    "head": "9399476bd34e188f6d0a334da3a82865560e4b17",
+    "not_gate_acceptance": true,
+    "old_stable_run": "432d3d68d05c46de887dd6c1cada1b59",
+    "privacy_actual_secret_hits": [],
+    "source_review_commit_only": true,
+    "remote_head": "9399476bd34e188f6d0a334da3a82865560e4b17",
+    "remote_tree": "7abf177293267f64272100530259080b8627db9d",
+    "remote_verified": true,
+    "publication_authority": "explicit source-review-only Draft exception; no Gate or merge approval"
   },
-  "product_cycle": {
-    "run": "00ad822256916abac8a81686b5148981",
-    "controller_candidate": "e194382a7e84b309d7d91034a5d093dee1daa10b6bda69b74be954b943bf8f3c",
-    "developer_uuid": "01a163ab-fb7d-79e0-b791-6fd4d80e0c31",
-    "developer_exit": 0,
-    "developer_tests": 109,
-    "review_uuid": "840ad1e2-2562-4338-b530-e13f7f238e22",
-    "first_native_audit": "timeout700;FAILED",
-    "recovery1": "API502;exit1;no verdict",
-    "recovery2": "IN_PROGRESS"
+  "main": {
+    "head": "0a24331da65678b86448cc4a51bb2127a38cda32",
+    "git_tree": "e7804dc723aa09beca82be387db0f97807c84799",
+    "local_clean_ff_synchronized": true
   },
-  "pr10_merge": false,
-  "stable_promotion": false,
-  "raw_evidence": "local archives only"
+  "pr11": "MERGED, separate ACCEPT_WITH_LIMITATIONS/current required defects closed/CI successful/identity verified",
+  "pr10": "DRAFT, latest source pushed, NOT READY_TO_MERGE",
+  "tests": {
+    "candidate_sha256": "1fc1e7dfa26df617b90d2b5d6a8ca698bbe27fd6897b90808e31d5253b2fb000",
+    "python": 425,
+    "host": 6,
+    "chromium_http": 118,
+    "browser_suites": [
+      32,
+      17,
+      9,
+      6,
+      34,
+      13,
+      7
+    ],
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "all_exits": 0,
+    "baseline_syntax_passed": true,
+    "frontend_byte_identical": true,
+    "source_unchanged": true,
+    "browser_native_data": "synthetic; actual native calls separately recorded"
+  },
+  "review": {
+    "original_verdict": "ACCEPT_WITH_LIMITATIONS",
+    "raw_local": "/home/workspace/DevFlower/archives/devflower-final-integration-20261022/stable-product-final/authority/control/432d3d68d05c46de887dd6c1cada1b59/round-1/review.json",
+    "raw_sha256": "686519e8e98e9a2403cfac0f3555be5355d90a458c3154c423a77569568eaa32",
+    "all_source_findings_closed": true,
+    "machine_contracts": "4 PASS; not overall hard ACCEPT",
+    "requested_model": "deepseek-flash[1m]",
+    "cli_reported_model": "deepseek-flash[1m]",
+    "physical_backend": "unknown",
+    "requested_effort": "high",
+    "resolved_effort": "unknown",
+    "session_id": "de7963e4-fcdb-4218-ae3b-4c7cb5709953",
+    "pid": 830323,
+    "exit": 0,
+    "seconds": 773.442,
+    "native_locations_local": "/home/workspace/DevFlower/archives/devflower-final-integration-20261022/stable-product-final/native-session-locations.json"
+  },
+  "native_final_candidate": {
+    "analysis": "6d35e34f5d5085d0a6fe0922fadb862c",
+    "resume": "d337627c4f573756e01a0a22350fe6c9",
+    "same_home_cwd_explicit_UUID": true,
+    "protocol_checks": 14,
+    "protocol_failures": 0,
+    "native_stop": "90ea7e0b3dcc886e6c7d82168c5349fa",
+    "native_stop_checks": 10,
+    "native_stop_failures": 0,
+    "groups_actually_dead": true,
+    "not_independent_approval": true,
+    "evidence_timing": "Completed during review, appended late; original R5 claim that 1fc native was not rerun is preserved, these receipts have no new independent approval"
+  },
+  "K": {
+    "status": "BLOCKED",
+    "done": "real product discovery, actual native implementation, nonzero test, independent reproducible issue, actual fix, retest, independent review",
+    "missing": "hard ACCEPT -> correct final Gate -> new actual product development PR/readback",
+    "gate": "review verdict: ACCEPT_WITH_LIMITATIONS",
+    "source_review_Draft_exception_is_not_K": true,
+    "old_stable_new_product_PR_created": false
+  },
+  "stable": {
+    "sha256": "5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821",
+    "approval_unchanged": true,
+    "promoted": false,
+    "three_operator_generated_cache_files_preserved_outside_release": true,
+    "original_hash_and_HTTP_reverified": true
+  },
+  "limits": [
+    "Copilot unavailable/unverified; unsupported native archive/delete disabled",
+    "Current Development preview external_steps is empty: verify/delivery nodes fail closed. Bootstrap used separately approved old Stable, not the new Controller itself.",
+    "No whole-product hard ACCEPT or final K delivery; cannot merge PR10."
+  ],
+  "raw_logs_screenshots_native_chats": "local only; not in Git",
+  "github_ci": [
+    {
+      "id": 39826030752,
+      "name": "Studio contracts",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Silver-Zhang/DevFlower/actions/runs/39826030752"
+    },
+    {
+      "id": 39826030756,
+      "name": "Usable regression",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Silver-Zhang/DevFlower/actions/runs/39826030756"
+    },
+    {
+      "id": 39826019309,
+      "name": "Usable regression",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Silver-Zhang/DevFlower/actions/runs/39826019309"
+    }
+  ]
 }
