@@ -576,11 +576,12 @@ class NativeAdapterBoundaryTests(unittest.TestCase):
                 for timed_out in (False,True):
                     with self.subTest(exit=code,wire=out or err,timeout=timed_out):
                         journal=Journal();process=dict(exit=code,timeout=timed_out,overflow=False,cancelled=False)
+                        category='timeout' if timed_out else 'authentication'
                         with patch('orchestration.adapters.execute',return_value=(process,out,err)):
-                            with self.assertRaisesRegex(Blocked,'authentication'):
+                            with self.assertRaisesRegex(Blocked,'CLI '+category+';'):
                                 CLI('claude',binding,dict(step_timeout_seconds=30,max_log_bytes=100000)).start(
                                     'fixture',root,artifacts,store=journal,run='fixture')
-                        self.assertEqual(journal.events[-1][1]['error_category'],'authentication')
+                        self.assertEqual(journal.events[-1][1]['error_category'],category)
                         self.assertEqual(journal.events[-1][1]['process']['timeout'],timed_out)
                         self.assertFalse(any(state=='AGENT_COMPLETED' for state,_ in journal.events))
             journal=Journal()
@@ -596,6 +597,72 @@ class NativeAdapterBoundaryTests(unittest.TestCase):
                        overflow=False,cancelled=False),success,b'')):
                 reply=CLI('claude',binding,dict(step_timeout_seconds=30,max_log_bytes=100000)).start('fixture',root,artifacts)
             self.assertIn('401',reply['report']['reply'])
+
+    def test_supervised_stop_precedes_authentication_in_native_output(self):
+        for provider in ('codex','claude'):
+            for flags,category in ((dict(cancelled=True,timeout=True,overflow=True),'cancelled'),
+                                   (dict(timeout=True,overflow=False),'timeout'),
+                                   (dict(timeout=True,overflow=True),'timeout'),
+                                   (dict(overflow=True),'output-budget')):
+                with self.subTest(provider=provider,flags=flags):
+                    # Representative timeout=-15 with source/test text mentioning 401.
+                    source=canonical(dict(type='item.completed',item=dict(type='command_execution',
+                        aggregated_output='AUTH_FAILURE = 401; test genuine 403 authentication')))+b'\n{"type":'
+                    error=(canonical(dict(type='error',message='HTTP 401 unauthorized')) if provider=='codex' else
+                           canonical(dict(type='result',is_error=True,result='HTTP 403 unauthorized')))
+                    process=dict(exit=-15,timeout=False,overflow=False,cancelled=False);process.update(flags)
+                    for raw,err in ((source,b''),(error,b'HTTP 401 unauthorized')):
+                        self.assert_failed_category(provider,process,raw,err,category)
+
+    def assert_failed_category(self,provider,process,out,err,category):
+        class Journal:
+            def __init__(self):self.events=[]
+            def intent(self,*args):return 'request'
+            def finish(self,key,status,**data):self.events.append((status,data))
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);artifacts=root/'artifacts';artifacts.mkdir()
+            binding=dict(executable='/usr/bin/true',home=str(root/'home'),role='reviewer',
+                project='fixture',model='test-model',effort='high',session_id=SID,read_paths=[],
+                readonly_files=[],isolation='bwrap',external_sandbox=provider=='codex',tools=['Read','Glob','Grep'])
+            journal=Journal()
+            with patch('orchestration.adapters.execute',return_value=(process,out,err)):
+                with self.assertRaisesRegex(Blocked,'CLI '+category+';' if category!='protocol' else 'Codex|Claude|structured'):
+                    CLI(provider,binding,dict(step_timeout_seconds=30,max_log_bytes=100000)).start(
+                        'fixture',root,artifacts,store=journal,run='fixture')
+            self.assertEqual(journal.events[-1][1]['error_category'],category)
+            self.assertEqual(journal.events[-1][1]['process'],process)
+            self.assertFalse(any(state=='AGENT_COMPLETED' for state,_ in journal.events))
+
+    def test_source_tool_and_success_text_cannot_classify_authentication(self):
+        for provider in ('codex','claude'):
+            if provider=='codex':
+                raw=b'\n'.join(canonical(event) for event in [
+                    dict(type='thread.started',thread_id=SID),
+                    dict(type='item.completed',item=dict(type='command_execution',
+                        aggregated_output='source: {"type":"error","message":"401 unauthorized"}')),
+                    dict(type='item.completed',item=dict(type='agent_message',text='401 is a test example')),
+                    dict(type='turn.failed',error=dict(message='provider temporarily unavailable'))])
+            else:
+                raw=canonical(dict(type='result',is_error=False,subtype='success',session_id=SID,
+                    result='Example: 401 unauthorized',structured_output=['invalid report; test 403']))
+            for code,category in ((1,'process-failure'),(0,'protocol')):
+                with self.subTest(provider=provider,exit=code):
+                    self.assert_failed_category(provider,dict(exit=code,timeout=False,overflow=False,cancelled=False),raw,b'',category)
+
+    def test_native_error_envelopes_and_stderr_preserve_401_and_403(self):
+        for provider in ('codex','claude'):
+            for code in (0,1):
+                for status in (401,403):
+                    if provider=='codex':
+                        wires=[canonical(dict(type='error',message=f'HTTP {status}')),
+                               b'partial non-JSON line\n'+canonical(dict(type='turn.failed',error=dict(message=f'HTTP {status}')))]
+                    else:
+                        wires=[canonical(dict(type='result',is_error=True,subtype='error_during_execution',result=f'HTTP {status}')),
+                               canonical(dict(type='result',is_error=True,errors=[f'HTTP {status}']))]
+                    for raw in wires:
+                        with self.subTest(provider=provider,exit=code,status=status,raw=raw):
+                            self.assert_failed_category(provider,dict(exit=code,timeout=False,overflow=False,cancelled=False),raw,b'','authentication')
+            self.assert_failed_category(provider,dict(exit=1,timeout=False,overflow=False,cancelled=False),b'',b'HTTP 401 unauthorized','authentication')
 
     def test_live_native_uuid_is_journaled_before_turn_completion(self):
         class Journal:
@@ -631,7 +698,7 @@ class NativeAdapterBoundaryTests(unittest.TestCase):
                         role=role, model='test-model', effort='high', session_id=SID, isolation='bwrap',
                         external_sandbox=provider == 'codex', read_paths=[], readonly_files=[],
                         tools=['native'] if provider == 'codex' else ['Read', 'Glob', 'Grep', 'Bash'])
-                    report = dict(reply='visible fixture reply')
+                    report = dict(reply='visible fixture reply; examples: 401/403 authentication_error')
                     if provider == 'codex':
                         events = [dict(type='thread.started', thread_id=SID),
                             dict(type='item.completed', item=dict(type='agent_message', text=json.dumps(report))),
@@ -649,6 +716,7 @@ class NativeAdapterBoundaryTests(unittest.TestCase):
                     self.assertEqual(options['write'][-1:] == [str(cwd)], role == 'implementer')
                     self.assertEqual(receipt['session_id'], SID);self.assertEqual(receipt['cwd'], str(cwd))
                     self.assertEqual(receipt['home'], str(home))
+                    self.assertEqual(receipt['report'],report)
 
     def test_auth_failure_and_wrong_uuid_never_produce_a_success_receipt(self):
         adapter = CLI('codex', {}, {})

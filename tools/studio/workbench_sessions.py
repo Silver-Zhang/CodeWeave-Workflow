@@ -1,0 +1,309 @@
+"""Names and reversible lifecycle metadata; native records are never rewritten."""
+from __future__ import annotations
+import json
+import os
+from pathlib import Path
+import shlex
+import sys
+import time
+from orchestration.common import Blocked, canonical, digest
+from orchestration.process import execute
+from orchestration.store import lease
+from .agent_sessions import _visible, safe_text
+from .graph import Invalid
+from .session_sources import opened
+
+
+class WorkbenchSessions:
+    def __init__(self, runtime): self.rt=runtime;self.db=runtime.flow
+
+    def title(self, row):
+        try:
+            native=self.rt.db.get('session-handle',row['handle'])
+            if native['workspace']!=row['workspace_id'] or not native.get('authorized_read'):raise Invalid('历史不属于本工作区')
+            first=None;title=None
+            with opened(native['native']['path']) as fd:
+                with os.fdopen(os.dup(fd),'rb') as stream:
+                    for i in range(1200):
+                        line=stream.readline(1048577)
+                        if not line or len(line)>1048576:break
+                        obj=json.loads(line)
+                        if obj.get('type')=='custom-title' and isinstance(obj.get('customTitle'),str): title=obj['customTitle']
+                        visible=_visible(obj,row['provider'])
+                        if not first and visible and visible['role']=='user':
+                            text=visible['text']
+                            if text.startswith(('# AGENTS.md instructions for','<environment_context>','<permissions instructions>')):continue
+                            if text.startswith('Role:') and 'Writable test artifacts:' in text:
+                                text='\n'.join(text.splitlines()[2:]).strip()
+                            first=text
+            return safe_text(title or first or '新对话')[:90].replace('\n',' ')
+        except (Invalid,ValueError,OSError):return '对话记录暂不可读'
+
+    def listing(self, workspace, view='active', query=''):
+        # Failed first turns still own native records. Index their dedicated HOME
+        # without inventing a successful UUID receipt or adopting external HOME.
+        for chat in self.db.list('node-session'):
+            if chat['workspace']!=workspace:continue
+            key=digest(chat['binding']['home'].encode())
+            try:self.rt.db.get('chat-profile',key)
+            except Invalid:self.rt.db.put('chat-profile',key,dict(workspace=workspace,binding=chat['binding']))
+        listing=self.rt.session_center.discover(workspace,True);rows=listing['discovery']['sessions']
+        native_keys={r['handle'] for r in rows}
+        for meta in self.db.list('session-meta'):
+            if meta['workspace']==workspace and meta.get('native_archived') and meta['id'] not in native_keys:
+                rows.append(meta['snapshot'])
+        result=[]
+        operations=listing['operations']
+        for row in rows:
+            handle=row['handle']
+            try:meta=self.db.get('session-meta',handle)
+            except Invalid:meta=dict(id=handle,workspace=workspace,collection='active')
+            if meta['workspace']!=workspace:raise Blocked('会话元数据不属于当前工作区')
+            if meta.get('collection','active')!=view:continue
+            internal=None
+            try:internal=self.rt.db.get('session-handle',handle)
+            except Invalid:pass
+            related=[a for a in self.db.list('node-session') if a['workspace']==workspace and (
+                a['binding'].get('session_id')==row['session_id'] or internal and a['binding']['home']==internal['profile'].get('home'))]
+            title=meta.get('alias')
+            if not title:
+                try:title=self.db.get('session-title',handle)['title']
+                except Invalid:
+                    title=None
+                if not title or title.startswith(('## 本次运行初始化','# AGENTS.md instructions','Role:')):
+                    activations=[a for a in self.db.list('activation') if any(a.get('chat_key')==c['id'] for c in related)]
+                    title=next((c.get('name') for c in related if c.get('name')),None) or next((a.get('name') for a in activations if a.get('name')),None) or self.title(row)
+                    self.db.put('session-title',handle,{'id':handle,'title':title})
+            title=title or '新对话'
+            running=next((o for o in operations if o.get('session_id')==row['session_id'] and o['state'] not in ('COMPLETED','FAILED','CANCELLED')),None)
+            busy=False
+            if row.get('resume'):
+                try:
+                    project=self.rt.session_center.workspace(workspace);internal=self.rt.db.get('session-handle',handle)
+                    binding,_=self.rt.session_center._binding(internal,project)
+                    busy=bool(binding and self.busy(binding,row['session_id']))
+                except (Invalid,Blocked):busy=True
+            actual=[a for a in self.db.list('activation') if any(a.get('chat_key')==c['id'] for c in related)]
+            latest=max(actual,key=lambda a:a.get('started_at',0)) if actual else None
+            named=dict(row,title=title,collection=meta.get('collection','active'),alias_only=bool(meta.get('alias')),
+                display_state=running['state'] if running else 'BUSY' if busy else '运行未确认',busy=busy,
+                node=related[0]['node'] if related else None,
+                choices={'resume':bool(row.get('resume')) and not busy and not meta.get('native_archived'),
+                         'context_new':row['capabilities'].get('read',False),'fork':row['provider']=='codex' and bool(row.get('resume')) and not busy,
+                         'view':True},native_archived=meta.get('native_archived',False))
+            if latest and not busy:
+                from orchestration.process import group_alive
+                named['display_state']='运行未确认' if latest['state'] in ('RUNNING','STARTING') and not group_alive(latest.get('process')) else latest['state']
+            if not query or query.casefold() in (title+' '+row['provider']).casefold():result.append(named)
+        return dict(sessions=result,coverage=listing['discovery']['coverage'],operations=operations)
+
+    def busy(self,binding,sid):
+        if self.rt.session_center._busy(binding['home']):return True
+        # External native terminals need not honour our lock; check their actual HOME/explicit session.
+        for p in Path('/proc').glob('[0-9]*'):
+            comm=''
+            try:
+                comm=(p/'comm').read_text().strip()
+                if not any(x in comm for x in ('codex','claude')):continue
+                argv=(p/'cmdline').read_bytes().split(b'\0')
+                env=dict(x.split(b'=',1) for x in (p/'environ').read_bytes().split(b'\0') if b'=' in x)
+                if sid.encode() in argv or env.get(b'HOME')==binding['home'].encode():return True
+            except (OSError,ValueError):
+                if 'comm' in locals() and any(x in comm for x in ('codex','claude')):return True
+                continue
+        return False
+
+    def history(self,workspace,handle,query=''):
+        try:meta=self.db.get('session-meta',handle)
+        except Invalid:meta={}
+        if meta.get('native_archived'):
+            if meta['workspace']!=workspace:raise Blocked('归档会话不属于本工作区')
+            from .session_sources import LIMITS,read_session,regular_at
+            from .agent_sessions import conversation
+            from .session_center import credential_bytes
+            from orchestration.privacy import credentials
+            binding=meta['binding'];sid=meta['snapshot']['session_id']
+            archive=Path(binding['home'])/'.codex/archived_sessions';records=[]
+            # Native Codex archives are flat, unlike sessions/YYYY/MM/DD.
+            # Keep the ordinary scanner's layout restriction intact.
+            with opened(archive,directory=True) as directory:
+                names=os.listdir(directory)
+                if len(names)>2000:raise Blocked('原生归档超过读取预算')
+                for name in names:
+                    if sid not in name or not name.endswith('.jsonl'):continue
+                    with regular_at(name,dir_fd=directory) as fd:
+                        item=read_session(fd,'codex',name,LIMITS);item['path']=str(archive/name);records.append(item)
+            records=[r for r in records if r['session_id']==sid and r['cwd']==meta['cwd'] and not r['cwd_changed']]
+            if len(records)!=1:raise Blocked('原生归档记录不能唯一核验；请先恢复后查看')
+            row=dict(profile=dict(binding,config_root=str(Path(binding['home'])/'.codex')),native=records[0])
+            secret=credentials(binding['home'],[x[0] for x in binding.get('readonly_files',[])],read_file=credential_bytes)
+            result=dict(workspace_id=workspace,handle=handle,messages=conversation('codex',records[0]['path'],200,query,expected_sha256=records[0]['sha256'],secrets=secret))
+        else:
+            result=self.rt.session_center.history(workspace,handle,query,200)
+            _,row=self.rt.session_center.resolve(workspace,handle)
+        messages=[]
+        for m in result['messages']:
+            text=m['text']
+            if m['role']=='user' and text.startswith(('# AGENTS.md instructions for','<environment_context>','<permissions instructions>')):continue
+            if m['role']=='user' and text.startswith('Role:') and 'Writable test artifacts:' in text:
+                text='\n'.join(text.splitlines()[2:]).strip()
+            if m['role']=='user' and '## 每轮任务' in text and '## 上游输入' in text:
+                # The complete, unchanged request remains in the expandable
+                # request group; the chat bubble shows the human round task.
+                text=text.split('## 每轮任务',1)[1].split('## 上游输入',1)[0].strip()
+            if m['role']=='assistant':
+                try:
+                    value=json.loads(text)
+                    if isinstance(value,dict) and isinstance(value.get('reply'),str):text=value['reply']
+                except ValueError:pass
+            messages.append(dict(m,text=text))
+        sid=row['native']['session_id'];chats=[c['id'] for c in self.db.list('node-session') if c['workspace']==workspace and c['binding'].get('session_id')==sid]
+        groups=[{k:a.get(k) for k in ('id','node','name','iteration','state','initialization_included','actual_request','actual_request_sha256','receipt')}
+                for a in self.db.list('activation') if a.get('chat_key') in chats]
+        from orchestration.privacy import credentials,redact
+        from .session_center import credential_bytes
+        extra=[src for p in self.rt.operator['profiles'].values() for src,_ in p.get('readonly_files',[])]
+        secrets=credentials(row['profile']['home'] or row['profile']['config_root'],extra,read_file=credential_bytes)
+        activity=[]
+        with opened(row['native']['path']) as fd:
+            with os.fdopen(os.dup(fd),'rb') as stream:
+                total=0
+                while True:
+                    raw=stream.readline(1048577);total+=len(raw)
+                    if not raw:break
+                    if len(raw)>1048576 or total>16*1024*1024:raise Invalid('工具活动超过读取预算')
+                    obj=json.loads(raw);items=[]
+                    if row['profile']['provider']=='claude' and obj.get('type') in ('user','assistant'):
+                        content=obj.get('message',{}).get('content',[])
+                        if isinstance(content,list):
+                            for c in content:
+                                if isinstance(c,dict) and c.get('type') in ('tool_use','tool_result'):
+                                    items.append({'kind':c['type'],'name':c.get('name','工具结果'),'content':c.get('input',c.get('content',''))})
+                    elif row['profile']['provider']=='codex' and obj.get('type')=='response_item':
+                        v=obj.get('payload',{})
+                        if v.get('type') in ('function_call','function_call_output'):
+                            items.append({'kind':v['type'],'name':v.get('name','工具结果'),'content':v.get('arguments',v.get('output',''))})
+                    for v in items:
+                        value=redact(v,secrets);text=json.dumps(value['content'],ensure_ascii=False)
+                        activity.append(dict(value,content=safe_text(text[:4000]),truncated=len(text)>4000))
+                    activity=activity[-100:]
+        # No thinking/reasoning payloads or full protocol envelopes cross this boundary.
+        return dict(result,messages=messages,groups=groups,activity=activity)
+
+    def change(self,workspace,handle,action,*,name='',answer=''):
+        self.rt.check_operator()
+        native_modified=False
+        try:meta=self.db.get('session-meta',handle)
+        except Invalid:meta=dict(id=handle,workspace=workspace,collection='active')
+        if meta['workspace']!=workspace:raise Blocked('会话不属于当前工作区')
+        if meta.get('native_archived') and action=='restore':
+            binding=meta['binding']
+            if self.busy(binding,meta['snapshot']['session_id']):raise Blocked('会话占用状态未确认，无法恢复')
+            self.rpc(binding,meta['cwd'],'thread/unarchive',{'threadId':meta['snapshot']['session_id']})
+            native_modified=True
+            meta.update(native_archived=False,collection='active')
+        else:
+            project,row=self.rt.session_center.resolve(workspace,handle)
+            binding,reason=self.rt.session_center._binding(row,project)
+            if binding and self.busy(binding,row['native']['session_id']):raise Blocked('会话正在被使用；请先停止原回合')
+            if action=='rename':
+                if not isinstance(name,str) or not 1<=len(name.strip())<=160:raise Invalid('会话名称需要 1–160 个字符')
+                meta['alias']=safe_text(name.strip())
+            elif action in ('native_rename','fork'):
+                if not binding or row['profile']['provider']!='codex' or not answer.strip():
+                    raise Blocked('只有明确确认且可核验原环境的 Codex 会话可执行此原生操作')
+                sid=row['native']['session_id']
+                if action=='native_rename':
+                    if not isinstance(name,str) or not 1<=len(name.strip())<=160:raise Invalid('请填写有效会话名称')
+                    self.rpc(binding,row['native']['cwd'],'thread/name/set',{'threadId':sid,'name':name.strip()})
+                    native_modified=True
+                    meta['alias']=safe_text(name.strip());meta['native_named']=True
+                else:
+                    result=self.rpc(binding,row['native']['cwd'],'thread/fork',{'threadId':sid,'excludeTurns':True,
+                        'cwd':row['native']['cwd'],'approvalPolicy':'never','sandbox':'read-only'})
+                    child=result.get('thread',{}).get('id')
+                    from .session_sources import UUID
+                    if not isinstance(child,str) or not UUID.fullmatch(child) or child==sid:raise Blocked('没有可验证的新原生会话 ID，未伪称分叉成功')
+                    fork=dict(binding,session_id=child)
+                    self.rt.db.put('chat-profile',digest(canonical([fork['home'],child])),dict(workspace=workspace,binding=fork))
+                    return dict(native_fork=True,parent_session=sid,new_session=child,cwd=row['native']['cwd'],original_preserved=True)
+            elif action in ('archive','trash'):
+                if not answer.strip():raise Invalid('请确认影响范围；此操作不会永久删除原生记录')
+                meta['collection']='archived' if action=='archive' else 'trash'
+            elif action=='native_archive':
+                if not answer.strip() or not binding or row['profile']['provider']!='codex':
+                    raise Blocked('此会话没有可验证的原生归档权限；可使用 DevFlower 归档')
+                # Only dedicated managed homes, never another application's/default HOME.
+                snapshot=next(x for x in self.rt.session_center.discover(workspace,True)['discovery']['sessions'] if x['handle']==handle)
+                self.rpc(binding,row['native']['cwd'],'thread/archive',{'threadId':row['native']['session_id']})
+                native_modified=True
+                meta.update(collection='archived',native_archived=True,binding=binding,cwd=row['native']['cwd'],snapshot=snapshot)
+            elif action=='restore':meta['collection']='active'
+            else:raise Invalid('永久删除未启用；原生会话和源码不会被删除')
+        meta['updated_at']=time.time();self.db.put('session-meta',handle,meta)
+        return dict(handle=handle,collection=meta['collection'],alias=meta.get('alias'),native_archived=meta.get('native_archived',False),
+                    native_modified=native_modified,permanently_deleted=False)
+
+    def rpc(self,binding,cwd,method,params):
+        helper=Path(__file__).with_name('workbench_rpc.py')
+        home=Path(binding['home']);artifacts=self.rt.storage/'metadata-artifacts';artifacts.mkdir(exist_ok=True)
+        mutation=method in ('thread/archive','thread/unarchive','thread/name/set','thread/fork')
+        operation=None
+        if mutation:
+            import secrets
+            operation=secrets.token_hex(16)
+            with self.db.tx() as db:
+                rows=[json.loads(r[0]) for r in db.execute("SELECT data FROM records WHERE kind='native-mutation'")]
+                if any(r['home']==str(home) and r['state']!='COMPLETED' for r in rows):
+                    raise Blocked('此前原生操作回执未确认；禁止盲目重复改名、分叉或归档')
+                value=dict(id=operation,home=str(home),cwd=cwd,method=method,params=params,state='PENDING',at=time.time())
+                db.execute('INSERT INTO records VALUES(?,?,?)',('native-mutation',operation,canonical(value).decode()))
+        try:
+            with lease(home.parent/(digest(str(home.resolve()).encode())+'.session.lock')):
+                result,out,_=execute([sys.executable,'-B',str(helper)],cwd,home,
+                    read=[str(helper),cwd,*binding['read_paths']],write=[],timeout=30,cap=2_000_000,
+                    backend='bwrap',readonly_files=binding.get('readonly_files',[]),
+                    input_text=json.dumps({'executable':binding['executable'],'method':method,'params':params}))
+            if result['exit'] or result['timeout']:raise Blocked('原生元数据接口未完成，未伪称操作成功')
+            response=json.loads(out)
+            if 'error' in response:raise Blocked('原生工具拒绝操作：'+safe_text(response['error'].get('message','unknown')))
+        except (Blocked,OSError,ValueError):
+            if operation:self.db.change('native-mutation',operation,{'state':'RECOVERY_REQUIRED'})
+            raise
+        if operation:self.db.change('native-mutation',operation,{'state':'COMPLETED','result':response['result']})
+        return response['result']
+
+    def terminal(self,workspace,handle):
+        project,row=self.rt.session_center.resolve(workspace,handle)
+        binding,reason=self.rt.session_center._binding(row,project)
+        if not binding or self.busy(binding,row['native']['session_id']):raise Blocked(reason or '原生会话正被占用')
+        command=[sys.executable,str(Path(__file__).parents[1]/'devflower_native_terminal.py')]
+        for key,value in dict(operator=str(self.rt.operator_file),operator_sha256=self.rt.operator_sha256,candidate_sha256=self.rt.candidate_sha256,policy=str(self.rt.policy_file),policy_sha256=self.rt.policy_sha,workspace=workspace,handle=handle).items():command+=['--'+key.replace('_','-'),value]
+        return dict(command=shlex.join(command),cwd=row['native']['cwd'],mode='只读原生终端；启动前重新核验原环境和占用，退出后释放同一 HOME 锁',attached=False)
+
+    def capabilities(self,refresh=False):
+        result=[]
+        for name,profile in self.rt.operator['profiles'].items():
+            rows=self.rt.policy.get('models',{}).get(profile['provider'],[])
+            error=None;source='explicit operator registration'
+            if profile['provider']=='codex' and refresh:
+                try:
+                    binding=dict(profile,home=str(self.rt.rpc_home))
+                    catalog=self.rpc(binding,str(self.rt.storage),'model/list',{'limit':100})
+                    rows=[{'id':r['model'],'name':r.get('displayName',r['model']),
+                           'efforts':[e['reasoningEffort'] for e in r.get('supportedReasoningEfforts',[])],
+                           'source':'native model/list','inference_verified':False} for r in catalog.get('data',[])]
+                    self.db.put('model-catalog',profile['provider'],{'id':profile['provider'],'models':rows,'at':time.time()})
+                    source='native model/list'
+                except (Blocked,OSError,ValueError) as exc:error=safe_text(str(exc))
+            else:
+                try:rows=self.db.get('model-catalog',profile['provider'])['models'];source='native model/list (cached catalog)'
+                except Invalid:pass
+            successes=[a for a in self.db.list('activation') if a.get('provider')==profile['provider'] and a.get('receipt') and a.get('state')=='COMPLETED']
+            rows=[dict(m,inference_verified=any(a.get('model')==m['id'] for a in successes)) for m in rows]
+            result.append(dict(id=name,provider=profile['provider'],available=True,models=rows,source=source,error=error,inference_verified=bool(successes),
+                authentication='local credential overlay configured; service access requires an actual turn',
+                model=profile['model'],effort=profile['effort'],resolved_effort='unknown'))
+        result.append(dict(id='copilot',provider='copilot',available=False,installed=bool(__import__('shutil').which('copilot')),
+            reason='已检查本机 CLI；认证、模型发现与隔离执行尚未验证，不能作为可执行节点'))
+        return result

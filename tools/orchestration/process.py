@@ -41,7 +41,7 @@ def stop(record):
 
 
 def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
-            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock', context=None, readonly_files=(), on_stdout=None):
+            store=None, run=None, input_text='', env_extra=None, isolate=True, backend='landlock', context=None, readonly_files=(), on_stdout=None, readonly_paths=()):
     # Native session HOME persists; scratch is short enough for AF_UNIX sockets
     # and belongs to exactly one invocation. Cleanup cannot erase sessions.
     parent_scratch = tempfile.gettempdir()
@@ -49,11 +49,11 @@ def execute(argv, cwd, home, read=(), write=(), timeout=60, cap=1048576,
         parent_scratch = '/tmp'
     with tempfile.TemporaryDirectory(prefix='dfp-', dir=parent_scratch) as scratch:
         return _execute(argv, cwd, home, read, write, timeout, cap, store, run,
-                        input_text, env_extra, isolate, backend, context, readonly_files, scratch, on_stdout)
+                        input_text, env_extra, isolate, backend, context, readonly_files, scratch, on_stdout, readonly_paths)
 
 
 def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
-             input_text, env_extra, isolate, backend, context, readonly_files, scratch, on_stdout):
+             input_text, env_extra, isolate, backend, context, readonly_files, scratch, on_stdout, readonly_paths=()):
     if not argv or not isinstance(argv, list):
         raise Blocked('argv required')
     home = Path(home)
@@ -86,6 +86,11 @@ def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
                 wrapped += ['--ro-bind', str(Path(p).resolve()), str(p)]
         for p in [str(home), scratch, *write]:
             wrapped += ['--bind', str(Path(p).resolve()), str(p)]
+        for p in readonly_paths:
+            if Path(p).is_symlink():
+                raise Blocked('protected native metadata cannot be a symlink')
+            if Path(p).exists():
+                wrapped += ['--ro-bind', str(Path(p).resolve()), str(p)]
         for source, dest in overlays:
             wrapped += ['--ro-bind', str(source), str(dest)]
         command = [str(Path(argv[0]).resolve()) if Path(argv[0]).is_absolute() else argv[0], *argv[1:]]
@@ -109,6 +114,7 @@ def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
         store.finish(op, 'RUNNING', process=record)
     # Input is bounded and nonblocking too: no prompt-vs-output pipe deadlock.
     pending = memoryview(input_text.encode())
+    sent_bytes = 0
     selector = selectors.DefaultSelector()
     for pipe, name in ((proc.stdout, 'stdout'), (proc.stderr, 'stderr')):
         os.set_blocking(pipe.fileno(), False)
@@ -136,12 +142,16 @@ def _execute(argv, cwd, home, read, write, timeout, cap, store, run,
             for key, _ in selector.select(.1):
                 if key.data == 'stdin':
                     try:
-                        pending = pending[os.write(key.fd, pending[:8192]):]
+                        written = os.write(key.fd, pending[:8192])
+                        sent_bytes += written
+                        pending = pending[written:]
                     except BrokenPipeError:
                         pending = pending[:0]
                     if not pending:
                         selector.unregister(key.fileobj)
                         key.fileobj.close()
+                        if sent_bytes == len(input_text.encode()) and store and callable(getattr(store, 'input_sent', None)):
+                            store.input_sent(op, sent_bytes, hashlib.sha256(input_text.encode()).hexdigest())
                     continue
                 chunk = os.read(key.fd, 65536)
                 if not chunk:

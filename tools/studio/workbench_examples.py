@@ -1,0 +1,28 @@
+"""Editable executable v3 examples populated from actual approved native profiles."""
+def examples(profiles):
+    names=list(profiles);first=next((k for k in names if profiles[k]['provider']=='codex'),names[0])
+    second=next((k for k in names if profiles[k]['provider']=='claude'),names[-1])
+    def node(key,kind,name,x,y,**data):return dict(id=key,kind=kind,name=name,position={'x':x,'y':y},**data)
+    def agent(key,name,profile,x,y):
+        p=profiles[profile]
+        return node(key,'agent',name,x,y,provider=p['provider'],profile=profile,model=p['model'],effort=p['effort'],
+            role='通用 Agent',responsibility=name,mode='Ask',session='new',subagents='disabled',timeout=300,
+            initial_prompt='理解本次工作流的目标和已授权边界。',round_prompt='完成当前任务，参考上游提供的结果。',
+            handoff_prompt='提供主要回答、简短摘要、证据、未解决问题及后续建议；不要虚构工具执行。')
+    def edges(pairs):return [dict(id='edge'+str(i),source=s,target=t,transfer='result') for i,(s,t) in enumerate(pairs)]
+    def graph(name,nodes,pairs):return dict(version=3,name=name,nodes=nodes,edges=edges(pairs),budget={'calls':24,'seconds':3600})
+    sequential=graph('两 Agent 顺序分析',[node('start','start','任务输入',50,180),agent('analyze','分析任务',first,320,180),
+        agent('review','复核与补充',second,620,180),node('result','result','结果',920,180)],
+        [('start','analyze'),('analyze','review'),('review','result')])
+    parallel=graph('并发分析与汇总',[node('start','start','任务输入',40,220),agent('branchA','可行性分析',first,310,90),
+        agent('branchB','风险分析',second,310,360),node('merge','merge','等待两路结果',610,220),
+        agent('summary','汇总建议',first,880,220),node('result','result','结果',1160,220)],
+        [('start','branchA'),('start','branchB'),('branchA','merge'),('branchB','merge'),('merge','summary'),('summary','result')])
+    body=graph('提案—审核循环体',[node('start','start','本轮输入',40,200),agent('proposal','提出或修订方案',first,300,200),
+        agent('review','独立检查方案',second,600,200),node('result','result','本轮结果',900,200)],
+        [('start','proposal'),('proposal','review'),('review','result')])
+    body['nodes'][2]['handoff_prompt']='独立检查上游方案。满足任务标准时 accepted=true，否则 accepted=false 并说明必须修正的问题。不要为结束循环而改判。'
+    loop=graph('提案—审核（最多五轮）',[node('start','start','任务输入',40,200),
+        node('cycle','loop','提案与审核',340,200,body=body,max_rounds=5,until={'field':'result.accepted','op':'equals','value':True}),
+        node('result','result','已通过的方案',710,200)],[('start','cycle'),('cycle','result')])
+    return [sequential,parallel,loop]

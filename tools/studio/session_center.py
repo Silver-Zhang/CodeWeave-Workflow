@@ -164,7 +164,9 @@ class SessionCenter:
                 if p['config_root'] != str(Path(b['home']) / ('.' + b['provider'])):
                     return None, 'Storage root differs from the managed native environment; read only'
                 if b.get('session_id') != native['session_id']:
-                    return None, 'UUID has no managed native request/receipt binding; read only'
+                    # A native fork shares HOME with its parent. Another managed
+                    # UUID is not evidence against this exact transcript identity.
+                    continue
                 if native['cwd'] != project['path']:
                     return None, 'Original cwd differs from the approved workspace'
                 if self._busy(b['home']):
@@ -176,7 +178,7 @@ class SessionCenter:
                 if not row['resume'] or self._busy(p['home']):
                     return None, 'Controller session is occupied or requires recovery'
                 return row['binding'], 'Controller-managed independent role; original cwd preserved'
-        return None, 'External history is read only; storage registration does not authorize execution'
+        return None, 'UUID has no managed native request/receipt binding; external history is read only'
 
     def _busy(self, home):
         for row in self.db.listing('session-operation', filters={'binding.home': home}, limit=None):

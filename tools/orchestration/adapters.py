@@ -19,6 +19,31 @@ AUTH_FAILURE = re.compile(rb'(?i)(not logged in|not authenticated|unauthorized|\
     rb'(?:api[ _-]?key|auth(?:entication)?|credential|token).{0,32}(?:invalid|expired|missing|rejected))')
 
 
+def native_errors(kind, raw):
+    """Read provider error envelopes, never chat, tool results or quoted source."""
+    messages = []
+    for line in ([raw] if kind == 'claude' else raw.splitlines()):
+        try:
+            event = json.loads(line)
+        except (ValueError, TypeError):
+            # A truncated event must not hide an earlier/later native error.
+            continue
+        if not isinstance(event, dict):
+            continue
+        values = []
+        if kind == 'codex':
+            if event.get('type') == 'error':
+                values = [event.get('message')]
+            elif event.get('type') == 'turn.failed' and isinstance(event.get('error'), dict):
+                values = [event['error'].get('message')]
+        elif event.get('type') == 'result' and event.get('is_error') is True:
+            errors = event.get('errors', [])
+            values = [*errors] if isinstance(errors, list) else []
+            values.append(event.get('result'))
+        messages.extend(value for value in values if isinstance(value, str))
+    return messages
+
+
 def probe(executable, kind):
     def call(args):
         try:
@@ -113,6 +138,9 @@ class CLI:
         request_op = store.intent(run, 'AGENT_REQUEST', {'kind': self.kind, 'project': b['project'],
             'role': b['role'], 'requested_session': requested_session,
             'requested_model': b['model'], 'requested_effort': b['effort']}) if store else None
+        if store and callable(getattr(store, 'visible_request', None)):
+            # Application-owned visible request, never system instructions or hidden reasoning.
+            store.visible_request(prompt)
         pending_events = bytearray()
         observed_session = None
         def observe(chunk):
@@ -147,26 +175,29 @@ class CLI:
                     timeout=step_timeout, cap=self.limits['max_log_bytes'],
                     input_text=prompt, store=store, run=run, env_extra=env, backend=b.get('isolation', 'landlock'), readonly_files=b.get('readonly_files', []),
                     context={'agent_role': b['role'], 'provider': self.kind, 'transport': transport_evidence['mode']},
-                    on_stdout=observe)
+                    on_stdout=observe, readonly_paths=[str(Path(cwd)/'.git')])
         except Blocked as exc:
             category = 'authentication' if AUTH_FAILURE.search(str(exc).encode()) else 'configuration'
             if store:
                 store.finish(request_op, 'AGENT_FAILED', error_category=category)
             raise
+        errors = native_errors(self.kind, out)
+        authentication = AUTH_FAILURE.search('\n'.join(errors).encode(errors='replace') + b'\n' + err)
         if result['exit'] != 0 or result['timeout'] or result['overflow'] or result['cancelled']:
-            category = ('cancelled' if result['cancelled'] else 'authentication' if
-                        AUTH_FAILURE.search(out + b'\n' + err) else 'timeout' if result['timeout'] else
-                        'output-budget' if result['overflow']
-                        else 'process-failure')
+            detail = redact('; '.join(errors)[:1200], secrets)
+            category = ('cancelled' if result['cancelled'] else 'timeout' if result['timeout'] else
+                        'output-budget' if result['overflow'] else
+                        'authentication' if authentication else 'process-failure')
             if store:
-                store.finish(request_op, 'AGENT_FAILED', error_category=category, process=result, transport=transport_evidence)
-            raise Blocked('CLI ' + category + '; exit=' + str(result['exit']))
+                store.finish(request_op, 'AGENT_FAILED', error_category=category, process=result, transport=transport_evidence,
+                             **({'visible_error': detail} if detail else {}))
+            raise Blocked('CLI ' + category + '; exit=' + str(result['exit']) + (': ' + detail if detail else ''))
         try:
             envelope = self.collect(result, out)
         except Blocked:
             # Provider error envelopes can accompany exit=0. Classify only
             # after collection rejects the receipt, never successful chat text.
-            category = 'authentication' if AUTH_FAILURE.search(out + b'\n' + err) else 'protocol'
+            category = 'authentication' if authentication else 'protocol'
             if store:
                 store.finish(request_op, 'AGENT_FAILED', error_category=category, process=result, transport=transport_evidence)
             if category == 'authentication':

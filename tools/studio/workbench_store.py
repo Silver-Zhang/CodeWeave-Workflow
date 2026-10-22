@@ -1,0 +1,83 @@
+"""Transactional events and immutable run activations, separate from old Controller authority."""
+from contextlib import contextmanager
+import json
+from pathlib import Path
+import sqlite3
+import time
+from orchestration.common import canonical, digest
+from .graph import Invalid
+from .server import Conflict
+
+
+class WorkbenchStore:
+    def __init__(self, path):
+        self.path = Path(path)
+        if self.path.is_symlink() or self.path.exists() and self.path.stat().st_nlink != 1:
+            raise Invalid('运行数据库需要私有常规文件')
+        with self.tx() as db:
+            db.executescript('''CREATE TABLE IF NOT EXISTS records(kind TEXT,id TEXT,data TEXT,PRIMARY KEY(kind,id));
+              CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT,run TEXT,data TEXT);
+              CREATE TABLE IF NOT EXISTS drafts(id TEXT,revision TEXT,data TEXT,PRIMARY KEY(id,revision));''')
+        self.path.chmod(0o600)
+
+    @contextmanager
+    def tx(self):
+        db = sqlite3.connect(self.path, timeout=20)
+        try:
+            db.execute('BEGIN IMMEDIATE')
+            yield db
+            db.commit()
+        except BaseException:
+            db.rollback(); raise
+        finally: db.close()
+
+    def get(self, kind, key):
+        with self.tx() as db:
+            row = db.execute('SELECT data FROM records WHERE kind=? AND id=?', (kind, key)).fetchone()
+        if not row: raise Invalid('找不到此记录，请刷新')
+        return json.loads(row[0])
+
+    def list(self, kind):
+        with self.tx() as db:
+            rows = db.execute('SELECT data FROM records WHERE kind=? ORDER BY rowid DESC', (kind,)).fetchall()
+        return [json.loads(x[0]) for x in rows]
+
+    def put(self, kind, key, data):
+        with self.tx() as db:
+            db.execute('INSERT OR REPLACE INTO records VALUES(?,?,?)', (kind, key, canonical(data).decode()))
+        return data
+
+    def change(self, kind, key, changes, *, states=None, event=None):
+        with self.tx() as db:
+            row = db.execute('SELECT data FROM records WHERE kind=? AND id=?', (kind, key)).fetchone()
+            if not row: raise Invalid('记录不存在')
+            data = json.loads(row[0])
+            if states is not None and data['state'] not in states: raise Conflict('状态已变化，请刷新')
+            data.update(changes)
+            db.execute('UPDATE records SET data=? WHERE kind=? AND id=?', (canonical(data).decode(), kind, key))
+            if event:
+                value = dict(event, at=time.time(), run=data.get('run', key), node=data.get('node'),
+                             iteration=data.get('iteration', 0), attempt=data.get('attempt', 1))
+                db.execute('INSERT INTO events(run,data) VALUES(?,?)', (value['run'], canonical(value).decode()))
+        return data
+
+    def event(self, run, kind, **data):
+        value = dict(data, run=run, kind=kind, at=time.time())
+        with self.tx() as db:
+            cur = db.execute('INSERT INTO events(run,data) VALUES(?,?)', (run, canonical(value).decode()))
+        return dict(value, seq=cur.lastrowid)
+
+    def events(self, run, after=0):
+        with self.tx() as db:
+            rows = db.execute('SELECT seq,data FROM events WHERE run=? AND seq>? ORDER BY seq LIMIT 1000', (run, after)).fetchall()
+        return [dict(json.loads(data), seq=seq) for seq, data in rows]
+
+    def save(self, key, graph, expected):
+        revision = digest(canonical(graph)); value = dict(id=key, revision=revision, graph=graph)
+        with self.tx() as db:
+            old = db.execute("SELECT data FROM records WHERE kind='draft' AND id=?", (key,)).fetchone()
+            if (json.loads(old[0])['revision'] if old else None) != expected:
+                raise Conflict('工作流已由另一处保存；请重新加载后比较')
+            db.execute('INSERT OR IGNORE INTO drafts VALUES(?,?,?)', (key, revision, canonical(value).decode()))
+            db.execute("INSERT OR REPLACE INTO records VALUES('draft',?,?)", (key, canonical(value).decode()))
+        return value
