@@ -1,9 +1,9 @@
 # 当前状态
 
-新任务20261021_02_unified-agent-workbench已到BLOCKED。完整自验363 Python+6隔离+110 Chromium检查通过；实际Codex21回合、并发汇合、两轮退出/五轮停止和原生恢复已留证。
+20261021_02_unified-agent-workbench：BLOCKED，5轮源码审核已用尽，停止继续复审。R5原始BLOCKED：两项R4必需补证已CLOSED，A–J/L PASS，但完整产品合同K仍BLOCKED；摘要对照300秒及准确恢复480秒均超时，无最终原生裁决，无硬ACCEPT。
 
-Claude deepseek-flash[1m]/high两次真实调用均503，无本轮源码裁决。另有冻结预算回显WB-UI-01、可信验证/交付程序未配置、真实v3取消验收缺项；完整A–L未通过。
+当前130文件候选e194382a7e84、tree84070e94；381 Python+6宿主+113 Chromium/HTTP通过，零失败/错误/Skip，baseline/语法/空白检查通过。真实并行/生命周期/取消/循环/双会话GUI、限定实际修复复审及旧Stable verify-only均有原始证据，不能替代整体验收。
 
-本地候选b1b2cfdf90a1，预期tree d7528dd0，源码HEAD/远端仍465a31f，Draft PR10。源码不提交/推送；记录单独同步。详情只读本任务五节README及evidence.json，原始日志/会话/截图留本地。
+源码HEAD/origin仍465a31f，main61356ac；本次源码不commit/push，PR10仍Draft/旧代码。仅正常同步project/devflower记录及PR状态，不合并main、不签Stable。
 
-新预览入口：python3 /home/workspace/DevFlower/.local/open-workbench.py（42571，Development）；旧Stable不动。服务恢复后先关闭缺项，再固定新候选/完整自验/Claude复审；不复用旧ACCEPT、不合并main、不自签Stable。
+本机入口python3 /home/workspace/DevFlower/.local/open-workbench.py（42033，Development）。详见本任务五节README/evidence.json；原始日志、截图、会话及只读候选留本地。
