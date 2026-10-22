@@ -1,0 +1,33 @@
+name: Studio contracts
+on:
+  pull_request:
+    paths:
+      - 'tools/studio/**'
+      - 'tools/devflower_studio.py'
+      - 'tests/*studio*'
+      - 'tests/*workspace*'
+      - 'tests/studio_browser.py'
+      - '.github/workflows/studio.yml'
+  push:
+    branches: ['flow/studio-mvp', 'flow/workspace-session-m0']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  studio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4, pinned
+        with:
+          persist-credentials: false
+      - name: Environment
+        run: python3 --version && node --version
+      - name: Studio contracts (no models, no credentials, no business repositories)
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_studio.py -v
+      - name: Read-only workspace session contracts
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p test_workspace_sessions.py -v
+      - name: Browser module syntax
+        run: |
+          node --check tools/studio/static/app.js
+          node --check tools/studio/static/workspace.js

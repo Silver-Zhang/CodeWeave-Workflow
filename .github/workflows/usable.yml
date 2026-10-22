@@ -1,0 +1,130 @@
+name: Usable regression
+
+on:
+  pull_request:
+    paths:
+      - 'tools/**'
+      - 'tests/**'
+      - 'docs/**'
+      - 'AGENTS.md'
+      - 'WORKFLOW.md'
+      - 'examples/**'
+      - '.github/workflows/usable.yml'
+  push:
+    branches: ['main', 'flow/devflower-usable-v1', 'flow/template-governance-ci']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: usable-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Environment and immutable source receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 --version
+          node --version
+          git --version
+          mkdir -p "$RUNNER_TEMP/usable-evidence"
+          git rev-parse HEAD > "$RUNNER_TEMP/usable-evidence/commit.txt"
+          git rev-parse HEAD^{tree} > "$RUNNER_TEMP/usable-evidence/tree.txt"
+          git archive --format=tar HEAD | gzip -n > "$RUNNER_TEMP/usable-evidence/source.tar.gz"
+      - name: Install isolation runtime on this disposable runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y bubblewrap
+          # Test actual namespaces instead of silently skipping unsupported isolation.
+          if test -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
+      - name: All Python contracts including Usable and orchestration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -v 2>&1 | tee "$RUNNER_TEMP/usable-evidence/unittest.log"
+      - name: Baseline and all frontend syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/devflower.py check --baseline
+          node --check tools/studio/static/app.js
+          node --check tools/studio/static/workspace.js
+          node --check tools/studio/static/usable.js
+          node --check tools/studio/static/usable_canvas.js
+      - name: Real host isolation probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/host_isolation.py 2>&1 | tee "$RUNNER_TEMP/usable-evidence/isolation.log"
+      - name: Preserve source identity and actual test logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: usable-contract-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/usable-evidence/
+          retention-days: 7
+          if-no-files-found: error
+
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install pinned browser test driver outside the source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix "$RUNNER_TEMP/pw" --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+          echo "PLAYWRIGHT_PACKAGE=$RUNNER_TEMP/pw/node_modules/playwright" >> "$GITHUB_ENV"
+          echo "PLAYWRIGHT_MODULE=$GITHUB_WORKSPACE/tests/browser_driver.cjs" >> "$GITHUB_ENV"
+          echo "CHROMIUM=$(node -e "process.stdout.write(require('$RUNNER_TEMP/pw/node_modules/playwright').chromium.executablePath())")" >> "$GITHUB_ENV"
+      - name: Real HTTP and Chromium regression (no models or user credentials)
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          for suite in studio_races studio_identity_races workspace_browser usable_browser template_browser; do
+            if ! python3 "tests/$suite.py" --chromium "$CHROMIUM" --playwright-module "$PLAYWRIGHT_MODULE" --artifacts "$RUNNER_TEMP/$suite"; then
+              status=1
+            fi
+          done
+          exit "$status"
+      - name: Preserve synthetic browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: usable-browser-evidence-${{ github.run_id }}
+          # Only results/screenshots, never generated auth/config or native records.
+          path: |
+            ${{ runner.temp }}/studio_races/*results.json
+            ${{ runner.temp }}/studio_races/*.png
+            ${{ runner.temp }}/studio_identity_races/*results.json
+            ${{ runner.temp }}/studio_identity_races/*.png
+            ${{ runner.temp }}/workspace_browser/*results.json
+            ${{ runner.temp }}/workspace_browser/*.png
+            ${{ runner.temp }}/usable_browser/*results.json
+            ${{ runner.temp }}/usable_browser/*.png
+            ${{ runner.temp }}/template_browser/*results.json
+            ${{ runner.temp }}/template_browser/*.png
+          retention-days: 7
+          if-no-files-found: error
