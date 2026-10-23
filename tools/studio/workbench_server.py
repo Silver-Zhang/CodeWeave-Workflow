@@ -10,6 +10,7 @@ from .server import Conflict
 from .workbench_graph import validate_graph
 from .workbench_examples import examples
 from .workbench_sessions import WorkbenchSessions
+from .native_terminals import NativeTerminals
 
 STATIC=Path(__file__).with_name('static')
 
@@ -22,6 +23,7 @@ def create_server(runtime,port=0):
     else:
         token=secrets.token_urlsafe(32);token_path.write_text(token);token_path.chmod(0o600)
     sessions=WorkbenchSessions(runtime)
+    terminals=NativeTerminals(runtime,sessions)
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args):pass
         def respond(self,status,value,mime='application/json; charset=utf-8'):
@@ -65,7 +67,10 @@ def create_server(runtime,port=0):
                     elif path=='/api/folders':value=runtime.folder(q.get('path'))
                     elif path=='/api/sessions':value=sessions.listing(q['workspace'],q.get('view','active'),q.get('query',''))
                     elif path=='/api/history':value=sessions.history(q['workspace'],q['handle'],q.get('query',''))
+                    elif path=='/api/node-session':value=sessions.activation_session(q['workspace'],q['run'],q['activation'])
                     elif path=='/api/terminal':value=sessions.terminal(q['workspace'],q['handle'])
+                    elif path=='/api/terminals':value={'terminals':terminals.listing(q['workspace'])}
+                    elif path=='/api/terminal/output':value=terminals.snapshot(q['workspace'],q['id'],int(q.get('after','0')))
                     elif path=='/api/run':value=runtime.snapshot(q['run'],int(q.get('after','0')))
                     elif path=='/api/chat':value=runtime.session_center.operation(q['id'],q['workspace'])
                     else:raise Invalid('没有这个工作台接口')
@@ -81,6 +86,11 @@ def create_server(runtime,port=0):
                         raise Invalid('确认必须属于当前等待的节点')
                     value=runtime.flow.change('activation',row['id'],{'state':'PENDING','human_answer':data['answer'][:4000]},event={'kind':'human-confirmed'})
                 elif path=='/api/session/action':value=sessions.change(data['workspace'],data['handle'],data['action'],name=data.get('name',''),answer=data.get('answer',''))
+                elif path=='/api/terminal/prepare':value=terminals.prepare(data)
+                elif path=='/api/terminal/start':value=terminals.start(data)
+                elif path=='/api/terminal/input':value=terminals.input(data['workspace'],data['id'],data['sequence'],data['text'])
+                elif path=='/api/terminal/resize':value=terminals.resize(data['workspace'],data['id'],data['cols'],data['rows'])
+                elif path=='/api/terminal/close':value=terminals.close(data['workspace'],data['id'])
                 elif path=='/api/chat/prepare':
                     # A context copy is explicitly a new conversation, never a fake native resume.
                     if data.get('context_from'):
@@ -102,5 +112,10 @@ def create_server(runtime,port=0):
             except (Invalid,Blocked,ValueError,KeyError,TypeError,OSError,RecursionError) as exc:
                 from .agent_sessions import safe_text
                 self.respond(400,{'error':safe_text(str(exc)) if isinstance(exc,(Invalid,Blocked)) else '操作未完成，请刷新状态或检查本机运行环境','category':type(exc).__name__,'node':getattr(exc,'node',None)})
-    server=ThreadingHTTPServer(('127.0.0.1',port),Handler);server.daemon_threads=True
+    class Server(ThreadingHTTPServer):
+        def server_close(self):
+            terminals.shutdown()
+            super().server_close()
+    server=Server(('127.0.0.1',port),Handler);server.daemon_threads=True
+    server.native_terminals=terminals
     return server,token

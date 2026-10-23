@@ -78,6 +78,10 @@ class WorkbenchRuntime(SessionRuntime):
         if not any(Path(project['path']).is_relative_to(x) for x in self.operator['allowed_roots']): raise Blocked('工作区未获执行授权')
         profile = self.operator['profiles'].get(node.get('profile'))
         if not profile or node.get('provider', profile['provider']) != profile['provider']: raise Invalid('请选择已探测的执行工具与配置')
+        try:cli=self.flow.get('cli-probe',node['profile'])
+        except Invalid:cli=None
+        if cli and (not cli['available'] or not cli.get('machine_output')):
+            raise Blocked('该原生CLI尚未通过当前版本接口探测，不能只修改界面字段执行')
         model, effort = node.get('model', profile['model']), node.get('effort', profile['effort'])
         known = self.policy.get('models', {}).get(profile['provider'], [])
         if not any(v['id'] == model and effort in v.get('efforts', []) for v in known) and (model, effort) != (profile['model'], profile['effort']):
@@ -101,8 +105,10 @@ class WorkbenchRuntime(SessionRuntime):
         if write and node.get('mode') != 'Agent': raise Invalid('Ask / Plan 必须保持只读权限')
         if write and cwd != project['path']: raise Blocked('原冻结目录不能授予写权限')
         allowed = ['Read', 'Glob', 'Grep', 'Bash', 'Write', 'Edit'] if write else ['Read', 'Glob', 'Grep']
-        tools = node.get('tools') or allowed
+        tools = node.get('tools', allowed)
         if not isinstance(tools, list) or any(t not in allowed for t in tools): raise Invalid('所选工具超出工作方式允许的权限')
+        if profile['provider']=='codex' and 'tools' in node:
+            raise Invalid('Codex当前由原生工具集和强制工作区隔离控制，不能承诺逐工具过滤')
         binding.update(model=model, effort=effort, role='implementer' if write else 'reviewer',
             responsibility=node.get('responsibility') or node.get('role', '通用 Agent'), tools=['native'] if profile['provider'] == 'codex' else tools,
             timeout_seconds=node.get('timeout', 300))
@@ -236,6 +242,8 @@ class WorkbenchRuntime(SessionRuntime):
 
     def control(self, run, action):
         row=self.flow.get('run',run)
+        if row['state'] in ('COMPLETED','FAILED','CANCELLED'):
+            raise Conflict('已结束的运行只供查看，不能改写或重复启动')
         if action=='pause': self.flow.change('run',run,{'paused':True})
         elif action=='stop':
             self.flow.change('run',run,{'cancel_requested':True})
@@ -246,7 +254,8 @@ class WorkbenchRuntime(SessionRuntime):
         elif action=='resume':
             if row['candidate_sha256']!=self.candidate_sha256 or row['policy_sha256']!=self.policy_sha or row['operator_sha256']!=self.operator_sha256:
                 raise Conflict('旧版本运行只能查看；新候选不能复用旧授权恢复')
-            if row['state'] in END: raise Conflict('已结束的运行不能重复启动；请新建运行')
+            if row['state'] in END:
+                raise Blocked('本运行已持久化为状态未确认；不能自动重发。请查看原生会话和完成回执，另行授权新运行')
             if not alive(row.get('worker')):
                 for n in self.flow.list('activation'):
                     if n['run']!=run or n['state'] not in ('STARTING','RUNNING'): continue

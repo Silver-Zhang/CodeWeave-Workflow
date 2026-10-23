@@ -324,7 +324,7 @@ class RuntimeTests(unittest.TestCase):
         g=self.request();g['graph']['nodes'][1].update(kind='delivery',profile='browser-command')
         with self.assertRaises(Invalid):self.rt.prepare_flow(g)
     def test_external_accept_with_failing_tests_or_wrong_identity_never_passes(self):
-        executable=str(Path(sys.executable).resolve())
+        executable=str(Path('/usr/bin/true').resolve())  # Receipt tests use a valid pinned non-interpreter fixture.
         sha=digest(Path(executable).read_bytes())
         self.rt.policy['external_steps']['fixed']=dict(kind='verify',argv=[executable],executable_sha256=sha,dependencies={executable:sha})
         self.rt.flow.put('run','r',dict(workspace=self.w,graph_sha256='g',authorization={},task='frozen task'))
@@ -339,7 +339,7 @@ class RuntimeTests(unittest.TestCase):
         with patch('studio.workbench_runtime.execute',return_value=({'exit':0,'timeout':False,'cancelled':False,'overflow':False},canonical(dict(base,failures=0)),b'')):
             self.assertTrue(self.rt.external_step('r','a',{'kind':'verify','profile':'fixed'},[])['result']['verified'])
     def test_external_delivery_needs_remote_readback_even_with_accept(self):
-        executable=str(Path(sys.executable).resolve())
+        executable=str(Path('/usr/bin/true').resolve())  # Receipt tests use a valid pinned non-interpreter fixture.
         sha=digest(Path(executable).read_bytes())
         self.rt.policy['external_steps']['fixed']=dict(kind='delivery',argv=[executable],executable_sha256=sha,dependencies={executable:sha})
         self.rt.flow.put('run','r',dict(workspace=self.w,graph_sha256='g',authorization={},task='frozen task'))
@@ -379,7 +379,7 @@ class RuntimeTests(unittest.TestCase):
                     with self.assertRaises(Blocked):validate_receipt(bad,payload,kind)
 
     def test_external_payload_hashes_frozen_task_utf8_bytes(self):
-        executable=str(Path(sys.executable).resolve());sha=digest(Path(executable).read_bytes())
+        executable=str(Path('/usr/bin/true').resolve());sha=digest(Path(executable).read_bytes())
         self.rt.policy['external_steps']['fixed']=dict(kind='verify',argv=[executable],executable_sha256=sha,dependencies={executable:sha})
         request=self.request();request['task']='  冻结任务\r\n精确 UTF-8 字节  \n'
         permit=self.rt.prepare_flow(request)

@@ -1,5 +1,6 @@
 """Ordinary Chromium and real HTTP races; synthetic snapshots, no model acceptance."""
 import argparse,json,os,subprocess,sys,threading,time,unittest
+from unittest.mock import patch
 from pathlib import Path
 sys.path[:0]=[str(Path(__file__).parent),str(Path(__file__).resolve().parents[1]/'tools')]
 from test_workbench_runtime import fixture,structured_session
@@ -18,6 +19,12 @@ def main():
         graph['nodes'][1]['name']='分析 '+label
         rt.flow.put('run',label,dict(id=label,workspace=workspace,state='COMPLETED',graph=graph,task='任务 '+label,created_at=time.time(),actual_calls=0))
         rt.flow.put('activation',label,dict(id=label,run=label,node='analyze',name='分析 '+label,kind='agent',state='COMPLETED',iteration=1,output={'answer':'结果 '+label}))
+    # A lost worker with no completion receipt is genuinely unrecoverable.
+    preview=rt.prepare_flow(dict(workspace=workspace,graph=examples(rt.operator['profiles'])[0],task='Synthetic missing completion recovery'))
+    with patch.object(rt,'spawn'):
+        lost=rt.launch_flow(preview['id'],preview['sha256'],'Synthetic recovery test, never a native model')['run']['id']
+    rt.flow.change('run',lost,dict(created_at=time.time()-10,state='RUNNING'))
+    rt.flow.put('activation','lost-recovery',dict(id='lost-recovery',run=lost,node='analyze',kind='agent',state='RUNNING',name='Unconfirmed fixture'))
     session_rows={}
     for label in ('dialog-A','dialog-B'):
         _,row=structured_session(base,rt,label)
@@ -41,7 +48,7 @@ def main():
     rt.flow.put('session-meta',row['handle'],dict(id=row['handle'],workspace=workspace,collection='active',alias='Synthetic dialog-plain'))
     session_rows['dialog-plain']=dict(handle=row['handle'],session_id=row['session_id'])
     server,token=create_server(rt);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
-    access=out/'access.json';access.write_text(json.dumps(dict(url='http://127.0.0.1:'+str(server.server_port),token=token,workspace=workspace,path=str(base.source),sessions=session_rows)))
+    access=out/'access.json';access.write_text(json.dumps(dict(url='http://127.0.0.1:'+str(server.server_port),token=token,workspace=workspace,path=str(base.source),sessions=session_rows,lost_run=lost)))
     access.chmod(0o600)
     try:return subprocess.run([a.node,str(Path(__file__).with_suffix('.cjs')),str(out)],timeout=180,env=dict(os.environ,CHROMIUM=a.chromium,PLAYWRIGHT_MODULE=a.playwright_module)).returncode
     finally:server.shutdown();server.server_close();thread.join();owner.doCleanups()

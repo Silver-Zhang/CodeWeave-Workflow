@@ -16,7 +16,8 @@ from orchestration.process import group_alive
 from orchestration.store import lease
 from .agent_sessions import safe_text
 from .graph import Invalid
-from .workbench_graph import predicate, request_text, transfer
+from .workbench_graph import predicate, request_text, request_sections, transfer
+from .workbench_data import public_data
 
 DONE = {'COMPLETED', 'FAILED', 'SKIPPED', 'CANCELLED', 'RECOVERY_REQUIRED'}
 REPLY = {'type': 'object', 'additionalProperties': False,
@@ -67,7 +68,9 @@ class Journal:
         from orchestration.privacy import credentials,redact
         activation=self.s.db.get('activation',self.key);chat=self.s.db.get('node-session',activation['chat_key']);binding=chat['binding']
         secret=credentials(binding['home'],[x[0] for x in binding.get('readonly_files',[])])
-        self.s.db.change('activation', self.key, {'actual_request': safe_text(redact(text,secret)),
+        parts=redact(activation.get('request_sections',[]),secret)
+        for part in parts:part['text']=safe_text(part['text'])
+        self.s.db.change('activation', self.key, {'actual_request': safe_text(redact(text,secret)), 'request_sections':parts,
                         'actual_request_sha256': digest(text.encode())})
 
     def input_sent(self,operation,size,sha):
@@ -187,7 +190,7 @@ class Scheduler:
                     if incoming and not inputs:
                         self.db.change('activation', a['id'], {'state': 'SKIPPED', 'reason': '未选择此条件分支'},
                                        event={'kind': 'node-skipped'}); progressed = True; continue
-                    if n['kind']=='merge' and len(inputs)!=len(incoming):
+                    if n['kind']=='merge' and n.get('strategy','all')=='all' and len(inputs)!=len(incoming):
                         self.db.change('activation',a['id'],{'state':'SKIPPED','received':len(inputs),'expected':len(incoming),
                             'reason':'默认汇合需要全部上游输入；上游跳过或条件未选择，未生成不完整汇合结果'},event={'kind':'node-skipped'})
                         progressed=True;continue
@@ -225,7 +228,7 @@ class Scheduler:
             elif kind == 'agent': output = self.executor(n, key, inputs, prefix, iteration)
             elif kind == 'condition': output = dict(upstream, condition=predicate(upstream, n.get('test', {})))
             elif kind == 'merge': output = {'answer': '\n\n'.join(str(x['content'].get('answer', x['content'])) if isinstance(x['content'], dict) else str(x['content']) for x in inputs), 'result': {'inputs': inputs}, 'sources': inputs}
-            elif kind == 'result': output = upstream
+            elif kind in ('result', 'output'): output = upstream
             elif kind == 'human':
                 answer = self.db.get('activation', key).get('human_answer')
                 if not answer:
@@ -281,7 +284,8 @@ class Scheduler:
                 raise Blocked('已达到本次运行的模型调用预算')
             current['calls'] = current.get('calls', 0) + 1
             db.execute("UPDATE records SET data=? WHERE kind='run' AND id=?", (canonical(current).decode(), self.run))
-        self.db.change('activation', key, {'request': safe_text(prompt), 'initialization_included': first and bool(node.get('initial_prompt')),
+        self.db.change('activation', key, {'request': safe_text(prompt), 'request_sections': request_sections(node, inputs, first=first),
+                       'initialization_included': first and bool(node.get('initial_prompt')),
                        'chat_key': chat_key, 'provider': chat['binding']['provider'], 'model': chat['binding']['model'],
                        'effort': chat['binding']['effort'], 'mode': node.get('mode', 'Ask')})
         binding = chat['binding'];home = Path(binding['home']);cwd = chat['cwd']
@@ -308,10 +312,13 @@ class Scheduler:
             structured.setdefault('accepted',report['accepted'])
             if not isinstance(report.get('reply'), str): raise Blocked('原生回合没有有效回答')
             visible = {k: receipt.get(k) for k in ('session_id', 'requested_model', 'requested_effort', 'resolved_model', 'resolved_effort', 'process', 'permission_mode', 'raw_report_sha256')}
-            result = dict(answer=report['reply'], summary=report.get('summary', report['reply'][:400]),
+            from orchestration.privacy import credentials
+            secret = credentials(binding['home'], [x[0] for x in binding.get('readonly_files', [])])
+            result = public_data(dict(answer=report['reply'], summary=report.get('summary', report['reply'][:400]),
                 result=structured,
                 evidence=report.get('evidence', []), issues=report.get('issues', []), next=report.get('next', ''),
-                artifacts=self.rt.attachments(cwd, report.get('artifacts', [])), receipt=visible)
+                artifacts=self.rt.attachments(cwd, report.get('artifacts', []))), secret)
+            result['receipt'] = visible
             # This local completion receipt is reconciled before any crash recovery; never resubmit blindly.
             completion = dict(run=self.run, activation=key, chat_key=chat_key, output=result,
                               session_id=receipt['session_id'], source_before=before, source_after=tree_hash(cwd))

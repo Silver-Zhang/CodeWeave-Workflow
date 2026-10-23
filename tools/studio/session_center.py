@@ -354,7 +354,8 @@ class SessionCenter:
             self._recheck(value)
             b = value['binding']
             with ExitStack() as stack:
-                stack.enter_context(lease(Path(value['source']['common_dir']) / 'devflower-writer.lock'))
+                stack.enter_context(lease(Path(value['source']['common_dir']) / 'devflower-writer.lock',
+                                          shared=value['permission'] == 'read'))
                 stack.enter_context(lease(Path(b['home']).parent / (digest(str(Path(b['home']).resolve()).encode()) + '.session.lock')))
                 if journal.get(key)['data']['cancel_requested']:
                     raise Blocked('Cancelled before native spawn')

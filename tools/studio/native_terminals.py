@@ -1,0 +1,222 @@
+"""Bounded native PTYs. HTTP selects an authorized handle, never a shell command."""
+from __future__ import annotations
+import atexit
+import fcntl
+import hashlib
+import os
+from pathlib import Path
+import pty
+import secrets
+import selectors
+import sqlite3
+import struct
+import subprocess
+import sys
+import termios
+import threading
+import time
+
+from orchestration.common import Blocked, canonical, clean_env, digest, tree_hash
+from orchestration.privacy import credentials
+from orchestration.process import group_alive, stop
+from orchestration.store import process_identity
+from .graph import Invalid
+from .server import Conflict
+from .terminal_text import TerminalText
+
+TERMINAL = {'COMPLETED', 'FAILED', 'CANCELLED', 'RECOVERY_REQUIRED'}
+
+
+def dimensions(cols, rows):
+    if type(cols) is not int or type(rows) is not int or not 20 <= cols <= 300 or not 5 <= rows <= 100:
+        raise Invalid('终端尺寸超出范围')
+    return cols, rows
+
+
+class NativeTerminals:
+    def __init__(self, runtime, sessions):
+        self.rt, self.sessions = runtime, sessions
+        self.entries, self.lock = {}, threading.RLock()
+        atexit.register(self.shutdown)
+
+    def prepare(self, data):
+        if set(data) != {'workspace', 'handle'}: raise Invalid('终端只能选择已授权的会话，不能提交命令或路径')
+        project, row = self.rt.session_center.resolve(data['workspace'], data['handle'])
+        binding, reason = self.rt.session_center._binding(row, project)
+        if not binding or binding['provider'] not in ('codex', 'claude'):
+            raise Blocked(reason or '该 Provider 尚未支持原生终端')
+        if self.sessions.busy(binding, row['native']['session_id']): raise Blocked('此会话已有写入者，请先停止原回合或连接已有终端')
+        value = dict(purpose='native-terminal', workspace=data['workspace'], handle=data['handle'],
+            provider=binding['provider'], model=binding['model'], effort=binding['effort'],
+            cwd=row['native']['cwd'], session_id=row['native']['session_id'], native_sha256=row['native']['sha256'],
+            home=binding['home'], source_sha256=tree_hash(project['path']), candidate_sha256=self.rt.candidate_sha256,
+            operator_sha256=self.rt.operator_sha256, policy_sha256=self.rt.policy_sha,
+            human_questions=['在原生只读CLI中打开此明确会话；使用原目录和HOME，并独占该会话写入锁。'])
+        return self.rt.db.prepare(value)
+
+    def start(self, data):
+        if set(data) - {'id', 'sha256', 'answer', 'cols', 'rows'}: raise Invalid('终端启动参数不受支持')
+        cols, rows = dimensions(data.get('cols', 100), data.get('rows', 28))
+        with self.lock:
+            try:
+                prior = self.rt.flow.get('terminal-permit', data['id'])
+                if prior['sha256'] != data['sha256']: raise Conflict('终端重试身份不一致')
+                return self.snapshot(prior['workspace'], prior['terminal'])
+            except Invalid: pass
+            value, receipt = self.rt.db.consume(data['id'], data['sha256'], [data['answer']])
+            if value.get('purpose') != 'native-terminal' or any(value[k] != actual for k, actual in (
+                    ('candidate_sha256', self.rt.candidate_sha256), ('operator_sha256', self.rt.operator_sha256), ('policy_sha256', self.rt.policy_sha))):
+                raise Blocked('终端授权不属于当前运行器')
+            project, row = self.rt.session_center.resolve(value['workspace'], value['handle'])
+            binding, reason = self.rt.session_center._binding(row, project)
+            if not binding or self.sessions.busy(binding, value['session_id']): raise Blocked(reason or '原生会话已占用')
+            if (binding['home'], row['native']['cwd'], row['native']['session_id'], row['native']['sha256']) != (
+                    value['home'], value['cwd'], value['session_id'], value['native_sha256']): raise Conflict('原生身份或历史在确认后变化')
+            if tree_hash(project['path']) != value['source_sha256']: raise Conflict('工作区在终端预览后变化，请重新确认')
+            if any(e['home'] == binding['home'] and e['proc'].poll() is None for e in self.entries.values()): raise Blocked('同一HOME已有终端')
+            if sum(e['proc'].poll() is None for e in self.entries.values()) >= 4: raise Blocked('已达到本机4个原生终端的上限')
+            for old in list(self.entries):
+                if len(self.entries) < 16: break
+                if self.entries[old]['proc'].poll() is not None: del self.entries[old]
+            key = secrets.token_hex(16)
+            record = dict(id=key, workspace=value['workspace'], handle=value['handle'], provider=value['provider'],
+                cwd=value['cwd'], session_id=value['session_id'], model=value['model'], effort=value['effort'], state='STARTING', created_at=time.time(),
+                input_sequence=0, authorization_sha256=digest(canonical(receipt)), candidate_sha256=self.rt.candidate_sha256)
+            with self.rt.flow.tx() as db:
+                db.execute('INSERT INTO records VALUES(?,?,?)', ('terminal', key, canonical(record).decode()))
+                db.execute('INSERT INTO records VALUES(?,?,?)', ('terminal-permit', data['id'], canonical(dict(
+                    sha256=data['sha256'], terminal=key, workspace=value['workspace'])).decode()))
+            master, slave = pty.openpty()
+            fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack('HHHH', rows, cols, 0, 0))
+            argv = [sys.executable, '-B', str(Path(__file__).parents[1] / 'devflower_native_terminal.py')]
+            for name, item in dict(operator=str(self.rt.operator_file), operator_sha256=self.rt.operator_sha256,
+                    candidate_sha256=self.rt.candidate_sha256, policy=str(self.rt.policy_file), policy_sha256=self.rt.policy_sha,
+                    workspace=value['workspace'], handle=value['handle']).items():
+                argv += ['--' + name.replace('_', '-'), item]
+            env = clean_env(); env.update(TERM='xterm-256color', COLORTERM='truecolor',
+                                         DEVFLOWER_TERMINAL_PARENT_PID=str(os.getpid()))
+            try:
+                process = subprocess.Popen(argv, cwd=value['cwd'], env=env, stdin=slave, stdout=slave, stderr=slave,
+                                           start_new_session=True, close_fds=True)
+            except BaseException:
+                os.close(master); self.rt.flow.change('terminal', key, {'state': 'FAILED', 'reason': '原生终端未启动'}); raise
+            finally: os.close(slave)
+            os.set_blocking(master, False)
+            identity = process_identity(process.pid)
+            secret = credentials(binding['home'], [x[0] for x in binding.get('readonly_files', [])])
+            entry = dict(proc=process, master=master, process=identity, home=binding['home'], text='', first=0, next=0,
+                total=0, filter=TerminalText(secret), inputs={}, deadline=time.monotonic()+1800, state='RUNNING')
+            self.entries[key] = entry
+            self.rt.flow.change('terminal', key, {'state': 'RUNNING', 'process': identity})
+            entry['thread']=threading.Thread(target=self._read, args=(key, entry), daemon=True, name='native-pty-'+key[:6])
+            entry['thread'].start()
+            return self.snapshot(value['workspace'], key)
+
+    def _append(self, entry, raw, final=False):
+        text = entry['filter'].feed(raw, final)
+        entry['text'] += text; entry['next'] += len(text)
+        if len(entry['text']) > 262144:
+            entry['first'] += len(entry['text'])-262144; entry['text'] = entry['text'][-262144:]
+
+    def _read(self, key, entry):
+        selector = selectors.DefaultSelector(); selector.register(entry['master'], selectors.EVENT_READ)
+        reason = None
+        try:
+            while entry['proc'].poll() is None:
+                if time.monotonic() > entry['deadline'] or entry['total'] > 16*1024*1024:
+                    reason = '终端达到30分钟或输出预算，已停止本终端'; stop(entry['process']); break
+                for _, _ in selector.select(.1):
+                    try: raw = os.read(entry['master'], 65536)
+                    except OSError: raw = b''
+                    if not raw: break
+                    with self.lock: entry['total'] += len(raw); self._append(entry, raw)
+            # Drain the real PTY once more; raw bytes never become framework log files.
+            with self.lock:
+                try:
+                    while raw := os.read(entry['master'], 65536): self._append(entry, raw)
+                except OSError: pass
+                self._append(entry, b'', True)
+                code = entry['proc'].wait(timeout=3)
+                state = ('RECOVERY_REQUIRED' if entry['state'] == 'RECOVERY_REQUIRED' else
+                         'CANCELLED' if entry.get('cancelled') else 'FAILED' if reason or code else 'COMPLETED')
+                entry['state'] = state
+                self.rt.flow.change('terminal', key, {'state': state, 'exit': code, 'reason': reason,
+                    'finished_at': time.time(), 'output_bytes': entry['total']})
+        except BaseException:
+            stop(entry['process'])
+            with self.lock:
+                entry['state'] = 'RECOVERY_REQUIRED'
+                self.rt.flow.change('terminal', key, {'state': 'RECOVERY_REQUIRED', 'reason': '终端连接结果未确认；未自动重发输入'})
+        finally:
+            selector.close(); os.close(entry['master'])
+
+    def snapshot(self, workspace, key, after=0):
+        with self.lock:
+            row = self.rt.flow.get('terminal', key)
+            if row['workspace'] != workspace: raise Blocked('终端不属于此工作区')
+            if type(after) is not int or after < 0: raise Invalid('终端输出位置无效')
+            entry = self.entries.get(key)
+            if not entry:
+                return dict(row, state='RECOVERY_REQUIRED' if row['state'] not in TERMINAL else row['state'],
+                            output='', next=after, reset=False, process_alive=group_alive(row.get('process')))
+            reset = after < entry['first'] or after > entry['next']
+            start = entry['first'] if reset else after
+            return dict(row, state=entry['state'], output=entry['text'][start-entry['first']:], next=entry['next'], reset=reset,
+                        process_alive=entry['proc'].poll() is None)
+
+    def listing(self, workspace):
+        self.rt.session_center.workspace(workspace)
+        result=[]
+        for row in self.rt.flow.list('terminal'):
+            if row['workspace']!=workspace:continue
+            result.append({k:v for k,v in self.snapshot(workspace,row['id']).items() if k!='output'})
+            if len(result)>=20:break
+        return result
+
+    def input(self, workspace, key, sequence, text):
+        if not isinstance(text, str) or not 0 < len(text.encode()) <= 16384: raise Invalid('终端输入超过预算')
+        with self.lock:
+            row = self.snapshot(workspace, key); entry = self.entries.get(key)
+            if not entry or entry['state'] != 'RUNNING' or entry['proc'].poll() is not None: raise Blocked('终端未运行，未重发输入')
+            if type(sequence) is not int: raise Invalid('终端输入需要明确序号')
+            sha = digest(text.encode())
+            if sequence in entry['inputs']:
+                if entry['inputs'][sequence] != sha: raise Conflict('重复输入序号的内容不同')
+                if row.get('input_status')!='SENT':raise Blocked('上次终端输入结果未确认，不重发')
+                return dict(accepted=True, duplicate=True, input_sequence=row['input_sequence'])
+            if sequence != row['input_sequence'] + 1: raise Conflict('终端输入次序未确认；请重新连接，不要盲目重发')
+            # Persist intent before touching the PTY; lost replies cannot replay input.
+            self.rt.flow.change('terminal',key,{'input_sequence':sequence,'last_input_sha256':sha,'input_status':'SENDING'})
+            entry['inputs'][sequence]=sha
+            try:
+                raw=text.encode();sent=os.write(entry['master'],raw)
+                if sent != len(raw):raise OSError('partial PTY input')
+                self.rt.flow.change('terminal',key,{'input_status':'SENT'})
+            except (OSError,sqlite3.Error):
+                entry['state']='RECOVERY_REQUIRED';stop(entry['process'])
+                try:self.rt.flow.change('terminal',key,{'state':'RECOVERY_REQUIRED','input_status':'UNKNOWN'})
+                except sqlite3.Error:pass
+                raise Blocked('终端输入结果未确认，已停止，未自动重发') from None
+            if len(entry['inputs'])>128:del entry['inputs'][min(entry['inputs'])]
+            return dict(accepted=True,duplicate=False,input_sequence=sequence)
+
+    def resize(self, workspace, key, cols, rows):
+        cols, rows = dimensions(cols, rows)
+        with self.lock:
+            self.snapshot(workspace, key); entry=self.entries.get(key)
+            if not entry or entry['proc'].poll() is not None: raise Blocked('终端没有活动连接')
+            fcntl.ioctl(entry['master'],termios.TIOCSWINSZ,struct.pack('HHHH',rows,cols,0,0))
+        return dict(resized=True)
+
+    def close(self, workspace, key):
+        with self.lock:
+            self.snapshot(workspace,key);entry=self.entries.get(key)
+            if entry and entry['proc'].poll() is None:entry['cancelled']=True;stop(entry['process'])
+        if entry and entry.get('thread') is not threading.current_thread():entry['thread'].join(timeout=5)
+        return dict(stopped=bool(entry),history_preserved=True)
+
+    def shutdown(self):
+        for entry in list(self.entries.values()):
+            if entry['proc'].poll() is None:stop(entry['process'])
+        for entry in list(self.entries.values()):
+            if entry.get('thread') is not threading.current_thread():entry['thread'].join(timeout=5)

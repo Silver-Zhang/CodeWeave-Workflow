@@ -18,6 +18,17 @@ from .session_sources import opened
 class WorkbenchSessions:
     def __init__(self, runtime): self.rt=runtime;self.db=runtime.flow
 
+    def activation_session(self, workspace, run, activation):
+        flow = self.db.get('run', run); item = self.db.get('activation', activation)
+        if flow['workspace'] != workspace or item['run'] != run:
+            raise Blocked('节点会话不属于当前工作区和运行')
+        chat = self.db.get('node-session', item['chat_key'])
+        for row in self.listing(workspace)['sessions']:
+            internal = self.rt.db.get('session-handle', row['handle'])
+            if chat['id'] in self.matching_chats(workspace, internal):
+                return row
+        raise Blocked('原生会话尚未完成唯一身份核验，请刷新后重试')
+
     def matching_chats(self,workspace,row):
         """A UUID alone is not a session: keep its provider, HOME and cwd exact."""
         p,native=row['profile'],row['native']
@@ -166,6 +177,23 @@ class WorkbenchSessions:
             if latest and not busy and not running:
                 from orchestration.process import group_alive
                 named['display_state']='运行未确认' if latest['state'] in ('RUNNING','STARTING') and not group_alive(latest.get('process')) else latest['state']
+            if latest:
+                workflow = self.db.get('run', latest['run'])
+                named.update(workflow=workflow.get('graph', {}).get('name', '未命名工作流'),
+                             workflow_id=latest['run'], node_name=latest.get('name', latest['node']))
+            # Show the session's actual bound request configuration, never the
+            # default profile selected for a different/new conversation.
+            bound = related[0]['binding'] if related else next((c['binding'] for c in
+                self.rt.db.listing('chat-profile', filters={'workspace': workspace}, limit=None)
+                if internal and c['binding'].get('home') == internal['profile'].get('home') and
+                c['binding'].get('provider') == row['provider'] and
+                c['binding'].get('session_id') == row['session_id']), None)
+            if bound:
+                exact = next((name for name, profile in self.rt.operator['profiles'].items() if
+                    all(bound.get(k) == profile.get(k) for k in
+                        ('provider', 'executable', 'model', 'effort', 'read_paths', 'readonly_files'))), None)
+                named['execution'] = dict(profile=exact, provider=bound['provider'],
+                                          model=bound['model'], effort=bound['effort'])
             if not query or query.casefold() in (title+' '+row['provider']).casefold():result.append(named)
         return dict(sessions=result,coverage=listing['discovery']['coverage'],operations=operations)
 
@@ -230,7 +258,7 @@ class WorkbenchSessions:
                 except ValueError:pass
             messages.append(dict(m,text=text))
         related=self.related_activations(workspace,row)
-        groups=[{k:a.get(k) for k in ('id','node','name','iteration','state','initialization_included','actual_request','actual_request_sha256','receipt')}
+        groups=[{k:a.get(k) for k in ('id','run','node','name','iteration','iteration_path','state','initialization_included','request_sections','actual_request','actual_request_sha256','input_sent_sha256','receipt')}
                 for a,_ in related]
         from orchestration.privacy import credentials,redact
         from .session_center import credential_bytes
@@ -244,7 +272,7 @@ class WorkbenchSessions:
         for group in groups:
             if isinstance(group.get('actual_request'),str):group['actual_request']=safe_text(group['actual_request'])
         execution_results=self.execution_results(workspace,row,related,messages,query,secrets)
-        activity=[]
+        activity=[];summaries=[]
         with opened(row['native']['path']) as fd:
             with os.fdopen(os.dup(fd),'rb') as stream:
                 total=0
@@ -261,6 +289,12 @@ class WorkbenchSessions:
                                     items.append({'kind':c['type'],'name':c.get('name','工具结果'),'content':c.get('input',c.get('content',''))})
                     elif row['profile']['provider']=='codex' and obj.get('type')=='response_item':
                         v=obj.get('payload',{})
+                        # Only an explicit public summary; never content, thinking or encrypted payloads.
+                        if v.get('type')=='reasoning' and isinstance(v.get('summary'),list):
+                            for part in v['summary']:
+                                if isinstance(part,dict) and part.get('type')=='summary_text' and isinstance(part.get('text'),str):
+                                    summaries.append({'source':'provider-public-summary','text':safe_text(redact(part['text'][:8000],secrets))})
+                            summaries=summaries[-20:]
                         if v.get('type') in ('function_call','function_call_output'):
                             items.append({'kind':v['type'],'name':v.get('name','工具结果'),'content':v.get('arguments',v.get('output',''))})
                     for v in items:
@@ -268,7 +302,7 @@ class WorkbenchSessions:
                         activity.append(dict(value,content=safe_text(text[:4000]),truncated=len(text)>4000))
                     activity=activity[-100:]
         # No thinking/reasoning payloads or full protocol envelopes cross this boundary.
-        return dict(result,messages=messages,execution_results=execution_results,groups=groups,activity=activity)
+        return dict(result,messages=messages,execution_results=execution_results,groups=groups,activity=activity,summaries=summaries)
 
     def change(self,workspace,handle,action,*,name='',answer=''):
         self.rt.check_operator()
@@ -366,6 +400,14 @@ class WorkbenchSessions:
         for name,profile in self.rt.operator['profiles'].items():
             rows=self.rt.policy.get('models',{}).get(profile['provider'],[])
             error=None;source='explicit operator registration'
+            if refresh:
+                from orchestration.adapters import probe
+                cli=probe(profile['executable'],profile['provider'])
+                cli.update(id=name,at=time.time(),executable_sha256=digest(Path(profile['executable']).resolve().read_bytes()))
+                self.db.put('cli-probe',name,cli)
+            else:
+                try:cli=self.db.get('cli-probe',name)
+                except Invalid:cli={'available':Path(profile['executable']).is_file(),'status':'registered; native capability refresh not yet performed'}
             if profile['provider']=='codex' and refresh:
                 try:
                     binding=dict(profile,home=str(self.rt.rpc_home))
@@ -380,8 +422,13 @@ class WorkbenchSessions:
                 try:rows=self.db.get('model-catalog',profile['provider'])['models'];source='native model/list (cached catalog)'
                 except Invalid:pass
             successes=[a for a in self.db.list('activation') if a.get('provider')==profile['provider'] and a.get('receipt') and a.get('state')=='COMPLETED']
-            rows=[dict(m,inference_verified=any(a.get('model')==m['id'] for a in successes)) for m in rows]
-            result.append(dict(id=name,provider=profile['provider'],available=True,models=rows,source=source,error=error,inference_verified=bool(successes),
+            approved = {m['id']: m.get('efforts', []) for m in self.rt.policy.get('models', {}).get(profile['provider'], [])}
+            approved.setdefault(profile['model'], [profile['effort']])
+            rows=[dict(m, execution_allowed=m['id'] in approved,
+                       efforts=[e for e in m.get('efforts', []) if e in approved.get(m['id'], [])],
+                       inference_verified=any(a.get('model')==m['id'] for a in successes)) for m in rows]
+            result.append(dict(id=name,provider=profile['provider'],available=cli['available'],cli=cli,models=rows,source=source,error=error,inference_verified=bool(successes),
+                modes=['Ask','Plan','Agent'],skills=[],subagents=False,
                 authentication='local credential overlay configured; service access requires an actual turn',
                 model=profile['model'],effort=profile['effort'],resolved_effort='unknown'))
         result.append(dict(id='copilot',provider='copilot',available=False,installed=bool(__import__('shutil').which('copilot')),

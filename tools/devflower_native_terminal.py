@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import signal
 sys.dont_write_bytecode=True
 from orchestration.common import Blocked,clean_env,digest
 from orchestration.store import lease
@@ -22,6 +23,15 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for key in ('operator','operator-sha256','candidate-sha256','policy','policy-sha256','workspace','handle'):p.add_argument('--'+key,required=True)
     a=p.parse_args();rt=WorkbenchRuntime(a.operator,a.operator_sha256,a.candidate_sha256,a.policy,a.policy_sha256)
+    parent=os.environ.get('DEVFLOWER_TERMINAL_PARENT_PID')
+    if parent:
+        # Popen created a new session with this PTY on stdin. Do this in the
+        # child main thread, not an unsafe preexec hook in the HTTP server.
+        import fcntl,termios
+        from orchestration.sandbox import LIBC
+        fcntl.ioctl(sys.stdin.fileno(),termios.TIOCSCTTY,0)
+        if LIBC.prctl(1,signal.SIGTERM,0,0,0) or os.getppid()!=int(parent):
+            raise Blocked('原生终端监督器已退出，未启动CLI')
     if not sys.stdin.isatty() or not sys.stdout.isatty():raise Blocked('请在本机交互终端打开；浏览器不会启动第二个会话写入者')
     rt.check_operator();project,row=rt.session_center.resolve(a.workspace,a.handle)
     binding,reason=rt.session_center._binding(row,project)

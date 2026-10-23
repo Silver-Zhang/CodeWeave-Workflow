@@ -4,6 +4,7 @@ from orchestration.common import Blocked,digest,tree_hash,manifest
 from .session_sources import clean_path,opened
 import os
 import hashlib
+import re
 
 
 def validate_profile(profile,check_bytes=True):
@@ -15,9 +16,24 @@ def validate_profile(profile,check_bytes=True):
     executable=clean_path(argv[0]);deps=profile.get('dependencies',{});trees=profile.get('dependency_trees',{})
     if not isinstance(deps,dict) or not isinstance(trees,dict) or deps.get(executable)!=profile.get('executable_sha256') or not deps.get(executable):
         raise Blocked('外部执行器需要固定程序及依赖哈希')
+    # Pin interpreted entrypoints as well as the interpreter. Relative scripts
+    # or module lookup can otherwise execute code from a writable workspace.
+    interpreter = Path(executable).name.lower()
+    if re.fullmatch(r'(?:python(?:\d+(?:\.\d+)*)?|node(?:js)?|bash|sh|dash)', interpreter):
+        options = {'-I','-B','-u','-s','-S','-E','-O','-OO','-q','--no-warnings','--'}
+        entrypoint = next((arg for arg in argv[1:] if arg not in options), None)
+        if not entrypoint or not Path(entrypoint).is_absolute() or not deps.get(entrypoint):
+            raise Blocked('解释器入口必须是固定哈希的绝对脚本路径，不支持相对脚本、模块或内联代码')
     # Interpreter alone does not pin the Python script, configuration or imported code.
     for arg in argv[1:]:
-        if arg.startswith('/') and Path(arg).is_file() and arg not in deps:raise Blocked('外部脚本/配置没有固定哈希')
+        value = arg.split('=', 1)[1] if arg.startswith('-') and '=' in arg else arg
+        if value.startswith('/'):
+            if Path(value).is_dir():
+                if value not in trees:raise Blocked('外部目录参数没有固定树哈希')
+            elif value not in deps:raise Blocked('外部脚本/配置没有固定哈希')
+        elif not value.startswith('-') and ('/' in value or Path(value).suffix.lower() in
+                {'.py','.pyc','.js','.mjs','.cjs','.sh','.json','.yaml','.yml','.toml','.ini'}):
+            raise Blocked('外部脚本与配置参数不能使用相对路径')
     for field in ('read_paths','write_paths'):
         if not isinstance(profile.get(field,[]),list):raise Blocked('外部挂载需要路径数组')
         for path in profile.get(field,[]):

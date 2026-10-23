@@ -31,18 +31,19 @@ def alive(record):
 
 
 @contextmanager
-def lease(path):
+def lease(path, *, shared=False):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open('a+') as stream:
         try:
-            fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(stream, (fcntl.LOCK_SH if shared else fcntl.LOCK_EX) | fcntl.LOCK_NB)
         except BlockingIOError:
             raise Blocked('live lease held') from None
-        stream.seek(0)
-        stream.truncate()
-        stream.write(canonical(process_identity(os.getpid())).decode())
-        stream.flush()
+        if not shared:
+            stream.seek(0)
+            stream.truncate()
+            stream.write(canonical(process_identity(os.getpid())).decode())
+            stream.flush()
         try:
             yield
         finally:
