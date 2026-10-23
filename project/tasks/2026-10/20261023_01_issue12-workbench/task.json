@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "20261023_01_issue12-workbench",
+  "date": "2026-10-23",
+  "mode": "B",
+  "status": "阻塞",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/workbench-productization",
+      "base": "9399476bd34e188f6d0a334da3a82865560e4b17",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/12",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/13",
+      "result": "f57b600f3811a75e80590586d03686fb0fd1fe8e"
+    }
+  ]
+}

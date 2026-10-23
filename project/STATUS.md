@@ -1,11 +1,13 @@
 # 当前状态
 
-20261022_01_final-integration：阻塞；新4a334beb最多5源码轮已用完，旧a026五轮/BLOCKED不变。
+Issue12：阻塞。第5轮原始最终裁决 **ACCEPT**，旧可信完整父Gate **BLOCKED**。未达到技术合并条件，保留Draft，不合并main。 原报告K与I12-09为PASS，却同时保留I12-10 BLOCKED/F-GATE P1 OPEN，形成矛盾ACCEPT；旧Gate实际退出2，原因required contracts not independently passed。五轮预算已用尽，不改写报告、不排除必需合同、不追加第六轮。
 
-PR11已普通合并；main0a24331/treee7804dc，本地干净ff-only同步。PR10最新9399476/tree7abf177/candidate1fc/133文件已推送并读回，仍Draft。
+flow/workbench-productization已推f57b600/treea0c16fa6，完整145文件SHA0e654e2a；PR13含PR10基础，3项本次CI全绿。main 0a24331da65678b86448cc4a51bb2127a38cda32/tree e7804dc723aa09beca82be387db0f97807c84799。PR11已合并，PR10旧Draft保留；Stable5816未替换。
 
-最终425 Python/6宿主/118浏览器、Baseline/语法/逐字节构建全部通过、0Skip。最终源码真实双Agent分析/精确恢复、14协议核对与10原生停止检查通过。
+459Python/6宿主/129Chromium HTTP/6编辑器及Baseline、6语法、字节一致构建全部退出0、0 FAIL/ERROR/SKIP。真实19完成回合、2取消启动、两Provider原生PTY与HTTP恢复分列，unknown身份不伪造。
 
-R4 NEEDS_CORRECTION发现真实调度竞态，真实Codex修复后R5原始ACCEPT_WITH_LIMITATIONS；3源码发现CLOSED、4机器合同PASS，但K尚缺硬ACCEPT→正确最终Gate→实际新开发PR及读回。固定旧Gate实际BLOCKED；不续第6轮、不合并PR10、不晋升Stable。
+R1 BLOCKED，R2/R3 NEEDS_CORRECTION，R4仅源码合同ACCEPT/旧源Gate ACCEPT；R5完整父合同ACCEPT，最终父Gate BLOCKED。旧负面记录及结束预算不改写，不增开第6轮。
 
-入口.local/open-workbench.py是Development1fc，.local/open-stable.py是原批准5816，已验证。详见任务五节README/evidence.json；原始日志/截图/会话仅本地。
+入口：python3 /home/workspace/DevFlower/.local/open-issue12-workbench.py（Development）；原open-stable.py保留。当前verify/delivery桥未配置fail closed，本轮固定外部监督交付，不称新Controller自批。
+
+完整证据和限制见tasks/2026-10/20261023_01_issue12-workbench。原始日志/截图/会话仅本机archives；所有历史工作树、6个脏副本和原生HOME保留，无分支删除。

@@ -1,0 +1,224 @@
+{
+  "task": "1c9b1656e1ed4790b029a41c9883b40d",
+  "parent_contract_sha256": "a0b13a2cfec18273bdf5a8d0e894628cbd1f3800823ea7c82b0fc350db14eb81",
+  "source_contract_sha256": "ae3c355501ec18a132df9f1cfe48d4c7efe071202a608e6723bedec720aef302",
+  "source_head": "f57b600f3811a75e80590586d03686fb0fd1fe8e",
+  "source_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5",
+  "candidate_sha256": "0e654e2a9a8e34a89b84a56dd8cf815762a17c38c9a7aecbfcf8d02ac355752b",
+  "files": 145,
+  "source_push_readback": true,
+  "pr": "https://github.com/Silver-Zhang/DevFlower/pull/13",
+  "main_head": "0a24331da65678b86448cc4a51bb2127a38cda32",
+  "main_tree": "e7804dc723aa09beca82be387db0f97807c84799",
+  "merged": false,
+  "tests": {
+    "python": 459,
+    "host": 6,
+    "chromium_http": 129,
+    "editor": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "all_exit": 0,
+    "baseline": true,
+    "syntax_commands": 6,
+    "byte_identical_build": true
+  },
+  "native": {
+    "completed_turns": 19,
+    "cancelled_starts": 2,
+    "cancelled_codex_uuid": "unknown/unattested",
+    "terminal_providers": [
+      "codex",
+      "claude"
+    ],
+    "actual_ready_and_stop": true,
+    "physical_backend": "unknown",
+    "resolved_effort": "unknown"
+  },
+  "reviews": [
+    {
+      "round": 1,
+      "scope": "source",
+      "verdict": "BLOCKED",
+      "raw_report_sha256": "32cc788393a877dd6a9937518bad01e04f239ba068eff99e52ddd91e20b232dc",
+      "exit": 0,
+      "requested_model": "deepseek-flash[1m]",
+      "reported_model": "deepseek-flash[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown"
+    },
+    {
+      "round": 2,
+      "scope": "source",
+      "verdict": "NEEDS_CORRECTION",
+      "raw_report_sha256": "ed7d3f6053aced2e211e0770e338ae9aa4a44b65331134c49fce85b9d6949084",
+      "exit": 0,
+      "requested_model": "deepseek-flash[1m]",
+      "reported_model": "deepseek-flash[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown"
+    },
+    {
+      "round": 3,
+      "scope": "source",
+      "verdict": "NEEDS_CORRECTION",
+      "raw_report_sha256": "bc3737e4cdefb3cae9517b2e75fed4f8e63eebe048a8dc531f78782d70d07c49",
+      "exit": 0,
+      "requested_model": "deepseek-flash[1m]",
+      "reported_model": "deepseek-flash[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown"
+    },
+    {
+      "round": 4,
+      "scope": "source",
+      "verdict": "ACCEPT",
+      "raw_report_sha256": "d5c356587c663b9c2d8f1982f52356c3570a71fc001f4fb296e74339c790c70a",
+      "exit": 0,
+      "requested_model": "deepseek-flash[1m]",
+      "reported_model": "deepseek-flash[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown"
+    },
+    {
+      "round": 5,
+      "scope": "parent",
+      "verdict": "ACCEPT",
+      "raw_report_sha256": "a3812270b19547fe4a4c334c2f69a9987517d06ce3c3794b271011a106a78194",
+      "exit": 0,
+      "requested_model": "deepseek-flash[1m]",
+      "reported_model": "deepseek-flash[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown"
+    }
+  ],
+  "source_gate": "ACCEPT",
+  "parent_gate": "BLOCKED",
+  "ready_to_merge": false,
+  "stable_promoted": false,
+  "raw_evidence_local_only": true,
+  "k_status": [
+    {
+      "evidence_refs": [
+        "chromium",
+        "native-development",
+        "source-inspection"
+      ],
+      "id": "I12-01",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "editor",
+        "chromium",
+        "source-inspection"
+      ],
+      "id": "I12-02",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "native-flow",
+        "node-session-identity",
+        "chromium",
+        "source-inspection"
+      ],
+      "id": "I12-03",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "native-flow",
+        "node-session-identity",
+        "python",
+        "source-inspection"
+      ],
+      "id": "I12-04",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "native-flow",
+        "native-terminal",
+        "python",
+        "source-inspection"
+      ],
+      "id": "I12-05",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "native-terminal",
+        "node-session-identity",
+        "chromium",
+        "source-inspection"
+      ],
+      "id": "I12-06",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "python",
+        "host",
+        "chromium",
+        "editor",
+        "source-inspection"
+      ],
+      "id": "I12-07",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "python",
+        "host",
+        "chromium",
+        "editor",
+        "native-flow",
+        "native-terminal",
+        "native-development",
+        "source-inspection"
+      ],
+      "id": "I12-08",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "source-gate",
+        "git-delivery",
+        "ci",
+        "native-development",
+        "python",
+        "source-inspection"
+      ],
+      "id": "I12-09",
+      "status": "PASS"
+    },
+    {
+      "evidence_refs": [
+        "source-gate",
+        "git-delivery",
+        "ci",
+        "source-inspection"
+      ],
+      "id": "I12-10",
+      "status": "BLOCKED"
+    },
+    {
+      "evidence_refs": [
+        "source-gate",
+        "git-delivery",
+        "ci",
+        "native-development",
+        "python",
+        "native-flow",
+        "source-inspection"
+      ],
+      "id": "K",
+      "status": "PASS"
+    }
+  ],
+  "parent_gate_reason": "required contracts not independently passed",
+  "review_budget_used": 5,
+  "review_accept_is_gate_valid": false
+}

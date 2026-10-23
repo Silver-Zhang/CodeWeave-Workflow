@@ -1,13 +1,13 @@
-# DevFlower 当前开发上下文
+# Issue12 当前开发上下文
 
-先读tasks/2026-10/20261022_01_final-integration的五节README/evidence.json。原文/A–L/K/Issue9及完整证据在本机archives/devflower-final-integration-20261022。旧a026五轮/BLOCKED不改；新4a334beb最多5源码轮已用完，最终原始R5 ACCEPT_WITH_LIMITATIONS，旧Gate BLOCKED。不得暗中续第6轮或转换裁决。
+当前任务tasks/2026-10/20261023_01_issue12-workbench；父UUID1c9b1656e1ed4790b029a41c9883b40d，完整合同a0b13不变。独立development/issue12-workbench，flow/workbench-productization已正常推f57b600、treea0c16fa6/145文件SHA0e654e2a，PR13完整增量包含PR10基础，三项本次CI绿。main 0a24331da65678b86448cc4a51bb2127a38cda32，Stable5816保持原批准身份。
 
-main工作树DevFlower干净0a24331/treee7804dc，PR11独立正常合并。development/agent-workspace-vnext在flow/agent-workspace-vnext，9399476/tree7abf177/candidate1fc1e7/133文件已正常push读回，PR10仍Draft。源分支不含project历史；记录在records的project/devflower。保护所有worktree/HOME/原生历史/认证/用户修改，不reset/clean/force、不改CodeWeave/RMC、不删除project分支。
+459Python/6host/129Chromium HTTP/6editor、Baseline/6syntax/字节一致重建全0。19完成真实回合+2取消启动单列，1取消Codex UUID未返回unknown；实际PTY就绪/防双写/非空进程集合停止并保留历史，真实HTTP重启同run不重放。历史HEAD1941/content0e的预提交记录不重标记。
 
-真实产品修复含结构化回答、跨HOME侧栏身份、独立画布尺寸缓存、普通首轮显示。R4独立审核发现真实调度竞态；R5真实Codex只移动states读取至Future退休后。Claude真实线程反例旧基线失败、候选通过且副作用一次，候选20/20；源码3发现CLOSED，仍不授予整版K。
+R1 BLOCKED，R2/R3 NEEDS_CORRECTION，R4源合同硬ACCEPT，实际旧源Gate ACCEPT；正常push/远端HEAD-tree-PR读回后，第5轮完整父合同ACCEPT，父Gate BLOCKED。第5轮原始最终裁决 **ACCEPT**，旧可信完整父Gate **BLOCKED**。未达到技术合并条件，保留Draft，不合并main。 原报告K与I12-09为PASS，却同时保留I12-10 BLOCKED/F-GATE P1 OPEN，形成矛盾ACCEPT；旧Gate实际退出2，原因required contracts not independently passed。五轮预算已用尽，不改写报告、不排除必需合同、不追加第六轮。 最多5轮，不续开第6轮，不改旧预算/原始报告。当前源码未再变，最新快照r4-committed、回归r4-committed、完整证据evidence-r5。原始档案archives/devflower-issue12-20261023。
 
-最终425 Python/6宿主/118浏览器、Baseline/语法/独立逐字节构建通过，0失败错误Skip。最终版本6d35e34f分析、d337627c原生恢复均真实双Provider完成，同HOME/cwd/UUID；14协议核对、90ea7e0b原生停止10检查通过。晚到证据未获新独立判断，R5关于未重跑的原文保留。审核UUID de7963e4-fcdb-4218-ae3b-4c7cb5709953，实际HOME/cwd/native位置见本地stable-product-final/native-session-locations.json，准确恢复入口.local/resume-final-review.py。
+真实Studio原生开发01a1669f/run2dae修复原子插入；固定旧Stable CLI原生开发01a1672d修复测量竞态，不是Studio。当前可写Studio01a1677c/run d86118c在独立完整f57副本15项实际产品测试+Baseline全0，源前后0e不变。R3错误旧汇总保留历史，当前manifest/完整回归/HEAD均f57。
 
-Claude请求DeepSeek Flash[1m]/high，物理中转后端与生效effort unknown；CLI自报分列。Opus超时/两次502、全部原始负面报告、沙箱限制、观察器误断言和host生成缓存恢复保留。无源码OPEN或4机器PASS不能代替整体硬ACCEPT。
+Claude明确SID1d899e35-836e-49fb-a618-c8a9762af1a0，持久HOME archives/.../runtime/source-r1、cwd工作空间；请求deepseek-flash[1m]/high，物理后端/生效effort unknown。Code6.1-sol/xhigh。会话恢复须原HOME/cwd/UUID/只读settings挂载/同session.lock，不能--last或并发写。
 
-K尚缺硬ACCEPT→正确最终Gate→真实新开发PR/读回；Draft源码送审例外不冒充K。当前预览external_steps为空，verify/delivery节点安全关闭。本次自举由原批准Stable5816，不由新Controller自批。批准不变、未晋升。入口.local/open-workbench.py已验证Development1fc；.local/open-stable.py已验证旧Stable。后续必须明确区分新任务与本轮已结束预算/裁决。
+推荐.local/open-issue12-workbench.py，原open-stable.py均实际核验。当前external_steps为空，verify/delivery fail closed，固定外部监督用于Controller自身研发，不冒充新Controller自动批准。未验证Copilot/删除/Skills不启用；不删除原生HOME/会话/证据，不改CodeWeave/RMC，不擅自晋升Stable。

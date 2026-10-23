@@ -4,6 +4,7 @@
 
 | 日期 | 任务 | 模式 | 状态 |
 |---|---|---|---|
+| 2026-10-23 | [20261023_01_issue12-workbench](tasks/2026-10/20261023_01_issue12-workbench/README.md) | B | 阻塞 |
 | 2026-10-22 | [20261022_01_final-integration](tasks/2026-10/20261022_01_final-integration/README.md) | B | 阻塞 |
 | 2026-10-21 | [20261021_02_unified-agent-workbench](tasks/2026-10/20261021_02_unified-agent-workbench/README.md) | B | 阻塞 |
 | 2026-10-21 | [20261021_01_agent-workspace-vnext](tasks/2026-10/20261021_01_agent-workspace-vnext/README.md) | B | 待决策 |
