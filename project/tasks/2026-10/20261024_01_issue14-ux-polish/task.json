@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "20261024_01_issue14-ux-polish",
+  "date": "2026-10-24",
+  "mode": "B",
+  "status": "待复核",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/workbench-ux-polish",
+      "base": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/14",
+      "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+      "git_tree": "1797893a1eca77744c59e6b4e86e96c275f689e3",
+      "commit": "cdc53cd0e04ee1e980b229686725a148bf2f432e",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/15"
+    }
+  ]
+}

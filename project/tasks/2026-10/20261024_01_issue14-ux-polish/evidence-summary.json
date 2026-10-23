@@ -1,0 +1,668 @@
+{
+  "task": "20261024_01_issue14-ux-polish",
+  "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+  "git_tree": "1797893a1eca77744c59e6b4e86e96c275f689e3",
+  "files": 154,
+  "contract_sha256": "cf63c4ee5ef1ecf4a3682cafffa958d90935a6909ace04e9604897ae950ffa85",
+  "tests": {
+    "python": 473,
+    "host": 6,
+    "chromium_http": 142,
+    "projection": 12,
+    "editor": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "commands": {
+    "baseline": {
+      "argv": [
+        "python3",
+        "tools/devflower.py",
+        "check",
+        "--baseline"
+      ],
+      "exit": 0,
+      "seconds": 0.032,
+      "tests": null,
+      "timeout": false,
+      "sha256": "328260c6882ae7d98082730ce4206161b5a5f15b44a7426538254946732217f1"
+    },
+    "editor": {
+      "argv": [
+        "node",
+        "--test",
+        "tests/workbench_editor.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.164,
+      "tests": 6,
+      "timeout": false,
+      "sha256": "bb25f46dc97bdf24509b91f1b4db8d841de0d889a966801bb5075a87b9b4a634"
+    },
+    "host": {
+      "argv": [
+        "python3",
+        "tests/host_isolation.py"
+      ],
+      "exit": 0,
+      "seconds": 0.866,
+      "tests": 6,
+      "timeout": false,
+      "sha256": "87a29b56bc2fdc137a21898362afc06bcb6e73e05a563bf0b3537269e13505df"
+    },
+    "projection": {
+      "argv": [
+        "node",
+        "--test",
+        "tests/workbench_projection.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.164,
+      "tests": 12,
+      "timeout": false,
+      "sha256": "182952a8539a93f0e5aae75f644b82523482cf0ea866833227f28f59aa1ca059"
+    },
+    "python": {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit": 0,
+      "seconds": 106.816,
+      "tests": 473,
+      "timeout": false,
+      "sha256": "632e0ec048a02f36f122f477ab681e8c4f1758611f9666d5cc96ef7aa4f74322"
+    },
+    "session_browser": {
+      "argv": [
+        "python3",
+        "tests/session_browser.py",
+        "--chromium",
+        "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+        "--node",
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--playwright-module",
+        "/home/workspace/DevFlower/development/issue14-ux/tests/browser_driver.cjs",
+        "--artifacts",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/regression/candidate10/session_browser"
+      ],
+      "exit": 0,
+      "seconds": 7.777,
+      "tests": null,
+      "timeout": false,
+      "sha256": "16e7881f4f04e00ed1278c5bf20ad688abfb8e2bc3dfd0dd3839331189cfee23"
+    },
+    "studio_identity_races": {
+      "argv": [
+        "python3",
+        "tests/studio_identity_races.py",
+        "--chromium",
+        "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+        "--node",
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--playwright-module",
+        "/home/workspace/DevFlower/development/issue14-ux/tests/browser_driver.cjs",
+        "--artifacts",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/regression/candidate10/studio_identity_races"
+      ],
+      "exit": 0,
+      "seconds": 10.837,
+      "tests": null,
+      "timeout": false,
+      "sha256": "d0357b10e8a2f20febbd154ceb90a22d2ffcf6b2324abb361ad9ceac3bb73638"
+    },
+    "studio_races": {
+      "argv": [
+        "python3",
+        "tests/studio_races.py",
+        "--chromium",
+        "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+        "--node",
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--playwright-module",
+        "/home/workspace/DevFlower/development/issue14-ux/tests/browser_driver.cjs",
+        "--artifacts",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/regression/candidate10/studio_races"
+      ],
+      "exit": 0,
+      "seconds": 3.47,
+      "tests": null,
+      "timeout": false,
+      "sha256": "45d33fb7331505e6417ee8b30bee4895318270d565ca2fbdd3e26c1819eea993"
+    },
+    "syntax-app": {
+      "argv": [
+        "node",
+        "--check",
+        "tools/studio/static/app.js"
+      ],
+      "exit": 0,
+      "seconds": 0.064,
+      "tests": null,
+      "timeout": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "syntax-usable": {
+      "argv": [
+        "node",
+        "--check",
+        "tools/studio/static/usable.js"
+      ],
+      "exit": 0,
+      "seconds": 0.064,
+      "tests": null,
+      "timeout": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "syntax-usable_canvas": {
+      "argv": [
+        "node",
+        "--check",
+        "tools/studio/static/usable_canvas.js"
+      ],
+      "exit": 0,
+      "seconds": 0.064,
+      "tests": null,
+      "timeout": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "syntax-usable_sessions": {
+      "argv": [
+        "node",
+        "--check",
+        "tools/studio/static/usable_sessions.js"
+      ],
+      "exit": 0,
+      "seconds": 0.064,
+      "tests": null,
+      "timeout": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "syntax-workbench": {
+      "argv": [
+        "node",
+        "--input-type=module",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.082,
+      "tests": null,
+      "timeout": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "syntax-workspace": {
+      "argv": [
+        "node",
+        "--check",
+        "tools/studio/static/workspace.js"
+      ],
+      "exit": 0,
+      "seconds": 0.064,
+      "tests": null,
+      "timeout": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "template_browser": {
+      "argv": [
+        "python3",
+        "tests/template_browser.py",
+        "--chromium",
+        "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+        "--node",
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--playwright-module",
+        "/home/workspace/DevFlower/development/issue14-ux/tests/browser_driver.cjs",
+        "--artifacts",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/regression/candidate10/template_browser"
+      ],
+      "exit": 0,
+      "seconds": 3.369,
+      "tests": null,
+      "timeout": false,
+      "sha256": "62b2f3c89faf00ad8484cbbb1ff3ac08b0eeb80c082c51f6d60b9c867e93afb3"
+    },
+    "usable_browser": {
+      "argv": [
+        "python3",
+        "tests/usable_browser.py",
+        "--chromium",
+        "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+        "--node",
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--playwright-module",
+        "/home/workspace/DevFlower/development/issue14-ux/tests/browser_driver.cjs",
+        "--artifacts",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/regression/candidate10/usable_browser"
+      ],
+      "exit": 0,
+      "seconds": 12.388,
+      "tests": null,
+      "timeout": false,
+      "sha256": "4ff7f357ae6c0b906b3a823f379c9917885fd20934bd6f9c6a697cdfe7cffdc5"
+    },
+    "workbench_browser": {
+      "argv": [
+        "python3",
+        "tests/workbench_browser.py",
+        "--chromium",
+        "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+        "--node",
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--playwright-module",
+        "/home/workspace/DevFlower/development/issue14-ux/tests/browser_driver.cjs",
+        "--artifacts",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/regression/candidate10/workbench_browser"
+      ],
+      "exit": 0,
+      "seconds": 67.787,
+      "tests": null,
+      "timeout": false,
+      "sha256": "373ef49a654a5d1aa8683df480cfd37e80d283949d83294ce30894a136a59eda"
+    },
+    "workspace_browser": {
+      "argv": [
+        "python3",
+        "tests/workspace_browser.py",
+        "--chromium",
+        "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+        "--node",
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--playwright-module",
+        "/home/workspace/DevFlower/development/issue14-ux/tests/browser_driver.cjs",
+        "--artifacts",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/regression/candidate10/workspace_browser"
+      ],
+      "exit": 0,
+      "seconds": 9.486,
+      "tests": null,
+      "timeout": false,
+      "sha256": "9b32dfa96405bc01badcd0794c9f61682684bfa6e173123b9a806b3e24916d5e"
+    }
+  },
+  "native": [
+    {
+      "calls": 2,
+      "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+      "checks": {
+        "both_providers": true,
+        "calls": true,
+        "completed": true,
+        "init_once": true,
+        "input_integrity": true,
+        "real_handoffs": true,
+        "real_sessions": true,
+        "same_candidate": true,
+        "same_source_at_request": true,
+        "source_unchanged": true
+      },
+      "passed": true,
+      "run": "8f784b29b4fd2facdd1b006d92739f9b"
+    },
+    {
+      "calls": 3,
+      "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+      "checks": {
+        "both_providers": true,
+        "calls": true,
+        "completed": true,
+        "init_once": true,
+        "input_integrity": true,
+        "merge_once": true,
+        "merge_two_inputs": true,
+        "real_handoffs": true,
+        "real_sessions": true,
+        "same_candidate": true,
+        "same_source_at_request": true,
+        "source_unchanged": true,
+        "summary_once": true
+      },
+      "passed": true,
+      "run": "48b6934b3c6288f015b66141bb1c4c26"
+    }
+  ],
+  "independent_review": {
+    "r1": {
+      "verdict": "NEEDS_CORRECTION",
+      "raw_report_sha256": "72ab3d76c7fb6ed503e30d2793080458140ccd456e8963ae44b61d5c643c9b04",
+      "candidate_sha256": "7f5a713174231b6f2380859eb5987e967cdc5ce3170e12a4465151f4ddaca3ca",
+      "session_id": "55c5da7d-dbf1-4ba6-859c-e20a518e160e",
+      "process": {
+        "bytes": {
+          "stderr": 85,
+          "stdout": 13017
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 2429904,
+          "pid": 2429904,
+          "sid": 2429904,
+          "start": "134342228"
+        },
+        "seconds": 387.349,
+        "sha256": {
+          "stderr": "af2f4f95914df9c684b8c6d9f07bfa793cb3ed8a4c9f15c3022ee6363d84537e",
+          "stdout": "43796b9f025a83b37c823ef6483687c59538a0b3c1286c95f478c7fde025ada2"
+        },
+        "status": "EXITED",
+        "timeout": false
+      }
+    },
+    "r2": {
+      "verdict": "ACCEPT",
+      "raw_report_sha256": "e6e5a31552e273174e32e463429cb410b980976b5d722447dbbfe28ac875d6e3",
+      "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+      "session_id": "55c5da7d-dbf1-4ba6-859c-e20a518e160e",
+      "process": {
+        "bytes": {
+          "stderr": 85,
+          "stdout": 15086
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 2623128,
+          "pid": 2623128,
+          "sid": 2623128,
+          "start": "134942257"
+        },
+        "seconds": 375.662,
+        "sha256": {
+          "stderr": "af2f4f95914df9c684b8c6d9f07bfa793cb3ed8a4c9f15c3022ee6363d84537e",
+          "stdout": "b43669396f8780e8ea46e6d2050e486a04180f9906ad7190b026099dc42799a2"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "required_contracts": [
+        {
+          "evidence_refs": [
+            "source-inspection",
+            "editor",
+            "chromium",
+            "product-ui"
+          ],
+          "id": "I14-01",
+          "status": "PASS"
+        },
+        {
+          "evidence_refs": [
+            "source-inspection",
+            "projection",
+            "chromium",
+            "native-merge",
+            "native-sequence"
+          ],
+          "id": "I14-02",
+          "status": "PASS"
+        },
+        {
+          "evidence_refs": [
+            "source-inspection",
+            "python",
+            "chromium",
+            "native-session",
+            "native-sequence"
+          ],
+          "id": "I14-03",
+          "status": "PASS"
+        },
+        {
+          "evidence_refs": [
+            "source-inspection",
+            "projection",
+            "chromium",
+            "native-merge",
+            "native-sequence",
+            "native-session"
+          ],
+          "id": "I14-04",
+          "status": "PASS"
+        },
+        {
+          "evidence_refs": [
+            "source-inspection",
+            "projection",
+            "chromium",
+            "python"
+          ],
+          "id": "I14-05",
+          "status": "PASS"
+        },
+        {
+          "evidence_refs": [
+            "source-inspection",
+            "python",
+            "host",
+            "baseline"
+          ],
+          "id": "I14-06",
+          "status": "PASS"
+        },
+        {
+          "evidence_refs": [
+            "python",
+            "editor",
+            "projection",
+            "host",
+            "chromium",
+            "baseline",
+            "syntax",
+            "rebuild",
+            "native-sequence",
+            "native-merge"
+          ],
+          "id": "I14-07",
+          "status": "PASS"
+        },
+        {
+          "evidence_refs": [
+            "source-inspection",
+            "product-ui",
+            "native-session",
+            "native-sequence",
+            "native-merge"
+          ],
+          "id": "I14-08",
+          "status": "PASS"
+        }
+      ],
+      "findings": [
+        {
+          "contract_ids": [
+            "I14-03"
+          ],
+          "evidence_refs": [
+            "source-inspection",
+            "python",
+            "native-session",
+            "native-sequence"
+          ],
+          "id": "I14-03-TOOL-TIMING",
+          "severity": "P1",
+          "status": "CLOSED",
+          "title": "CLOSED (was P1 OPEN in r1): tools/studio/tool_activity.py group_tools plus tools/studio/workbench_sessions.py:298-311 now carry native call_id and timestamps, group by identity, compute duration_seconds and mark missing/conflicting identity unknown. Independently reproduced with `TMPDIR=/tmp python3 -B -I scratch/probe_r2_tool_activity.py`: reversed Codex exec results pair alpha=12s/beta=2s and Claude tool_use u1=10s/u2=2s, missing-id/orphan rows stay unknown; real native/sequence/analyze-visible-history.json shows matched call_id+duration_seconds on final candidate 164a0cd2, and Chromium37 includes ux-tool-activity-pairs-results-and-shows-timing-or-unknown-without-protocol."
+        },
+        {
+          "contract_ids": [
+            "I14-04"
+          ],
+          "evidence_refs": [
+            "source-inspection",
+            "native-merge"
+          ],
+          "id": "I14-04-HANDOFF-ATTEMPT",
+          "severity": "P3",
+          "status": "NOT_REPRODUCED",
+          "title": "NOT_REPRODUCED (preserved r1 P3): tools/studio/workbench_ui/trace_views.jsx:40 still groups handoff events by [edge,activation,node,iteration_path] without attempt, so a retried transfer would collapse to the last event; tools/studio/workbench_scheduler.py always writes attempt=1 for every activation, so no user-visible retry-collapse was demonstrated."
+        }
+      ],
+      "requested_model": "deepseek-flash[1m]",
+      "reported_model": "deepseek-flash[1m]",
+      "requested_effort": "high",
+      "physical_backend": "unknown",
+      "effective_effort": "unknown",
+      "sandbox_counts": {
+        "tests": 473,
+        "passed": 470,
+        "failures": 3,
+        "errors": 0,
+        "skipped": 0,
+        "reason": "nested user namespaces unavailable; host suite473/473 passed"
+      }
+    }
+  },
+  "fixed_gate": {
+    "run_id": "7e6325c995dc44ac959596695a13a041",
+    "round": 2,
+    "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+    "git_tree": "1797893a1eca77744c59e6b4e86e96c275f689e3",
+    "acceptance_sha256": "cf63c4ee5ef1ecf4a3682cafffa958d90935a6909ace04e9604897ae950ffa85",
+    "raw_verdict": "ACCEPT",
+    "raw_report_sha256": "e6e5a31552e273174e32e463429cb410b980976b5d722447dbbfe28ac875d6e3",
+    "fixed_gate_sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+    "supervisor_sha256": "eae579b28104c1a71091d0cd81ee42aa7c7996b19f167b4aa680c8354e84f37d",
+    "status": "ACCEPT",
+    "user_personal_ux_acceptance": false,
+    "stable_promotion": false,
+    "main_merge_authorized": false
+  },
+  "user_personal_ux": false,
+  "stable_promotion": false,
+  "raw_evidence_local_only": "/home/workspace/DevFlower/archives/devflower-issue14-20261024",
+  "delivery": {
+    "head": "cdc53cd0e04ee1e980b229686725a148bf2f432e",
+    "git_tree": "1797893a1eca77744c59e6b4e86e96c275f689e3",
+    "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+    "explicit_staged_paths": [
+      ".github/workflows/usable.yml",
+      "docs/WORKBENCH.md",
+      "tests/test_workbench_product.py",
+      "tests/workbench_browser.cjs",
+      "tools/studio/static/workbench.css",
+      "tools/studio/static/workbench.js",
+      "tools/studio/workbench_sessions.py",
+      "tools/studio/workbench_ui/NativeTerminal.jsx",
+      "tools/studio/workbench_ui/index.jsx",
+      "tools/studio/workbench_ui/trace_views.jsx",
+      "tests/test_workbench_tool_activity.py",
+      "tests/workbench_projection.test.mjs",
+      "tools/studio/tool_activity.py",
+      "tools/studio/workbench_ui/HandoffEdge.jsx",
+      "tools/studio/workbench_ui/RuntimeOverview.jsx",
+      "tools/studio/workbench_ui/SessionList.jsx",
+      "tools/studio/workbench_ui/ToolActivity.jsx",
+      "tools/studio/workbench_ui/polish.css",
+      "tools/studio/workbench_ui/runtime_projection.mjs"
+    ],
+    "review": "r2",
+    "gate": "ACCEPT",
+    "pushed": true,
+    "remote_head": "cdc53cd0e04ee1e980b229686725a148bf2f432e",
+    "remote_tree": "1797893a1eca77744c59e6b4e86e96c275f689e3",
+    "pr": "https://github.com/Silver-Zhang/DevFlower/pull/15",
+    "pr_draft": true
+  },
+  "gate_process": {
+    "argv": [
+      "python3",
+      "-B",
+      "/home/workspace/DevFlower/archives/devflower-issue14-20261024/helpers/final-gate.py",
+      "--review",
+      "r2",
+      "--round",
+      "2",
+      "--regression",
+      "candidate10"
+    ],
+    "process": {
+      "host": "silver-work-station",
+      "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+      "pid": 2637045,
+      "start": "134988137",
+      "state": "R",
+      "pgid": 2637045,
+      "sid": 2637045
+    },
+    "exit": 0,
+    "seconds": 0.09305286407470703,
+    "log_sha256": "aef4eb05247559c5954d522f5bea431faf87990430b0067aee06f50b53ca946e"
+  },
+  "additional_reviewer_probes": [
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-I",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/reviews/r2/scratch/probe_r2_tool_activity.py"
+      ],
+      "executor": "fixed external host, reviewer-authored script unchanged",
+      "exit": 0,
+      "seconds": 0.06830692384392023,
+      "script_sha256": "8736a34f95c2b85f6ed55905c4e12558c66bbca7013c08b9d22f2b21226520d9",
+      "log_sha256": "1608ec72a865c67d1c3f2d4a78f0a5130935d88a8deb9733bb38d84c21c09a6d"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-I",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/reviews/r2/scratch/probe_r2_edgecases.py"
+      ],
+      "executor": "fixed external host, reviewer-authored script unchanged",
+      "exit": 0,
+      "seconds": 0.07239088113419712,
+      "script_sha256": "db1c905575c69d27cf4849c6355e0b28787b9a229bde2ce6b734fb0b32f509f5",
+      "log_sha256": "62c5a6cbc2add7cfa2cd1eb610bf0ebfc6040d8d558ec0ea0fb3fb60c355f908"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "-I",
+        "/home/workspace/DevFlower/archives/devflower-issue14-20261024/reviews/r2/scratch/probe_r2_residuals.py"
+      ],
+      "executor": "fixed external host, reviewer-authored script unchanged",
+      "exit": 0,
+      "seconds": 0.025104535976424813,
+      "script_sha256": "5e8689d678ba19549a9f3f2e85ae91ff5b34f92dfd470d64e5617cbb9f53b932",
+      "log_sha256": "04e2b858a78066559f149f149480005a2f1ed7ac38d456b814d667e2c04d2e70"
+    }
+  ],
+  "ci": [
+    {
+      "link": "https://github.com/Silver-Zhang/DevFlower/actions/runs/40012668051/job/120616728225",
+      "name": "studio",
+      "state": "SUCCESS",
+      "workflow": "Studio contracts"
+    },
+    {
+      "link": "https://github.com/Silver-Zhang/DevFlower/actions/runs/40012668009/job/120616728987",
+      "name": "contracts",
+      "state": "SUCCESS",
+      "workflow": "Usable regression"
+    },
+    {
+      "link": "https://github.com/Silver-Zhang/DevFlower/actions/runs/40012668009/job/120616728414",
+      "name": "chromium",
+      "state": "SUCCESS",
+      "workflow": "Usable regression"
+    }
+  ],
+  "records_validation": {
+    "normal_check_exit": 0,
+    "baseline_on_records_exit": 1,
+    "baseline_on_records_reason": "baseline intentionally excludes project instances; source baseline exit0 captured separately",
+    "structural_check_is_not_approval": true
+  }
+}
