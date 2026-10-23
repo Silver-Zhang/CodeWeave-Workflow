@@ -1,13 +1,11 @@
-# Issue12 当前开发上下文
+# PR13 最终集成上下文
 
-当前任务tasks/2026-10/20261023_01_issue12-workbench；父UUID1c9b1656e1ed4790b029a41c9883b40d，完整合同a0b13不变。独立development/issue12-workbench，flow/workbench-productization已正常推f57b600、treea0c16fa6/145文件SHA0e654e2a，PR13完整增量包含PR10基础，三项本次CI绿。main 0a24331da65678b86448cc4a51bb2127a38cda32，Stable5816保持原批准身份。
+当前任务tasks/2026-10/20261023_02_pr13-final-integration，UUIDe1163488edb5409e896c07342268cc2e，合同2031ffa9，新预算3轮。旧Issue12任务1c9b预算结束/原始R5矛盾ACCEPT及GateBLOCKED永不改写。独立worktree development/pr13-final-integration/flow/pr13-final-integration；PR13仍使用flow/workbench-productization，源f57b600/treea0c16fa6/完整145文件0e654e2a，没有新产品代码改动。
 
-459Python/6host/129Chromium HTTP/6editor、Baseline/6syntax/字节一致重建全0。19完成真实回合+2取消启动单列，1取消Codex UUID未返回unknown；实际PTY就绪/防双写/非空进程集合停止并保留历史，真实HTTP重启同run不重放。历史HEAD1941/content0e的预提交记录不重标记。
+当前新任务当前原始复审裁决 ACCEPT；最终固定Gate ACCEPT；PR13 已普通Merge Commit合并。 新R1独立BLOCKED已确认时序解释和K，缺口为新实测/实际guard/executor/验证ID/历史，均已补齐交最终复审。新鲜459Python/6隔离/129ChromiumHTTP/6editor、Baseline/6语法/字节构建全0；19完成真实回合+3取消启动、2就绪PTY/OS身份/锁/停止/历史、UI实际暂停刷新恢复与停止均记录。产品UI是Agent操作，不是用户本人批准。
 
-R1 BLOCKED，R2/R3 NEEDS_CORRECTION，R4源合同硬ACCEPT，实际旧源Gate ACCEPT；正常push/远端HEAD-tree-PR读回后，第5轮完整父合同ACCEPT，父Gate BLOCKED。第5轮原始最终裁决 **ACCEPT**，旧可信完整父Gate **BLOCKED**。未达到技术合并条件，保留Draft，不合并main。 原报告K与I12-09为PASS，却同时保留I12-10 BLOCKED/F-GATE P1 OPEN，形成矛盾ACCEPT；旧Gate实际退出2，原因required contracts not independently passed。五轮预算已用尽，不改写报告、不排除必需合同、不追加第六轮。 最多5轮，不续开第6轮，不改旧预算/原始报告。当前源码未再变，最新快照r4-committed、回归r4-committed、完整证据evidence-r5。原始档案archives/devflower-issue12-20261023。
+外部helpers/final_gate.py/invoke-final-gate.py和merge_guard.py（在本机当前任务档案）固定调用未改Stable gate12f0b6aa，完整原始旧R2-R5+新报告历史，17验证ID包含gate-interface42断言和product-ui12操作检查。真Gate未运行前不取得合并许可；独立报告所有必需PASS且必需finding CLOSED、Git/CI/身份精确、K和UX通过后才普通Merge Commit PR13。PR10源9399476为PR13祖先，不合并旧候选代替，合并后读GitHub真实状态。
 
-真实Studio原生开发01a1669f/run2dae修复原子插入；固定旧Stable CLI原生开发01a1672d修复测量竞态，不是Studio。当前可写Studio01a1677c/run d86118c在独立完整f57副本15项实际产品测试+Baseline全0，源前后0e不变。R3错误旧汇总保留历史，当前manifest/完整回归/HEAD均f57。
+新Claude明确SIDa4f6b9b3-fde1-4f97-8d49-53860702e8fb、持久HOME archives/devflower-pr13-final-integration-20261023/runtime/r1-diagnostic、cwd工作区；请求deepseek-flash[1m]/high，resolved/backend unknown。Code6.1-sol/xhigh，当前Studio01a1684c真实15测试+Baseline；实现报告仅开发完成说明，不独立自批。复审不--last、不混旧HOME/会话，不覆盖全局认证。
 
-Claude明确SID1d899e35-836e-49fb-a618-c8a9762af1a0，持久HOME archives/.../runtime/source-r1、cwd工作空间；请求deepseek-flash[1m]/high，物理后端/生效effort unknown。Code6.1-sol/xhigh。会话恢复须原HOME/cwd/UUID/只读settings挂载/同session.lock，不能--last或并发写。
-
-推荐.local/open-issue12-workbench.py，原open-stable.py均实际核验。当前external_steps为空，verify/delivery fail closed，固定外部监督用于Controller自身研发，不冒充新Controller自动批准。未验证Copilot/删除/Skills不启用；不删除原生HOME/会话/证据，不改CodeWeave/RMC，不擅自晋升Stable。
+当前main e35dec13825ecbce39ae4092c3d94a059bc732b8/tree a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5；原Stable5816不替换/不批准新Stable。新推荐.local/open-pr13-workbench.py（33385）实际核验；原open-stable.py保留。桥external_steps为空fail closed，本轮外部自举；私有scratch文件不扩大下游访问权限。原始证据仅当前本机archives，云端摘要在当前任务目录；无reset/clean/force/删除历史/CodeWeave或RMC改动。

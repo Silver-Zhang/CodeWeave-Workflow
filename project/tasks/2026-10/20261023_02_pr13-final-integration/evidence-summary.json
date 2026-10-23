@@ -1,0 +1,264 @@
+{
+  "task_id": "e1163488edb5409e896c07342268cc2e",
+  "old_task_id": "1c9b1656e1ed4790b029a41c9883b40d",
+  "new_budget": 3,
+  "contract_sha256": "2031ffa9e68ea775accee7a1a954c57724830d104c7756fb1426f716895c49e5",
+  "source_head": "f57b600f3811a75e80590586d03686fb0fd1fe8e",
+  "git_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5",
+  "candidate_sha256": "0e654e2a9a8e34a89b84a56dd8cf815762a17c38c9a7aecbfcf8d02ac355752b",
+  "files": 145,
+  "reviews": [
+    {
+      "name": "r1-diagnostic",
+      "completed": true,
+      "raw_verdict": "BLOCKED",
+      "report_sha256": "47bf197c38786814c434af4fd72b9906190d16adadd2e02f4c1a018356640f5a",
+      "session_id": "a4f6b9b3-fde1-4f97-8d49-53860702e8fb",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr13-final-integration-20261023/runtime/r1-diagnostic",
+      "cwd": "/home/workspace/DevFlower",
+      "requested_model": "deepseek-flash[1m]",
+      "requested_effort": "high",
+      "reported_model": "deepseek-flash[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "exit": 0
+    },
+    {
+      "name": "r2-final",
+      "completed": true,
+      "raw_verdict": "ACCEPT",
+      "report_sha256": "903f20d6db820d558e55abce5d1688bf863876776fbab7a43429ed849fa4ad13",
+      "session_id": "a4f6b9b3-fde1-4f97-8d49-53860702e8fb",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr13-final-integration-20261023/runtime/r1-diagnostic",
+      "cwd": "/home/workspace/DevFlower",
+      "requested_model": "deepseek-flash[1m]",
+      "requested_effort": "high",
+      "reported_model": "deepseek-flash[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "exit": 0
+    }
+  ],
+  "old_original_report_unmodified": true,
+  "gate": {
+    "scope": "parent",
+    "run_id": "e1163488edb5409e896c07342268cc2e",
+    "round": 2,
+    "candidate_sha256": "0e654e2a9a8e34a89b84a56dd8cf815762a17c38c9a7aecbfcf8d02ac355752b",
+    "git_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5",
+    "acceptance_sha256": "2031ffa9e68ea775accee7a1a954c57724830d104c7756fb1426f716895c49e5",
+    "raw_verdict": "ACCEPT",
+    "raw_report_sha256": "903f20d6db820d558e55abce5d1688bf863876776fbab7a43429ed849fa4ad13",
+    "stable_gate_sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+    "supervisor_sha256": "93352fae7cd1ea97a629e543f1d2b12497ce7677b440a88548a7716e419e4199",
+    "parent_ready": true,
+    "stable_promotion": false,
+    "status": "ACCEPT",
+    "gate_process_exit": 0
+  },
+  "merged": true,
+  "main_head": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+  "main_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5",
+  "states": {
+    "source_inspection": "ACCEPT",
+    "machine_verifiers": "PASS",
+    "independent_review": "ACCEPT",
+    "final_gate": "ACCEPT",
+    "agent_product_operation": "PASS",
+    "user_personal_acceptance": "NOT_PERFORMED",
+    "new_stable_approval": "NOT_GRANTED"
+  },
+  "fresh_tests": {
+    "python": 459,
+    "host_isolation": 6,
+    "chromium_http": 129,
+    "editor": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "exit": 0,
+    "baseline_exit": 0,
+    "syntax_commands": 6,
+    "byte_identical_rebuild": true
+  },
+  "fresh_native": {
+    "completed_protocol_turns": 19,
+    "cancelled_api_starts": 2,
+    "cancelled_canvas_start": 1,
+    "additional_exact_session_implementation_report": 1,
+    "models": {
+      "codex": "gpt-6.1-sol/xhigh",
+      "claude": "deepseek-flash[1m]/high"
+    },
+    "resolved_backend_and_effort": "unknown"
+  },
+  "product_ui": {
+    "candidate_sha256": "0e654e2a9a8e34a89b84a56dd8cf815762a17c38c9a7aecbfcf8d02ac355752b",
+    "operator": "local Agent, not user personal acceptance",
+    "checks": {
+      "directory_picker_workspace_path_environment": true,
+      "named_session_history_grouping": true,
+      "nearby_actual_provider_model_effort_mode_three_prompts": true,
+      "actual_two_agent_sequence_nonzero_tests": true,
+      "edge_real_content_and_downstream_sent_request": true,
+      "parallel_condition_loop_real": true,
+      "same_native_terminals_locks_and_stop": true,
+      "pause_resume_refresh_no_replay": true,
+      "actual_canvas_stop": true,
+      "persisted_real_node_events": true,
+      "full_canvas_edit_negative_browser_suite": true,
+      "source_unchanged": true
+    },
+    "passed": true,
+    "ui_sequence": "a95825340f8cdd7045f695c1df798fea",
+    "ui_stop": "28d186141e223c4bfb8ecbb95d7a3450",
+    "base_url": "http://127.0.0.1:33385",
+    "source_version": "f57b600/a0c16fa6",
+    "limits": [
+      "Scratch artifacts are outside downstream authorized paths, accurately shown inaccessible; raw logs separately supplied to the external independent reviewer, no permission escalation.",
+      "Physical model backend/effective effort unknown; raw requested parameters and session IDs retained.",
+      "External verification/delivery bridge remains unconfigured and fails closed; fixed external supervisor is used for this Controller own acceptance."
+    ]
+  },
+  "stable_unchanged": true,
+  "stable_candidate_approved": false,
+  "main_integration": {
+    "main_head": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+    "git_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5",
+    "candidate_sha256": "0e654e2a9a8e34a89b84a56dd8cf815762a17c38c9a7aecbfcf8d02ac355752b",
+    "source_unchanged": true,
+    "passed": true
+  },
+  "main_integration_results": {
+    "python": {
+      "argv": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-v"
+      ],
+      "exit": 0,
+      "seconds": 121.416,
+      "counts": {
+        "tests": 459,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "host": {
+      "argv": [
+        "python3",
+        "-B",
+        "tests/host_isolation.py"
+      ],
+      "exit": 0,
+      "seconds": 0.965,
+      "counts": {
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "baseline": {
+      "argv": [
+        "python3",
+        "-B",
+        "tools/devflower.py",
+        "check",
+        "--baseline"
+      ],
+      "exit": 0,
+      "seconds": 0.032,
+      "counts": {
+        "tests": null,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "editor": {
+      "argv": [
+        "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+        "--test",
+        "tests/workbench_editor.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.064,
+      "counts": {
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "syntax-app": {
+      "argv": [
+        "node",
+        "--check",
+        "tools/studio/static/app.js"
+      ],
+      "exit": 0,
+      "seconds": 0.064,
+      "counts": {
+        "tests": null,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "syntax-workbench": {
+      "argv": [
+        "node",
+        "--input-type=module",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.104,
+      "counts": {
+        "tests": null,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "main_ci": [
+    {
+      "name": "contracts",
+      "head": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "chromium",
+      "head": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "merge_readback": {
+    "merged": true,
+    "pr_url": "https://github.com/Silver-Zhang/DevFlower/pull/13",
+    "main_head": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+    "main_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5",
+    "source_head": "f57b600f3811a75e80590586d03686fb0fd1fe8e",
+    "candidate_sha256": "0e654e2a9a8e34a89b84a56dd8cf815762a17c38c9a7aecbfcf8d02ac355752b",
+    "merge_method": "merge",
+    "parents": [
+      "0a24331da65678b86448cc4a51bb2127a38cda32",
+      "f57b600f3811a75e80590586d03686fb0fd1fe8e"
+    ],
+    "pr10_state": "closed",
+    "pr10_merged": true,
+    "pr10_merge_commit": "9399476bd34e188f6d0a334da3a82865560e4b17",
+    "no_separate_pr10_merge_called": true,
+    "stable_promoted": false
+  },
+  "stable_candidate_manifest_sha256": "9a8dd3168872fade4c2f31cef5c160592a0e3f202a7de44d8b6d1fbcd6d9a077"
+}
