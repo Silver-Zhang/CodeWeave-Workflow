@@ -99,6 +99,55 @@ class ProductProjectionTests(unittest.TestCase):
         self.assertEqual(history['summaries'], [{'source': 'provider-public-summary', 'text': 'PUBLIC-SUMMARY'}])
         self.assertNotIn('HIDDEN-', json.dumps(history))
 
+    def test_codex_custom_exec_activity_is_visible_redacted_and_not_protocol_metadata(self):
+        base, rt = fixture(self)
+        path, _ = structured_session(base, rt, 'custom-exec', 'codex')
+        records = [
+            {'type':'custom_tool_call','name':'exec','input':'node --test tests/example.test.mjs',
+             'internal_chat_message_metadata_passthrough':{'hidden':'HIDDEN-METADATA'}},
+            {'type':'custom_tool_call_output','output':json.dumps([
+                {'type':'input_text','text':'11 tests passed; token=private-secret-value'},
+                {'type':'thinking','text':'HIDDEN-TOOL-BLOCK'}]),
+             'internal_chat_message_metadata_passthrough':'HIDDEN-OUTPUT-META'},
+            {'type':'unknown_tool_protocol','input':'HIDDEN-UNKNOWN'},
+            {'type':'reasoning','content':'HIDDEN-REASONING','encrypted_content':'HIDDEN-ENCRYPTED'}]
+        with path.open('a') as stream:
+            for payload in records:stream.write(json.dumps({'type':'response_item','payload':payload})+'\n')
+        rows = rt.session_center.discover(base.project['id'], True)['discovery']['sessions']
+        row = next(r for r in rows if rt.db.get('session-handle', r['handle'])['native']['path'] == str(path))
+        history = WorkbenchSessions(rt).history(base.project['id'], row['handle'])
+        activity = history['activity']
+        self.assertTrue(any(a['name']=='exec' and 'node --test' in a['content'] for a in activity))
+        self.assertTrue(any('11 tests passed' in a['content'] for a in activity))
+        self.assertNotIn('private-secret-value', json.dumps(history))
+        self.assertNotIn('HIDDEN-', json.dumps(history))
+
+    def test_native_tool_ids_pair_reverse_results_and_preserve_public_timing(self):
+        for provider in ('codex','claude'):
+            base, rt = fixture(self)
+            path, _ = structured_session(base, rt, 'timed-'+provider, provider)
+            records=[]
+            for phase,key,second,text in [('call','alpha',0,'alpha-command'),('call','beta',1,'beta-command'),
+                                           ('result','beta',3,'beta-result'),('result','alpha',12,'alpha-result')]:
+                at=f'2026-10-24T00:00:{second:02d}Z'
+                if provider=='codex':
+                    payload=dict(type='custom_tool_call' if phase=='call' else 'custom_tool_call_output',call_id=key)
+                    payload.update(dict(name='exec',input=text) if phase=='call' else dict(output=text))
+                    records.append(dict(type='response_item',timestamp=at,payload=payload))
+                else:
+                    content=dict(type='tool_use',id=key,name='Read',input=text) if phase=='call' else dict(type='tool_result',tool_use_id=key,content=text)
+                    records.append(dict(type='assistant' if phase=='call' else 'user',timestamp=at,message=dict(content=[content])))
+            with path.open('a') as stream:
+                for record in records:stream.write(json.dumps(record)+'\n')
+            rows=rt.session_center.discover(base.project['id'],True)['discovery']['sessions']
+            row=next(r for r in rows if rt.db.get('session-handle',r['handle'])['native']['path']==str(path))
+            activity=WorkbenchSessions(rt).history(base.project['id'],row['handle'])['activity']
+            paired={a['call_id']:a for a in activity if a['call_id'] in ('alpha','beta')}
+            self.assertEqual(paired['alpha']['duration_seconds'],12)
+            self.assertEqual(paired['beta']['duration_seconds'],2)
+            self.assertIn('alpha-result',paired['alpha']['result']);self.assertIn('beta-result',paired['beta']['result'])
+            self.assertTrue(all(a['association']=='matched' for a in paired.values()))
+
 
 class IndependentCounterexampleTests(unittest.TestCase):
     # Derived from the actual Claude source-r1 scripts; host-executed originals
