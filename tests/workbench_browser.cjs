@@ -8,6 +8,20 @@ async function until(fn){for(let i=0;i<100;i++){if(await fn())return;await delay
 async function test(name,fn){const context=await browser.newContext({viewport:{width:952,height:756}}),page=await context.newPage();page.setDefaultTimeout(8000);const errors=[];page.on('pageerror',e=>errors.push(String(e)));try{await page.goto(access.url+'/#'+access.token);await page.getByRole('button',{name:'打开文件夹',exact:true}).waitFor();await fn(page);assert.deepEqual(errors,[]);results.push({name,passed:true});}catch(e){results.push({name,passed:false,error:String(e)});await page.screenshot({path:out+'/'+name+'-failure.png'});}finally{await page.unrouteAll({behavior:'ignoreErrors'});await context.close();fs.writeFileSync(out+'/workbench-results.json',JSON.stringify({evidence_type:'synthetic native data, ordinary Chromium/real HTTP',tests:results.length,failures:results.filter(r=>!r.passed).length,skipped:0,results},null,2));}}
 async function openWorkspace(p){await p.getByRole('button',{name:'打开文件夹',exact:true}).click();await p.getByRole('heading',{name:'打开文件夹',exact:true}).waitFor();await p.getByRole('button',{name:'选择此文件夹',exact:true}).click();await p.getByRole('heading',{name:'打开文件夹',exact:true}).waitFor({state:'hidden'});await until(async()=>!(await p.getByRole('button',{name:'开始运行',exact:true}).isDisabled()));}
 async function example(p,index){await p.getByRole('button',{name:'示例',exact:true}).click();await p.locator('.example-library>button').nth(index).click();}
+async function displayedCanvasEdges(p,graph){
+ const paths=p.locator('.react-flow__edge-path'),nodes=p.locator('.react-flow__node');
+ await until(async()=>await paths.count()===graph.edges.length&&await nodes.count()===graph.nodes.length&&await nodes.evaluateAll(es=>es.every(e=>getComputedStyle(e).visibility==='visible')));
+ const geometry=await paths.evaluateAll(es=>es.map(e=>{const length=e.getTotalLength(),matrix=e.getScreenCTM(),start=e.getPointAtLength(0).matrixTransform(matrix),end=e.getPointAtLength(length).matrixTransform(matrix),style=getComputedStyle(e);return {id:e.closest('[data-id]').dataset.id,length,start:{x:start.x,y:start.y},end:{x:end.x,y:end.y},visible:style.visibility==='visible'&&style.display!=='none'&&style.stroke!=='none'}}));
+ assert.equal(await p.locator('.react-flow__edge-interaction').count(),graph.edges.length,'Every displayed edge must remain interactive');
+ for(const path of geometry){
+  assert(path.visible&&Number.isFinite(path.length)&&path.length>1,'Edge must have visible finite geometry: '+path.id);
+  const edge=graph.edges.find(e=>e.id===path.id);assert(edge,'Unexpected displayed edge: '+path.id);
+  for(const [side,id,type] of [['start',edge.source,'source'],['end',edge.target,'target']]){
+   const handle=await p.locator(`.react-flow__node[data-id="${id}"] .react-flow__handle.${type}`).boundingBox();assert(handle,'Missing displayed handle: '+id);
+   assert(Math.hypot(path[side].x-handle.x-handle.width/2,path[side].y-handle.y-handle.height/2)<12,'Edge endpoint must meet its displayed handle: '+path.id+' '+side);
+  }
+ }
+}
 async function nativeSessions(p){
  await openWorkspace(p);await p.getByLabel('会话分组方式',{exact:true}).selectOption('workflow');
  await p.locator('.session-group-title').first().waitFor();
@@ -40,6 +54,40 @@ await test('loop-permission-preview-includes-nested-agents',async p=>{await open
 await test('frozen-budget-does-not-display-or-edit-draft',async p=>{await openWorkspace(p);await p.locator('.react-flow__node[data-id="analyze"]').click();await p.getByRole('button',{name:'高级',exact:true}).click();await p.getByLabel('运行调用预算',{exact:true}).fill('24');await p.getByLabel('运行时间预算（秒）',{exact:true}).fill('1200');await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>await p.getByLabel('工作流名称',{exact:true}).inputValue()==='运行 A');await p.locator('.react-flow__node[data-id="analyze"]').click();await p.getByRole('button',{name:'高级',exact:true}).click();assert.equal(await p.getByLabel('运行调用预算',{exact:true}).inputValue(),'10');assert.equal(await p.getByLabel('运行时间预算（秒）',{exact:true}).inputValue(),'600');assert(await p.getByLabel('运行调用预算',{exact:true}).isDisabled());assert(await p.getByLabel('运行时间预算（秒）',{exact:true}).isDisabled());await p.getByLabel('历史运行',{exact:true}).selectOption('B');await until(async()=>await p.getByLabel('工作流名称',{exact:true}).inputValue()==='运行 B');await p.locator('.react-flow__node[data-id="analyze"]').click();await p.getByRole('button',{name:'高级',exact:true}).click();assert.equal(await p.getByLabel('运行调用预算',{exact:true}).inputValue(),'12');await p.getByRole('button',{name:'编辑草稿',exact:true}).click();await p.locator('.react-flow__node[data-id="analyze"]').click();await p.getByRole('button',{name:'高级',exact:true}).click();assert.equal(await p.getByLabel('运行调用预算',{exact:true}).inputValue(),'24');assert.equal(await p.getByLabel('运行时间预算（秒）',{exact:true}).inputValue(),'1200');assert(await p.getByLabel('运行调用预算',{exact:true}).isEnabled());});
 await test('slow-poll-eventually-displays-real-snapshot',async p=>{await openWorkspace(p);let responses=0;await p.route('**/api/run?**',async route=>{const response=await route.fetch();await delay(1400);responses++;await route.fulfill({response});});await p.getByLabel('历史运行',{exact:true}).selectOption('A');await delay(4600);const title=await p.getByLabel('工作流名称',{exact:true}).inputValue();assert(responses>=2,'Actual HTTP replies must have returned');assert.equal(title,'运行 A','Slow valid responses must eventually update the selected run');});
 await test('hung-snapshot-becomes-unknown-without-restarting-run',async p=>{await openWorkspace(p);let release;const hold=new Promise(r=>release=r);let held=0;await p.route('**/api/run?**',async route=>{const response=await route.fetch();held++;await hold;await route.fulfill({response});});try{await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>held===1);await delay(3000);assert.equal(held,1,'An outstanding snapshot must not overlap before its deadline');await delay(2600);assert((await p.locator('.activity-tabs').innerText()).includes('状态未确认'));assert(held<=2,'Only a timed-out read may be retried');}finally{release();}});
+await test('canvas-edges-survive-measurement-race-and-view-switches',async p=>{
+ const graph=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('devflower-workbench-view')).graph);
+ await displayedCanvasEdges(p,await graph());await openWorkspace(p);await displayedCanvasEdges(p,await graph());
+ // Deliver an actual native RO batch in an asynchronous save's DOM commit,
+ // before pending passive effects. No fabricated sizes or dependency patches.
+ await p.context().addInitScript(()=>{
+  const schedule=window.canvasMeasurementSchedule={pending:null,armed:false,finished:false};
+  const Native=ResizeObserver;
+  window.ResizeObserver=class extends Native{
+   constructor(callback){super((entries,observer)=>{if(!schedule.finished&&entries.some(e=>e.target.classList.contains('react-flow__node'))){schedule.pending={entries,observer,callback};return;}callback(entries,observer)});}
+   disconnect(){if(schedule.pending?.observer===this)schedule.pending=null;return super.disconnect()}
+  };
+  new MutationObserver(()=>{if(schedule.pending&&schedule.armed&&document.querySelector('.notice')?.textContent.includes('当前改动已保存')){const batch=schedule.pending;schedule.pending=null;schedule.finished=true;batch.callback(batch.entries,batch.observer)}}).observe(document,{childList:true,subtree:true,characterData:true});
+ });
+ await p.reload();await until(async()=>await p.evaluate(()=>!!window.canvasMeasurementSchedule?.pending));
+ const initial=await graph();let release,arrived;const held=new Promise(r=>release=r),seen=new Promise(r=>arrived=r);
+ await p.route('**/api/draft',async route=>{const response=await route.fetch();arrived();await held;await route.fulfill({response})});
+ try{
+  await p.getByRole('button',{name:'保存',exact:true}).click();await seen;await p.evaluate(()=>window.canvasMeasurementSchedule.armed=true);release();
+  await until(async()=>await p.evaluate(()=>window.canvasMeasurementSchedule.finished));await displayedCanvasEdges(p,initial);
+ }finally{release();await p.unroute('**/api/draft')}
+ for(let i=0;i<3;i++){await p.getByLabel('本次任务',{exact:true}).fill('Edge geometry update '+i);await displayedCanvasEdges(p,initial)}
+ await p.getByRole('checkbox',{name:'减少动态效果'}).check();await displayedCanvasEdges(p,initial);
+ for(const id of ['A','B']){
+  const response=await p.request.get(access.url+'/api/run?run='+id+'&after=0',{headers:{Authorization:'Bearer '+access.token}});assert.equal(response.status(),200);const frozen=(await response.json()).run.graph;
+  await p.getByLabel('历史运行',{exact:true}).selectOption(id);await until(async()=>await p.getByLabel('工作流名称',{exact:true}).inputValue()===frozen.name);await displayedCanvasEdges(p,frozen);
+ }
+ await p.getByRole('button',{name:'编辑草稿',exact:true}).click();await displayedCanvasEdges(p,initial);assert.deepEqual(await graph(),initial,'Measurements and run switches must preserve the canonical draft');
+ await p.getByRole('button',{name:'新建会话',exact:true}).click();await p.getByRole('button',{name:'工作流画布',exact:true}).click();await displayedCanvasEdges(p,initial);
+ await example(p,2);const nested=await graph();await displayedCanvasEdges(p,nested);
+ await p.getByRole('button',{name:'编辑循环内流程',exact:true}).click();await displayedCanvasEdges(p,nested.nodes.find(n=>n.kind==='loop').body);
+ await p.getByRole('button',{name:'返回外层',exact:true}).click();await displayedCanvasEdges(p,nested);
+ await example(p,0);await displayedCanvasEdges(p,await graph());
+});
 await test('canvas-nodes-stay-visible-during-unrelated-edits',async p=>{
  await openWorkspace(p);
  const nodes=p.locator('.react-flow__node');await until(async()=>await nodes.count()>0&&(await nodes.evaluateAll(es=>es.every(e=>getComputedStyle(e).visibility==='visible'))));
@@ -219,6 +267,30 @@ await test('existing-chat-keeps-native-profile-and-terminal-hides-second-compose
  await p.getByLabel('此会话执行配置',{exact:true}).waitFor();assert((await p.getByLabel('此会话执行配置',{exact:true}).innerText()).includes('codex'));
  assert.equal(await p.getByLabel('对话执行配置',{exact:true}).count(),0);
  await p.getByRole('button',{name:'原生终端',exact:true}).click();await p.getByRole('button',{name:'打开同一原生会话',exact:true}).waitFor();assert.equal(await p.locator('.chat-composer').count(),0);
+});
+await test('session-refresh-coalesces-identical-pending-requests',async p=>{
+ await openWorkspace(p);await p.locator('.session-main').first().waitFor();
+ let requests=0,release;const hold=new Promise(r=>release=r),pending=[];
+ const handler=route=>{const task=(async()=>{requests++;const response=await route.fetch();await hold;await route.fulfill({response})})();pending.push(task);return task};
+ await p.route('**/api/sessions?**',handler);
+ try{
+  for(let i=0;i<5;i++)await p.getByRole('button',{name:'刷新会话',exact:true}).click();
+  await delay(200);assert.equal(requests,1,'One pending metadata read must serve repeated refresh clicks, without filling HTTP connections');
+ }finally{release();await Promise.all(pending);await p.unroute('**/api/sessions?**',handler)}
+ await p.waitForLoadState('networkidle');
+ let fresh=0;p.on('request',r=>{if(r.url().includes('/api/sessions?'))fresh++});
+ await p.getByRole('button',{name:'刷新会话',exact:true}).click();await until(()=>Promise.resolve(fresh===1));
+});
+await test('native-live-output-does-not-poll-full-session-discovery',async p=>{
+ await openWorkspace(p);await p.locator('.session-main').filter({hasText:'Synthetic dialog-A'}).click();
+ const handle=access.sessions['dialog-A'].handle,id='synthetic-existing-pty';let outputReads=0,discoveryReads=0;
+ const row={id,workspace:access.workspace,handle,provider:'claude',state:'RUNNING',process_alive:true,input_sequence:0,session_id:access.sessions['dialog-A'].session_id};
+ await p.route('**/api/terminals?**',route=>route.fulfill({json:{terminals:[row]}}));
+ await p.route('**/api/terminal/output?**',route=>{outputReads++;return route.fulfill({json:{...row,output:'',next:0,reset:false}})});
+ p.on('request',r=>{if(r.url().includes('/api/sessions?'))discoveryReads++});
+ await p.getByRole('button',{name:'原生终端',exact:true}).click();await p.getByRole('button',{name:'关闭此终端',exact:true}).waitFor();
+ await delay(4400);assert(outputReads>=4,'Actual HTTP output polling must remain live');
+ assert.equal(discoveryReads,0,'An unchanged live PTY must not repeatedly rescan all native histories and starve terminal input');
 });
 await browser.close();console.log(JSON.stringify({tests:results.length,failures:results.filter(r=>!r.passed).length,skipped:0}));process.exitCode=results.some(r=>!r.passed)?1:0;
 })().catch(e=>{console.error(String(e));process.exitCode=1;browser?.close();});

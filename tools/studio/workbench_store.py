@@ -1,5 +1,5 @@
 """Transactional events and immutable run activations, separate from old Controller authority."""
-from contextlib import contextmanager
+from contextlib import contextmanager, closing
 import json
 from pathlib import Path
 import sqlite3
@@ -12,19 +12,23 @@ from .server import Conflict
 class WorkbenchStore:
     def __init__(self, path):
         self.path = Path(path)
-        if self.path.is_symlink() or self.path.exists() and self.path.stat().st_nlink != 1:
-            raise Invalid('运行数据库需要私有常规文件')
-        with self.tx() as db:
+        for p in (self.path, *(Path(str(self.path)+suffix) for suffix in ('-wal','-shm','-journal'))):
+            if p.is_symlink() or p.exists() and (not p.is_file() or p.stat().st_nlink != 1):
+                raise Invalid('运行数据库及日志需要私有常规文件')
+        with closing(sqlite3.connect(self.path, timeout=20)) as db:
+            if db.execute('PRAGMA journal_mode=WAL').fetchone()[0].lower() != 'wal':
+                raise Invalid('运行数据库需要 WAL 读写隔离')
             db.executescript('''CREATE TABLE IF NOT EXISTS records(kind TEXT,id TEXT,data TEXT,PRIMARY KEY(kind,id));
               CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT,run TEXT,data TEXT);
               CREATE TABLE IF NOT EXISTS drafts(id TEXT,revision TEXT,data TEXT,PRIMARY KEY(id,revision));''')
         self.path.chmod(0o600)
 
     @contextmanager
-    def tx(self):
+    def tx(self, *, read=False):
         db = sqlite3.connect(self.path, timeout=20)
         try:
-            db.execute('BEGIN IMMEDIATE')
+            # Polling uses a committed snapshot, never reserves the sole writer.
+            db.execute('BEGIN' if read else 'BEGIN IMMEDIATE')
             yield db
             db.commit()
         except BaseException:
@@ -32,13 +36,13 @@ class WorkbenchStore:
         finally: db.close()
 
     def get(self, kind, key):
-        with self.tx() as db:
+        with self.tx(read=True) as db:
             row = db.execute('SELECT data FROM records WHERE kind=? AND id=?', (kind, key)).fetchone()
         if not row: raise Invalid('找不到此记录，请刷新')
         return json.loads(row[0])
 
     def list(self, kind):
-        with self.tx() as db:
+        with self.tx(read=True) as db:
             rows = db.execute('SELECT data FROM records WHERE kind=? ORDER BY rowid DESC', (kind,)).fetchall()
         return [json.loads(x[0]) for x in rows]
 
@@ -68,7 +72,7 @@ class WorkbenchStore:
         return dict(value, seq=cur.lastrowid)
 
     def events(self, run, after=0):
-        with self.tx() as db:
+        with self.tx(read=True) as db:
             rows = db.execute('SELECT seq,data FROM events WHERE run=? AND seq>? ORDER BY seq LIMIT 1000', (run, after)).fetchall()
         return [dict(json.loads(data), seq=seq) for seq, data in rows]
 

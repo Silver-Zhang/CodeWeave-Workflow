@@ -22,6 +22,10 @@ class Storage:
                 raise Invalid("Studio storage must contain private regular files")
         self.lock = threading.RLock()
         with self.db() as db, db:
+            # History scans must not block a concurrent save/permit commit.
+            # Keep FULL durability; only reader/writer concurrency changes.
+            if db.execute('PRAGMA journal_mode=WAL').fetchone()[0].lower() != 'wal':
+                raise Invalid('Studio storage requires WAL reader/writer isolation')
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS objects(kind TEXT,id TEXT,data TEXT,PRIMARY KEY(kind,id));
                 CREATE TABLE IF NOT EXISTS revisions(id TEXT,revision TEXT,data TEXT,at REAL,PRIMARY KEY(id,revision));

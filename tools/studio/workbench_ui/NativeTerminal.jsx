@@ -48,7 +48,7 @@ export function NativeTerminal({api,workspace,session,onChanged}) {
   // Clear the prior scope before paint, including on a same-session reconnect.
   useLayoutEffect(()=>{attach()},[scope]);
   useEffect(()=>{
-    if(!row||current.current?.id!==row.id)return;const id=row.id,epoch=version.current;let live=true,busy=false,timer,lastNotify=0;
+    if(!row||current.current?.id!==row.id)return;const id=row.id,epoch=version.current;let live=true,busy=false,timer;
     const tick=async()=>{
       if(busy||!live||epoch!==version.current||current.current?.id!==id)return;busy=true;
       try{
@@ -57,7 +57,8 @@ export function NativeTerminal({api,workspace,session,onChanged}) {
         if(value.reset)terminal.current?.reset();if(value.output)terminal.current?.write(value.output);cursor.current=value.next;
         current.current=value;setRow(value);
         const running=value.state==='RUNNING'&&value.process_alive;
-        if(running&&Date.now()-lastNotify>2000){lastNotify=Date.now();onChanged?.();}
+        // Output stays live without rescanning every native history. The sidebar
+        // refreshes on explicit actions and actual lifecycle transitions.
         if(!uncertain.current){setConnected(running);if(terminal.current)terminal.current.options.disableStdin=!running;}
         if(!running&&['COMPLETED','FAILED','CANCELLED','RECOVERY_REQUIRED'].includes(value.state)){clearInterval(timer);onChanged?.();}
       }catch(e){if(live&&epoch===version.current){setConnected(false);uncertain.current=true;if(terminal.current)terminal.current.options.disableStdin=true;setError('终端连接未确认，未自动重发输入：'+e.message)}}

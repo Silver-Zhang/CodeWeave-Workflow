@@ -31,7 +31,7 @@
 
 高级部署入口是 `tools/devflower_workbench.py`，明确传入 operator、policy 及完整候选哈希。策略中的模型来自原生发现或有来源标注的显式登记；模型和 effort 沿用用户批准配置。源码变化需生成新的 Development 快照与配置 pin，不能覆盖运行中的 Stable。
 
-部署 Stable 桥接时，将适配器副本和私有配置放在 Development 之外。配置固定现用 Stable 的批准记录及哈希与私有授权目录。固定外部监督在实际启动后写入每个 run 的独立授权，绑定控制目录、已有 Stable run，以及工作台的 run/source/candidate/graph/authorization 身份。外部 payload、逐 run 授权的 `binding` 与回执均必须包含 `acceptance_sha256`：对本次冻结任务卡的原始 UTF-8 字节计算 SHA256，保留换行及首尾空格，并与原 Stable run 的 `acceptance_sha256` 完全相同；旧授权缺此字段或任一身份不匹配均拒绝。桥接仅等待并读取，不创建授权。GitHub 客户端配置只由外部执行器读取。使用 `python -I -B <固定副本> --config <私有配置> --config-sha256 <哈希> --kind verify`（或 `delivery`），在策略中固定解释器、脚本、配置及全部导入目录的哈希和最小挂载范围，私有运行数据作为单独挂载。没有外部授权绑定的研发运行不能通过此桥接交付；本轮 DevFlower 自身交付仍由固定外部监督重新检查，不由新 Controller 自批。
+部署 Stable 桥接时，将适配器副本和私有配置放在 Development 之外。配置固定现用 Stable 的批准记录及哈希与私有授权目录。固定外部监督在实际启动后写入每个 run 的独立授权，绑定控制目录、已有 Stable run，以及工作台的 run/source/candidate/graph/authorization 身份。外部 payload、逐 run 授权的 `binding` 与回执均必须包含 `acceptance_sha256`：对本次冻结任务卡的原始 UTF-8 字节计算 SHA256，保留换行及首尾空格，并与原 Stable run 的 `acceptance_sha256` 完全相同；旧授权缺此字段或任一身份不匹配均拒绝。桥接仅等待并读取，不创建授权。GitHub 客户端配置只由外部执行器读取。外部节点的参数协议仅支持固定哈希的绝对输入路径，以及解释器入口前的有限启动选项；不接受相对参数、`env` 的程序名查找、任意选项或字面配置。原桥接 CLI 本身仍接受 `--config` 等选项，但不要直接把这类参数写进工作台策略：应部署固定启动脚本，在脚本内绑定私有配置路径、配置哈希和 verify/delivery 类型，再以 `python -I -B <固定启动脚本绝对路径>` 调用。策略同时固定解释器、启动脚本、桥接脚本、配置及全部导入目录的哈希和最小挂载范围，私有运行数据作为单独挂载。旧的宽泛 argv 配置将拒绝执行，需先由部署者检查并改为固定启动器，不能静默降级。没有外部授权绑定的研发运行不能通过此桥接交付；本轮 DevFlower 自身交付仍由固定外部监督重新检查，不由新 Controller 自批。
 
 前端重建：进入 `tools/studio/workbench_ui`，执行 `npm ci` 和 `npm run build`；也可将 `DEVFLOWER_UI_DEPS` 指向外部依赖缓存再执行 `build.mjs`，避免把 node_modules 放入源码候选。精确版本见 package-lock.json，许可证见同目录 THIRD_PARTY_LICENSES.txt。
 

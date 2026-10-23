@@ -1,6 +1,6 @@
 import React,{useState,useEffect,useRef,useCallback} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ReactFlow,Background,Controls,MiniMap,Handle,Position,MarkerType,applyNodeChanges,applyEdgeChanges,addEdge,SelectionMode} from '@xyflow/react';
+import {ReactFlow,Background,Controls,MiniMap,Handle,Position,MarkerType,applyNodeChanges,applyEdgeChanges,addEdge,SelectionMode,useStore,useUpdateNodeInternals} from '@xyflow/react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {FolderOpen,Play,Pause,Square,Plus,Search,MessageSquare,Workflow,ChevronRight,ChevronLeft,ChevronDown,X,Settings2,Pin,Save,RefreshCw,Archive,Trash2,ArrowUpRight,Check,AlertCircle,GitBranch,GitMerge,Repeat2,UserCheck,CheckCheck,Flag,Terminal,Send,MoreHorizontal,Flower2,PanelBottom,FileCheck2,PackageCheck} from 'lucide-react';
@@ -58,7 +58,17 @@ function retainCanvasMeasurements(previous,nodes,changes=[]){
  }
  return next.size===previous.size&&[...next].every(([id,value])=>previous.get(id)===value)?previous:next;
 }
-function MeasuredCanvas({nodes,onNodesChange,...props}){
+function CanvasHandleMeasurements(){
+ const updateNodeInternals=useUpdateNodeInternals();
+ // A pending controlled update can clear handle bounds between DOM measurement
+ // and the dimensions callback's render. Same-size nodes need no new RO event.
+ const missing=useStore(s=>JSON.stringify([...s.nodeLookup.values()].filter(n=>
+  !n.hidden&&n.measured.width>0&&n.measured.height>0&&!n.internals.handleBounds
+ ).map(n=>n.id)));
+ useEffect(()=>{const ids=JSON.parse(missing);if(ids.length)updateNodeInternals(ids)},[missing,updateNodeInternals]);
+ return null;
+}
+function MeasuredCanvas({nodes,onNodesChange,children,...props}){
  // Measurements belong to this mounted canvas, never the canonical graph.
  const [measurements,setMeasurements]=useState(()=>new Map());
  useEffect(()=>{setMeasurements(old=>retainCanvasMeasurements(old,nodes))},[nodes]);
@@ -66,7 +76,7 @@ function MeasuredCanvas({nodes,onNodesChange,...props}){
  return <ReactFlow {...props} nodes={measuredNodes} onNodesChange={changes=>{
   setMeasurements(old=>retainCanvasMeasurements(old,nodes,changes));
   onNodesChange(changes);
- }}/>;
+ }}><CanvasHandleMeasurements/>{children}</ReactFlow>;
 }
 
 function App(){
@@ -81,7 +91,7 @@ function App(){
  const [lifecycle,setLifecycle]=useState(null),[rename,setRename]=useState(''),[lifeAnswer,setLifeAnswer]=useState(''),[reduce,setReduce]=useState(matchMedia('(prefers-reduced-motion: reduce)').matches);
  const [selection,setSelection]=useState([]),[editVersion,setEditVersion]=useState(0),[panMode,setPanMode]=useState('select'),[minimap,setMinimap]=useState(true),[sessionGroup,setSessionGroup]=useState('provider');
  const editHistory=useRef({past:[],future:[]}),clipboard=useRef(null),savedGraph=useRef(null);
- const generation=useRef(0),graphRef=useRef(null),workspaceRef=useRef(null),currentRun=useRef(null),pollVersion=useRef(0),lastSequence=useRef(0),dragged=useRef(0),loadingHistory=useRef({}),savePending=useRef(false),canvasRef=useRef(null),sessionsVersion=useRef(0),loaded=useRef(false),restoreChat=useRef(null);
+ const generation=useRef(0),graphRef=useRef(null),workspaceRef=useRef(null),currentRun=useRef(null),pollVersion=useRef(0),lastSequence=useRef(0),dragged=useRef(0),loadingHistory=useRef({}),savePending=useRef(false),canvasRef=useRef(null),sessionsVersion=useRef(0),sessionsPending=useRef(null),sessionFilters=useRef(null),previousFilters=useRef(JSON.stringify([sessionView,search])),loaded=useRef(false),restoreChat=useRef(null);
  const guard=async fn=>{try{setError('');await fn()}catch(e){setError(e.message);if(e.node){const parts=e.node.split('/');setLoopPath(parts.slice(0,-1));setViewMode('draft');setSelected(parts.at(-1));setPinned(true);setTab('canvas')}}};
  const rememberGraph=()=>{if(graphRef.current){editHistory.current.past.push(clone(graphRef.current));editHistory.current.past=editHistory.current.past.slice(-80);editHistory.current.future=[];setEditVersion(v=>v+1)}};
  const changeGraph=useCallback((updater,record=true)=>{const before=graphRef.current;if(!before)return;const next=typeof updater==='function'?updater(clone(before)):clone(updater);if(JSON.stringify(next)===JSON.stringify(before))return;if(record){editHistory.current.past.push(clone(before));editHistory.current.past=editHistory.current.past.slice(-80);editHistory.current.future=[];}graphRef.current=next;setGraph(next);setDirty(JSON.stringify(next)!==JSON.stringify(savedGraph.current));setEditVersion(v=>v+1)},[]);
@@ -103,8 +113,25 @@ setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
  useEffect(()=>{const connect=()=>{if(!location.hash)return;guard(async()=>{accessToken=location.hash.slice(1);await api('/api/connect',{});localStorage.setItem(ACCESS_KEY,accessToken);historyReplace();const s=await api('/api/status');hydrate(s)})};window.addEventListener('hashchange',connect);return()=>window.removeEventListener('hashchange',connect)},[]);
  useEffect(()=>{if(loaded.current&&graph)localStorage.setItem('devflower-workbench-view',JSON.stringify({graph,draft,dirty,workspace:workspace?.id,run,task,chat:restoreChat.current||(chats.some(c=>c.handle===tab)?tab:null),sessionView}))},[graph,draft,dirty,workspace,run,task,tab,sessionView]);
  useEffect(()=>{document.documentElement.dataset.reduce=reduce?'true':'false'},[reduce]);
- const refreshSessions=useCallback(async()=>{const w=workspaceRef.current;if(!w)return;const id=w.id;const version=++sessionsVersion.current;const r=await api(`/api/sessions?workspace=${id}&view=${sessionView}&query=${encodeURIComponent(search)}`);if(workspaceRef.current?.id===id&&version===sessionsVersion.current){setSessions(r.sessions);setChats(old=>old.map(c=>({...c,...(r.sessions.find(s=>s.handle===c.handle)||{})})));const restored=r.sessions.find(s=>s.handle===restoreChat.current);if(restored){restoreChat.current=null;await openChat(restored)}}return r.sessions},[sessionView,search]);
+ // Native output/events may request a refresh together. One pending read for
+ // the same filters serves them all; old callbacks always use current intent.
+ sessionFilters.current={view:sessionView,query:search};
+ const refreshSessions=useCallback(async()=>{
+  const w=workspaceRef.current;if(!w)return;const id=w.id,{view,query}=sessionFilters.current;
+  const key=JSON.stringify([id,view,query]);if(sessionsPending.current?.key===key)return sessionsPending.current.promise;
+  const version=++sessionsVersion.current;
+  const current=()=>version===sessionsVersion.current&&key===JSON.stringify([workspaceRef.current?.id,sessionFilters.current.view,sessionFilters.current.query]);
+  const promise=(async()=>{
+   try{
+    const r=await api(`/api/sessions?workspace=${id}&view=${view}&query=${encodeURIComponent(query)}`);
+    if(current()){setSessions(r.sessions);setChats(old=>old.map(c=>({...c,...(r.sessions.find(s=>s.handle===c.handle)||{})})));const restored=r.sessions.find(s=>s.handle===restoreChat.current);if(restored){restoreChat.current=null;await openChat(restored)}}return r.sessions;
+   }catch(e){if(current())throw e;return []}
+  })();
+  sessionsPending.current={key,promise};
+  try{return await promise}finally{if(sessionsPending.current?.promise===promise)sessionsPending.current=null}
+ },[]);
  useEffect(()=>{guard(refreshSessions)},[workspace,refreshSessions]);
+ useEffect(()=>{const key=JSON.stringify([sessionView,search]);if(previousFilters.current===key)return;previousFilters.current=key;const timer=setTimeout(()=>guard(refreshSessions),160);return()=>clearTimeout(timer)},[search,sessionView,refreshSessions]);
  useEffect(()=>{if(!run)return;const id=run;currentRun.current=id;lastSequence.current=0;setEvents([]);let active=true,inFlight=false,controller;
   async function poll(){if(!active||inFlight)return;inFlight=true;controller=new AbortController();const version=++pollVersion.current;const timeout=setTimeout(()=>controller.abort(),5000);
    try{const r=await api(`/api/run?run=${id}&after=${lastSequence.current}`,undefined,controller.signal);if(!active||currentRun.current!==id||version!==pollVersion.current)return;setSnapshot(r);setConnection('connected');if(r.events.length){lastSequence.current=r.events.at(-1).seq;setEvents(old=>[...old,...r.events].slice(-1000))}}

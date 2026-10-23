@@ -16,24 +16,39 @@ def validate_profile(profile,check_bytes=True):
     executable=clean_path(argv[0]);deps=profile.get('dependencies',{});trees=profile.get('dependency_trees',{})
     if not isinstance(deps,dict) or not isinstance(trees,dict) or deps.get(executable)!=profile.get('executable_sha256') or not deps.get(executable):
         raise Blocked('外部执行器需要固定程序及依赖哈希')
-    # Pin interpreted entrypoints as well as the interpreter. Relative scripts
-    # or module lookup can otherwise execute code from a writable workspace.
+    # This is a deliberately small argv protocol, not a filename heuristic.
+    # env, renamed interpreters and wrappers can all interpret extensionless
+    # operands as files relative to the writable project cwd. Therefore EVERY
+    # operand must be an absolute pinned input, regardless of executable name.
+    # Only known interpreter startup switches before the pinned entrypoint are
+    # accepted. Adapter configuration/literal options belong in its pinned
+    # launcher, not in untyped argv operands.
     interpreter = Path(executable).name.lower()
-    if re.fullmatch(r'(?:python(?:\d+(?:\.\d+)*)?|node(?:js)?|bash|sh|dash)', interpreter):
-        options = {'-I','-B','-u','-s','-S','-E','-O','-OO','-q','--no-warnings','--'}
-        entrypoint = next((arg for arg in argv[1:] if arg not in options), None)
-        if not entrypoint or not Path(entrypoint).is_absolute() or not deps.get(entrypoint):
-            raise Blocked('解释器入口必须是固定哈希的绝对脚本路径，不支持相对脚本、模块或内联代码')
-    # Interpreter alone does not pin the Python script, configuration or imported code.
+    if re.fullmatch(r'python(?:\d+(?:\.\d+)*)?', interpreter):
+        options = {'-I','-B','-u','-s','-S','-E','-O','-OO','-q','--'}
+    elif interpreter in ('node','nodejs'):
+        options = {'--no-warnings','--'}
+    elif interpreter in ('bash','sh','dash'):
+        options = {'--'}
+    else:
+        options = set()
+    entrypoint = False
+    options_closed = False
     for arg in argv[1:]:
-        value = arg.split('=', 1)[1] if arg.startswith('-') and '=' in arg else arg
-        if value.startswith('/'):
-            if Path(value).is_dir():
-                if value not in trees:raise Blocked('外部目录参数没有固定树哈希')
-            elif value not in deps:raise Blocked('外部脚本/配置没有固定哈希')
-        elif not value.startswith('-') and ('/' in value or Path(value).suffix.lower() in
-                {'.py','.pyc','.js','.mjs','.cjs','.sh','.json','.yaml','.yml','.toml','.ini'}):
-            raise Blocked('外部脚本与配置参数不能使用相对路径')
+        if not entrypoint and not options_closed and arg in options:
+            if arg == '--':options_closed = True
+            continue
+        if not Path(arg).is_absolute():
+            raise Blocked('外部参数仅支持固定哈希的绝对输入路径；字面配置须放入固定启动器')
+        clean_path(arg)
+        if Path(arg).is_dir():
+            if arg not in trees:raise Blocked('外部目录参数没有固定树哈希')
+        elif arg not in deps:raise Blocked('外部脚本/配置没有固定哈希')
+        if options and not entrypoint and arg not in deps:
+            raise Blocked('解释器入口必须是固定哈希的绝对脚本文件')
+        entrypoint = True
+    if options and not entrypoint:
+        raise Blocked('解释器入口必须是固定哈希的绝对脚本文件')
     for field in ('read_paths','write_paths'):
         if not isinstance(profile.get(field,[]),list):raise Blocked('外部挂载需要路径数组')
         for path in profile.get(field,[]):

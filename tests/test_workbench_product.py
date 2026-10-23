@@ -4,6 +4,8 @@ import json
 import tempfile
 import time
 import sys
+import sqlite3
+from contextlib import closing
 import unittest
 from unittest.mock import patch
 from pathlib import Path
@@ -21,6 +23,36 @@ from studio.workbench_scheduler import Scheduler
 from studio.workbench_scheduler import source_lease
 from orchestration.store import lease
 from studio.server import Conflict
+from studio.usable_store import Storage
+
+
+class StorageContentionTests(unittest.TestCase):
+    def test_history_snapshot_does_not_block_a_save_commit(self):
+        with tempfile.TemporaryDirectory() as folder:
+            store=Storage(folder);store.put('session','one',{'version':1})
+            with closing(sqlite3.connect(store.path)) as reader:
+                reader.execute('BEGIN')
+                before=reader.execute('SELECT data FROM objects').fetchall()
+                # No busy wait can hide a reader/writer lock regression.
+                with patch.object(store,'db',side_effect=lambda:closing(sqlite3.connect(store.path,timeout=0))):
+                    store.put('session','one',{'version':2})
+                self.assertEqual(reader.execute('SELECT data FROM objects').fetchall(),before)
+                self.assertEqual(store.get('session','one'),{'version':2})
+                reader.rollback()
+
+    def test_monitor_reads_committed_state_without_taking_event_writer_lock(self):
+        connect=sqlite3.connect
+        with tempfile.TemporaryDirectory() as folder:
+            store=WorkbenchStore(Path(folder)/'flow.sqlite');store.put('run','one',{'version':1})
+            with store.tx() as writer:
+                writer.execute("UPDATE records SET data=? WHERE kind='run' AND id='one'",('{"version":2}',))
+                writer.execute('INSERT INTO events(run,data) VALUES(?,?)',('one','{"kind":"new"}'))
+                with patch('studio.workbench_store.sqlite3.connect',side_effect=lambda *a,**kw:connect(*a,**dict(kw,timeout=0))):
+                    self.assertEqual(store.get('run','one'),{'version':1})
+                    self.assertEqual(store.list('run'),[{'version':1}])
+                    self.assertEqual(store.events('one'),[])
+            self.assertEqual(store.get('run','one'),{'version':2})
+            self.assertEqual(store.events('one')[0]['kind'],'new')
 
 
 class ProductProjectionTests(unittest.TestCase):
@@ -82,12 +114,38 @@ class IndependentCounterexampleTests(unittest.TestCase):
         g['edges'].append(dict(id='duplicate',source='branchA',target='merge'))
         with self.assertRaises(Invalid):validate_graph(g)
 
+    def test_wrappers_env_and_extensionless_operands_cannot_read_project_files(self):
+        # Actual source-r2 reviewer counterexamples, including unknown wrappers.
+        with tempfile.TemporaryDirectory() as folder:
+            wrapper=Path(folder)/'renamed-executor'
+            wrapper.write_text('#!/bin/sh\nexec python3 "$@"\n');wrapper.chmod(0o755)
+            for exe,args in ((str(Path('/usr/bin/env').resolve()),['python3','script']),
+                             (str(wrapper),['script']),
+                             (str(Path('/usr/bin/true').resolve()),['config'])):
+                sha=digest(Path(exe).read_bytes())
+                with self.subTest(exe=exe,args=args):
+                    with self.assertRaises(Blocked):
+                        validate_profile(dict(kind='verify',argv=[exe,*args],executable_sha256=sha,dependencies={exe:sha}))
+
+    def test_inline_options_and_post_entrypoint_flags_are_not_file_pin_bypasses(self):
+        exe=str(Path(sys.executable).resolve());sha=digest(Path(exe).read_bytes())
+        with tempfile.TemporaryDirectory() as folder:
+            script=Path(folder)/'fixed.py';script.write_text('print(1)')
+            profile=dict(kind='verify',argv=[exe,'-I','-B',str(script)],executable_sha256=sha,
+                         dependencies={exe:sha,str(script):digest(script.read_bytes())})
+            validate_profile(profile)
+            for extra in ('--config=config','-rscript','--data','-I',''):
+                with self.subTest(extra=extra),self.assertRaises(Blocked):
+                    validate_profile(dict(profile,argv=[*profile['argv'],extra]))
+            with self.assertRaises(Blocked):
+                validate_profile(dict(profile,argv=[exe,'--','-I',str(script)]))
+
     def test_external_directory_arguments_also_require_tree_pins(self):
         from orchestration.common import tree_hash
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);script=root/'adapter.py';script.write_text('print(1)')
             exe=str(Path(sys.executable).resolve());sha=digest(Path(exe).read_bytes())
-            profile=dict(kind='verify',argv=[exe,'-I',str(script),'--data',str(root)],executable_sha256=sha,
+            profile=dict(kind='verify',argv=[exe,'-I',str(script),str(root)],executable_sha256=sha,
                          dependencies={exe:sha,str(script):digest(script.read_bytes())})
             with self.assertRaises(Blocked):validate_profile(profile)
             profile['dependency_trees']={str(root):tree_hash(root)}
