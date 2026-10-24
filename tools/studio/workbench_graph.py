@@ -6,7 +6,7 @@ import re
 from .graph import Invalid
 from .workbench_data import public_data, public_field
 
-KINDS = {'start', 'agent', 'condition', 'merge', 'loop', 'human', 'output', 'result', 'verify', 'delivery'}
+KINDS = {'start', 'agent', 'router', 'condition', 'merge', 'loop', 'human', 'output', 'result', 'verify', 'delivery'}
 IDENT = re.compile(r'[A-Za-z][A-Za-z0-9_-]{0,63}\Z')
 OPS = {'equals', 'not_equals', 'contains', 'greater', 'less', 'exists'}
 
@@ -90,9 +90,18 @@ def validate_graph(document, *, depth=0):
             n['body'] = validate_graph(n.get('body'), depth=depth + 1)
             field({}, n.get('until', {}).get('field', 'result.accepted'))
         if n['kind'] == 'condition':
+            if n.get('missing_policy','false') not in ('false','fail'):raise Invalid('请选择字段缺失时走 ELSE 或停止')
             field({}, n.get('test', {}).get('field', 'result.accepted'))
             if n.get('test', {}).get('op', 'equals') not in OPS:
                 raise Invalid('条件操作符不受支持')
+        if n['kind']=='router':
+            from .routing import validate_router
+            validate_router(n)
+        from .data_contracts import normalize
+        reads=([n.get('test',{}).get('field','result.accepted')] if n['kind']=='condition' else [r['test']['field'] for r in n.get('routes',[])])
+        n['input_contract']=normalize(n.get('input_contract'),[dict(field=f,type='any',required=False) for f in dict.fromkeys(reads)])
+        n['output_contract']=normalize(n.get('output_contract'),[])
+        if any(f not in {r['field'] for r in n['input_contract']} for f in reads):raise Invalid('条件/路由只能读取输入合同声明的字段')
         if n['kind'] == 'merge' and n.get('strategy', 'all') not in ('all', 'selected'):
             raise Invalid('汇合策略请选择全部输入或已选择分支')
     if len(starts) != 1 or not any(n['kind'] == 'result' for n in g['nodes']):
@@ -109,6 +118,12 @@ def validate_graph(document, *, depth=0):
         if pair in pairs:
             raise Invalid('同一对节点只能有一条交接连线')
         pairs.add(pair)
+        source=next(n for n in g['nodes'] if n['id']==e['source'])
+        if source['kind']=='router':
+            from .routing import validate_router
+            if e.get('route') not in validate_router(source):raise Invalid('请为路由连线选择已声明分支')
+            if e.get('when','always')!='always':raise Invalid('路由连线使用分支标签，不能叠加布尔条件')
+        elif 'route' in e:raise Invalid('分支标签只能来自路由节点')
         if e.get('when', 'always') not in ('always', 'true', 'false'):
             raise Invalid('请选择无条件、条件满足或条件不满足')
         if e.get('transfer', 'result') not in ('result', 'answer', 'summary', 'field', 'artifacts', 'issues', 'evidence'):
@@ -119,6 +134,10 @@ def validate_graph(document, *, depth=0):
             raise Invalid('连线标签最多120个字符')
         bounded(e.get('max_chars', 16000), 128, 60000, '交接上下文预算')
         incoming[e['target']].append(e['source']); outgoing[e['source']].append(e['target'])
+    for n in g['nodes']:
+        if n['kind']=='router':
+            from .routing import validate_router
+            if {e['route'] for e in g['edges'] if e['source']==n['id']}!=validate_router(n):raise Invalid('每个声明的路由分支必须连接目标节点')
     if incoming[starts[0]]:
         raise Invalid('开始节点不能有上游')
     indegree = {k: len(v) for k, v in incoming.items()}

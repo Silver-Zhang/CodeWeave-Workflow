@@ -16,4 +16,11 @@ if __name__=='__main__':
     a=p.parse_args();rt=WorkbenchRuntime(a.operator,a.operator_sha256,a.candidate_sha256,a.policy,a.policy_sha256)
     with lease(rt.storage/(a.run+'.worker.lock')):
         rt.flow.change('run',a.run,{'worker':process_identity(os.getpid())})
-        Scheduler(rt,a.run).run_graph()
+        try:
+            Scheduler(rt,a.run).run_graph()
+        except BaseException as exc:
+            from studio.workbench_failures import abort_unexpected
+            try:abort_unexpected(rt,a.run,exc)
+            except BaseException:sys.stderr.write('Worker failure: '+type(exc).__name__+'; authority update unavailable\n')
+            sys.exit(1)
+        if rt.flow.get('run',a.run).get('unexpected_error'):sys.exit(1)

@@ -78,6 +78,10 @@ class WorkbenchRuntime(SessionRuntime):
         if not any(Path(project['path']).is_relative_to(x) for x in self.operator['allowed_roots']): raise Blocked('工作区未获执行授权')
         profile = self.operator['profiles'].get(node.get('profile'))
         if not profile or node.get('provider', profile['provider']) != profile['provider']: raise Invalid('请选择已探测的执行工具与配置')
+        try:auth=self.flow.get('auth-probe',node['profile'])
+        except Invalid:auth=None
+        if auth and time.time()-auth.get('at',0)<300 and auth.get('logged_in') is False:
+            raise Blocked('原生工具报告尚未认证；请通过本机原生登录后刷新模型')
         try:cli=self.flow.get('cli-probe',node['profile'])
         except Invalid:cli=None
         if cli and (not cli['available'] or not cli.get('machine_output')):
@@ -101,6 +105,7 @@ class WorkbenchRuntime(SessionRuntime):
             binding = dict(profile, home=str(self.native / secrets.token_hex(16)), session_id=None,
                            isolation='bwrap', external_sandbox=profile['provider'] == 'codex', project=workspace,
                            runtime_profile=node['profile'])
+        if node.get('mode','Ask') not in ('Ask','Plan','Agent'):raise Invalid('工作方式请选择 Ask、Plan 或 Agent')
         write = node.get('permission', 'workspace-write' if node.get('mode') == 'Agent' else 'read') == 'workspace-write'
         if write and node.get('mode') != 'Agent': raise Invalid('Ask / Plan 必须保持只读权限')
         if write and cwd != project['path']: raise Blocked('原冻结目录不能授予写权限')
@@ -190,8 +195,9 @@ class WorkbenchRuntime(SessionRuntime):
         bindings={}
         def inspect(g,prefix=''):
             for n in g['nodes']:
-                if n['kind']=='agent':
-                    try:bindings[prefix+n['id']]=self.node_binding(workspace,n)
+                if n['kind']=='agent' or n['kind']=='router' and n.get('classifier'):
+                    from .routing import classifier_node
+                    try:bindings[prefix+n['id']]=self.node_binding(workspace,classifier_node(n) if n['kind']=='router' else n)
                     except (Invalid,Blocked) as exc:
                         exc.node=prefix+n['id'];raise
                 if n['kind']=='loop': inspect(n['body'],prefix+n['id']+'/')

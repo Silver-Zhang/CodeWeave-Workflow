@@ -47,6 +47,16 @@ def main():
     rt.flow.change('activation','dialog-plain-turn-2',dict(state='CANCELLED'))
     rt.flow.put('session-meta',row['handle'],dict(id=row['handle'],workspace=workspace,collection='active',alias='Synthetic dialog-plain'))
     session_rows['dialog-plain']=dict(handle=row['handle'],session_id=row['session_id'])
+    # Explicit synthetic metadata boundary. /usr/bin/true is not a native model.
+    from studio.workbench_sessions import WorkbenchSessions
+    original_rpc=WorkbenchSessions.rpc
+    def metadata(manager,binding,cwd,method,params):
+        if method=='cli/probe':return dict(available=True,machine_output=True,version='synthetic metadata fixture',resume=True)
+        if method=='model/list':return dict(data=[dict(model=binding['model'],supportedReasoningEfforts=[dict(reasoningEffort=binding['effort'])])])
+        if method=='account/read':return dict(account={'type':'synthetic fixture'})
+        if method=='claude/auth-status':return dict(logged_in=True,auth_method='synthetic fixture',service_verified=False)
+        return original_rpc(manager,binding,cwd,method,params)
+    metadata_patch=patch.object(WorkbenchSessions,'rpc',metadata);metadata_patch.start();owner.addCleanup(metadata_patch.stop)
     server,token=create_server(rt);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
     access=out/'access.json';access.write_text(json.dumps(dict(url='http://127.0.0.1:'+str(server.server_port),token=token,workspace=workspace,path=str(base.source),sessions=session_rows,lost_run=lost)))
     access.chmod(0o600)

@@ -234,7 +234,7 @@ class SessionCenter:
 
     def prepare(self, request):
         self.runtime.check_operator()
-        if set(request) != {'workspace', 'handle', 'profile', 'prompt', 'permission'}:
+        if not {'workspace','handle','profile','prompt','permission'}<=set(request) or set(request)-{'workspace','handle','profile','prompt','permission','model','effort','mode'} or (set(request)-{'workspace','handle','profile','prompt','permission'} and not hasattr(self.runtime,'node_binding')):
             raise Invalid('Expected workspace, session handle or new, approved profile, prompt and permission')
         project = self.runtime.project(request['workspace'])
         source = self.runtime.validate_source(project['path'])
@@ -242,6 +242,11 @@ class SessionCenter:
             raise Invalid('Unsupported session permission')
         if not isinstance(request['prompt'], str) or not request['prompt'].strip() or len(request['prompt']) > 60000:
             raise Invalid('A bounded nonempty user message is required')
+        selected=None
+        if hasattr(self.runtime,'node_binding') and any(k in request for k in ('model','effort','mode')):
+            profile=self.runtime.operator['profiles'].get(request['profile'])
+            if not profile:raise Invalid('请选择已登记的执行配置')
+            selected=self.runtime.node_binding(project['id'],dict(profile=request['profile'],provider=profile['provider'],session=request['handle'],model=request.get('model',profile['model']),effort=request.get('effort',profile['effort']),mode=request.get('mode','Ask'),permission=request['permission']))
         handle, native_sha, cwd = request['handle'], None, project['path']
         if handle == 'new':
             p = self.runtime.operator['profiles'].get(request['profile'])
@@ -258,18 +263,24 @@ class SessionCenter:
             binding = dict(binding, session_id=row['native']['session_id'])
             p = self.runtime.operator['profiles'].get(request['profile'])
             if (not p or binding.get('runtime_profile', request['profile']) != request['profile'] or
-                    any(binding.get(k) != p.get(k) for k in ('provider', 'executable', 'model', 'effort', 'read_paths', 'readonly_files'))):
+                    any(binding.get(k) != p.get(k) for k in (('provider','executable','read_paths','readonly_files') if selected else ('provider','executable','model','effort','read_paths','readonly_files')))):
                 raise Blocked('Resume requires the exact approved Provider/model/effort/configuration profile')
             native_sha, cwd = row['native']['sha256'], row['native']['cwd']
+        if selected:
+            binding,cwd,native_sha=selected['binding'],selected['cwd'],selected['native_sha256']
         # No writable access to a frozen Controller candidate or baseline.
         if request['permission'] == 'workspace-write' and cwd != project['path']:
             raise Blocked('Frozen Controller sources can only be continued with read permission')
         binding = dict(binding, role='implementer' if request['permission'] == 'workspace-write' else 'reviewer',
                        tools=['native'] if binding['provider'] == 'codex' else
                        ['Read', 'Glob', 'Grep', 'Bash', 'Write', 'Edit'] if request['permission'] == 'workspace-write' else ['Read', 'Glob', 'Grep'])
+        prompt=request['prompt']
+        if 'mode' in request:
+            mode=request['mode'];prompt=prompt+'\n\n工作方式：'+mode+'。'+('只读制定计划，不执行修改。' if mode=='Plan' else '只读回答，不执行修改。' if mode=='Ask' else '仅在已授权工作区和工具范围内执行。')
         value = dict(workspace=project['id'], source=source, source_sha256=tree_hash(source['root']),
-                     binding=binding, cwd=cwd, prompt=request['prompt'], permission=request['permission'],
+                     binding=binding, cwd=cwd, prompt=prompt, permission=request['permission'],
                      handle=handle, native_sha256=native_sha, profile=request['profile'],
+                     mode=request.get('mode','Agent' if request['permission']=='workspace-write' else 'Ask'),
                      operator_sha256=self.runtime.operator_sha256,
                      human_questions=['确认此消息、精确会话、模型、原 HOME/cwd 和本次工具权限。'])
         return self.db.prepare(dict(value, purpose='native-session'))

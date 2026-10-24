@@ -7,7 +7,7 @@ import {statusInfo} from './runtime_projection.mjs';
 
 // A native process is started only by the explicit confirm button. Mount/reload
 // attaches a known PTY and reads output; it never retries a native input/start.
-export function NativeTerminal({api,workspace,session,onChanged}) {
+export function NativeTerminal({api,workspace,session,onChanged,onClose}) {
   const host=useRef(null),terminal=useRef(null),fit=useRef(null),current=useRef(null),version=useRef(0);
   const request=useRef(0);
   const sequence=useRef(0),pending=useRef(Promise.resolve()),uncertain=useRef(false),cursor=useRef(0);
@@ -84,7 +84,7 @@ export function NativeTerminal({api,workspace,session,onChanged}) {
     await api('/api/terminal/close',{workspace:workspace.id,id:active.id});if(reply!==request.current)return;
     terminal.current.options.disableStdin=true;setConnected(false);onChanged?.();
   }catch(e){if(reply===request.current)setError(e.message)}finally{if(reply===request.current)setLoading(false)}}
-  return <div className="native-terminal"><header><div><Terminal size={17}/><b>{session.title}</b><span>{row?statusInfo(row.state)[0]:'尚未打开'} · {row?.process_alive?'会话由此终端独占':'接管前核验占用'} · 原生只读</span></div><div>
+  return <div className="native-terminal"><button type="button" onClick={onClose} aria-label="关闭终端视图">关闭终端视图（保持进程）</button><header><div><Terminal size={17}/><b>{session.title}</b><span>{row?statusInfo(row.state)[0]:'尚未打开'} · {row?.process_alive?'会话由此终端独占':'接管前核验占用'} · 原生只读</span></div><div>
     <button onClick={attach} disabled={loading} aria-label="重新连接终端"><RefreshCw size={14}/>重新连接</button>
     {row?.process_alive?<button onClick={close} disabled={loading}><Square size={14}/>关闭此终端</button>:<button onClick={prepare} disabled={loading||session.choices?.resume===false}><Play size={14}/>打开同一原生会话</button>}
   </div></header><p className="hint">原CLI、目录与会话身份；与工作流共用写入锁。关闭标签只断开显示，关闭终端才停止进程；原生历史保留。输出只保留在本次服务内存中。</p>
