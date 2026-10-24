@@ -67,6 +67,45 @@ class ToolProjectionTests(unittest.TestCase):
         self.assertNotIn('INDEPENDENT-HIDDEN-PROTOCOL-SECRET',json.dumps(history))
         self.assertTrue(any('没有可展示' in item['content'] for item in history['activity']))
 
+    def test_malformed_result_types_are_not_treated_as_public_arguments(self):
+        for kind in (None,True,0,[],['future_private_protocol'],{}):
+            value=dict(type=kind,payload='MALFORMED-PRIVATE-PROTOCOL')
+            self.assertNotIn('MALFORMED-PRIVATE-PROTOCOL',visible_content(value,protocol=True))
+            self.assertNotIn('MALFORMED-PRIVATE-PROTOCOL',visible_content({'type':'tool_result','content':value}))
+        ordinary={'type':{'schema':'object'},'rows':[1]}
+        import json
+        self.assertEqual(json.loads(visible_content(ordinary)),ordinary)
+        self.assertIn('没有可展示',visible_content(ordinary,protocol=True))
+        self.assertEqual(json.loads(visible_content({'rows':[1]},protocol=True)),{'rows':[1]})
+
+    def test_encoded_protocol_budget_never_returns_opaque_private_payload(self):
+        import json
+        for layers in (3,4,8,12):
+            value={'type':'future_private_protocol','payload':'ENCODED-PRIVATE-PROTOCOL'}
+            for _ in range(layers):value=json.dumps(value)
+            self.assertNotIn('ENCODED-PRIVATE-PROTOCOL',visible_content(value))
+            self.assertNotIn('ENCODED-PRIVATE-PROTOCOL',visible_content(value,protocol=True))
+
+    def test_native_history_malformed_and_encoded_results_remain_private(self):
+        import json
+        from test_workbench_runtime import fixture,structured_session
+        from studio.workbench_sessions import WorkbenchSessions
+        base,rt=fixture(self);path,_=structured_session(base,rt,'malformed-tool-results','codex')
+        secret='MALFORMED-NATIVE-PRIVATE-PROTOCOL'
+        values=[dict(type=t,payload=secret) for t in (None,False,0,[],['future_private_protocol'],{})]
+        encoded=dict(type='future_private_protocol',payload=secret)
+        for _ in range(4):encoded=json.dumps(encoded)
+        values.append(encoded)
+        for i,value in enumerate(values):
+            with path.open('a') as stream:
+                for payload in [dict(type='custom_tool_call',call_id=str(i),name='exec',input='public'),dict(type='custom_tool_call_output',call_id=str(i),output=value)]:
+                    stream.write(json.dumps(dict(type='response_item',payload=payload))+'\n')
+        rows=rt.session_center.discover(base.project['id'],True)['discovery']['sessions']
+        row=next(x for x in rows if rt.db.get('session-handle',x['handle'])['native']['path']==str(path))
+        history=WorkbenchSessions(rt).history(base.project['id'],row['handle'])
+        self.assertNotIn(secret,json.dumps(history));self.assertEqual(len(history['activity']),7)
+        self.assertTrue(all('没有可展示' in item['result'] for item in history['activity']))
+
     def test_bounded_history_reports_omitted_records(self):
         rows=group_tools([dict(kind='tool_use',call_id=str(i),content='command') for i in range(102)])
         self.assertEqual(len(rows),100);self.assertTrue(rows[0]['history_truncated']);self.assertEqual(rows[0]['call_id'],'2')

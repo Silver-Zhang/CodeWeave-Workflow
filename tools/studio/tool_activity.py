@@ -7,39 +7,43 @@ import re
 _OMITTED=object()
 _NO_TEXT='此工具没有可展示的文本结果；请核对原生证据。'
 
-def _public_content(value, depth=0):
+def _public_content(value, depth=0, protocol=False):
     if depth>4:return _OMITTED
-    for _ in range(2):
+    for _ in range(8):
         if not isinstance(value,str):break
         try:decoded=json.loads(value)
         except (ValueError,RecursionError):break
         if not isinstance(decoded,(str,dict,list)):break
         value=decoded
+    else:
+        # Never fall back to encoded protocol bytes when the decoding budget ends.
+        return _OMITTED
     if isinstance(value,dict):
         kind=value.get('type')
+        if protocol and 'type' in value and not isinstance(kind,str):return _OMITTED
         if isinstance(kind,str):
             if kind in {'input_text','output_text','text'}:
                 return value['text'] if isinstance(value.get('text'),str) else _OMITTED
             if kind in {'tool_result','tool_use','function_call_output','custom_tool_call_output'}:
-                return _public_content(value.get('content',value.get('output','')),depth+1)
+                return _public_content(value.get('content',value.get('output','')),depth+1,True)
             # Unknown typed blocks fail closed, including nested/new protocols.
             return _OMITTED
         result={}
         for key,item in value.items():
-            public=_public_content(item,depth+1)
+            public=_public_content(item,depth+1,protocol)
             if public is not _OMITTED:result[key]=public
         return result if result or not value else _OMITTED
     if isinstance(value,list):
-        public=[_public_content(item,depth+1) for item in value]
+        public=[_public_content(item,depth+1,protocol) for item in value]
         public=[item for item in public if item is not _OMITTED]
         if any(isinstance(item,dict) and isinstance(item.get('type'),str) for item in value):
             return '\n'.join(item for item in public if isinstance(item,str)) or _OMITTED
         return public if public or not value else _OMITTED
     return value
 
-def visible_content(value, _depth=0):
-    """Expose known public blocks and ordinary data, never unknown protocols."""
-    value=_public_content(value,_depth)
+def visible_content(value, _depth=0, *, protocol=False):
+    """Public arguments preserve ordinary data; native result protocols fail closed."""
+    value=_public_content(value,_depth,protocol)
     if value is _OMITTED:return _NO_TEXT
     return value if isinstance(value,str) else json.dumps(value,ensure_ascii=False,indent=2)
 

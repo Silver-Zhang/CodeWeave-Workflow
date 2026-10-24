@@ -305,7 +305,7 @@ class WorkbenchSessions:
                         from .tool_activity import visible_content
                         value=redact(v,secrets)
                         # JSON/text-block decoding may reveal escaped secrets.
-                        text=safe_text(redact(visible_content(value['content']),secrets))
+                        text=safe_text(redact(visible_content(value['content'],protocol=v['kind'] in ('tool_result','function_call_output','custom_tool_call_output')),secrets))
                         activity.append(dict(value,content=safe_text(text[:4000]),truncated=len(text)>4000))
                     if len(activity)>100:activity_omitted=True
                     activity=activity[-100:]
