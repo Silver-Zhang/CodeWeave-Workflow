@@ -4,21 +4,43 @@ import json
 import math
 import re
 
-def visible_content(value, _depth=0):
-    """Unwrap public text blocks; never render thinking or transport wrappers."""
-    if _depth>4:return '此工具没有可展示的文本结果；请核对原生证据。'
+_OMITTED=object()
+_NO_TEXT='此工具没有可展示的文本结果；请核对原生证据。'
+
+def _public_content(value, depth=0):
+    if depth>4:return _OMITTED
     for _ in range(2):
         if not isinstance(value,str):break
-        try:value=json.loads(value)
+        try:decoded=json.loads(value)
         except (ValueError,RecursionError):break
-    visible={'input_text','output_text','text'}
-    blocks=visible|{'thinking','reasoning','image','image_url','input_image','output_image'}
-    if isinstance(value,dict) and value.get('type') in ('tool_result','tool_use','function_call_output','custom_tool_call_output'):
-        return visible_content(value.get('content',value.get('output','')), _depth+1)
-    if isinstance(value,dict) and isinstance(value.get('type'),str) and value['type'] in blocks:value=[value]
-    if isinstance(value,list) and any(isinstance(p,dict) and isinstance(p.get('type'),str) and p['type'] in blocks for p in value):
-        text='\n'.join(p['text'] for p in value if isinstance(p,dict) and isinstance(p.get('type'),str) and p['type'] in visible and isinstance(p.get('text'),str))
-        return text or '此工具没有可展示的文本结果；请核对原生证据。'
+        if not isinstance(decoded,(str,dict,list)):break
+        value=decoded
+    if isinstance(value,dict):
+        kind=value.get('type')
+        if isinstance(kind,str):
+            if kind in {'input_text','output_text','text'}:
+                return value['text'] if isinstance(value.get('text'),str) else _OMITTED
+            if kind in {'tool_result','tool_use','function_call_output','custom_tool_call_output'}:
+                return _public_content(value.get('content',value.get('output','')),depth+1)
+            # Unknown typed blocks fail closed, including nested/new protocols.
+            return _OMITTED
+        result={}
+        for key,item in value.items():
+            public=_public_content(item,depth+1)
+            if public is not _OMITTED:result[key]=public
+        return result if result or not value else _OMITTED
+    if isinstance(value,list):
+        public=[_public_content(item,depth+1) for item in value]
+        public=[item for item in public if item is not _OMITTED]
+        if any(isinstance(item,dict) and isinstance(item.get('type'),str) for item in value):
+            return '\n'.join(item for item in public if isinstance(item,str)) or _OMITTED
+        return public if public or not value else _OMITTED
+    return value
+
+def visible_content(value, _depth=0):
+    """Expose known public blocks and ordinary data, never unknown protocols."""
+    value=_public_content(value,_depth)
+    if value is _OMITTED:return _NO_TEXT
     return value if isinstance(value,str) else json.dumps(value,ensure_ascii=False,indent=2)
 
 def timestamp(value):

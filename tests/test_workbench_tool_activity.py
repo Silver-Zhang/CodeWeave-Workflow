@@ -41,6 +41,32 @@ class ToolProjectionTests(unittest.TestCase):
         blocks=[dict(type='thinking',text='HIDDEN'),dict(type='new_protocol_block',payload='SECRET'),dict(type='text',text='public')]
         for value in (blocks,dict(type='tool_result',content=blocks),dict(type='custom_tool_call_output',output=dict(type='tool_result',content=blocks))):
             self.assertEqual(visible_content(value),'public')
+    def test_unknown_only_and_nested_protocol_payloads_fail_closed(self):
+        import json
+        secret='INDEPENDENT-HIDDEN-PROTOCOL-SECRET'
+        unknown=dict(type='new_protocol_block',payload=secret)
+        for value in (unknown,[unknown],dict(type='tool_result',content=unknown),
+                      {'result':{'nested':[unknown]}},json.dumps(json.dumps(unknown)),
+                      [{'type':'reasoning','summary':secret}]):
+            with self.subTest(value=type(value).__name__):
+                self.assertNotIn(secret,visible_content(value))
+                self.assertIn('没有可展示',visible_content(value))
+        self.assertEqual(json.loads(visible_content({'rows':[1,2],'internal':unknown})),{'rows':[1,2]})
+
+    def test_native_history_does_not_expose_unknown_tool_protocol(self):
+        import json
+        from test_workbench_runtime import fixture,structured_session
+        from studio.workbench_sessions import WorkbenchSessions
+        base,rt=fixture(self);path,_=structured_session(base,rt,'unknown-tool-protocol','codex')
+        for payload in [dict(type='custom_tool_call',call_id='x',name='exec',input='safe'),
+                        dict(type='custom_tool_call_output',call_id='x',output=dict(type='new_protocol_block',payload='INDEPENDENT-HIDDEN-PROTOCOL-SECRET'))]:
+            with path.open('a') as stream:stream.write(json.dumps(dict(type='response_item',payload=payload))+'\n')
+        rows=rt.session_center.discover(base.project['id'],True)['discovery']['sessions']
+        row=next(x for x in rows if rt.db.get('session-handle',x['handle'])['native']['path']==str(path))
+        history=WorkbenchSessions(rt).history(base.project['id'],row['handle'])
+        self.assertNotIn('INDEPENDENT-HIDDEN-PROTOCOL-SECRET',json.dumps(history))
+        self.assertTrue(any('没有可展示' in item['content'] for item in history['activity']))
+
     def test_bounded_history_reports_omitted_records(self):
         rows=group_tools([dict(kind='tool_use',call_id=str(i),content='command') for i in range(102)])
         self.assertEqual(len(rows),100);self.assertTrue(rows[0]['history_truncated']);self.assertEqual(rows[0]['call_id'],'2')
