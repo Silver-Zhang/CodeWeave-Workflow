@@ -1,7 +1,6 @@
 {
-  "head": "89203371f2457bca54998e041de4c9f1c4ea804d",
-  "git_tree": "fa31992832bdfb047e9fcf393313babee681e2e6",
-  "candidate_sha256": "767cb7fc599473f1715d9c903e7d2e6aa9089658063c731709ee7054ef5d4560",
+  "branch": "flow/model-session-routing",
+  "candidate_sha256": "893aaa35415a1017e0b0be1e270ce67021722939b6c4a8115cc46aed2f8e51be",
   "files": [
     {
       "mode": "100644",
@@ -84,8 +83,8 @@
     {
       "mode": "100644",
       "path": "docs/WORKBENCH.md",
-      "sha256": "6ca83eb6aa0cba061b217c3b962360bcba69f47c3eceb21552225f4257e25bbc",
-      "size": 18178
+      "sha256": "cfea1f4fea0e9b20384a1a613e2c9bd95169bf03c488bfa9fd5f1205608a07f3",
+      "size": 18810
     },
     {
       "mode": "100644",
@@ -276,8 +275,8 @@
     {
       "mode": "100644",
       "path": "tests/test_issue16.py",
-      "sha256": "f3c9842c7f19dc49a7164576c284304cd1698dc88e38fc4cfbd373a611494178",
-      "size": 17084
+      "sha256": "577639f378ec15b1a04186b824487ceb8b177592ffb2e4457e4df87f8bfaf135",
+      "size": 18133
     },
     {
       "mode": "100644",
@@ -402,8 +401,8 @@
     {
       "mode": "100644",
       "path": "tests/workbench_browser.cjs",
-      "sha256": "b2a7ddff7fadfe49a6fff7845761aa5e2cd883fad1d6020b7287944eb35ed34b",
-      "size": 64167
+      "sha256": "c4c96c5ef64ccf3f9f42a46b9092504e833f7bc2fff373f0424c19b187b21b0e",
+      "size": 77310
     },
     {
       "mode": "100644",
@@ -414,8 +413,8 @@
     {
       "mode": "100644",
       "path": "tests/workbench_editor.test.mjs",
-      "sha256": "ba23e7a6770a66dea7c8545f2b3ee3563e3096efe63f63a6f488b8bf5e0f20b5",
-      "size": 3422
+      "sha256": "684063623a736a9038accbde8edadf42bff8aa52e1d2e48be441d308d28f7828",
+      "size": 4907
     },
     {
       "mode": "100644",
@@ -606,8 +605,8 @@
     {
       "mode": "100644",
       "path": "tools/studio/model_catalog.py",
-      "sha256": "2cba665a5ecc04d4e7676cd90871b34d4bfe2f726525ec49c32a6e358594d6a1",
-      "size": 9160
+      "sha256": "2d4e656c22132a7415b1dfa93b2d6b1a3b28784177bf6de347d1f8bcbc07e6d6",
+      "size": 9326
     },
     {
       "mode": "100644",
@@ -708,8 +707,8 @@
     {
       "mode": "100644",
       "path": "tools/studio/static/workbench.css",
-      "sha256": "4ef14b1a1a957d5309488b37e60b42d91fbc4dfefec740089765f14919f93675",
-      "size": 63527
+      "sha256": "148b22f274818b10edeb549ee2adae8749d878259adf1fc813e33fb646366d9f",
+      "size": 101349
     },
     {
       "mode": "100644",
@@ -720,8 +719,8 @@
     {
       "mode": "100644",
       "path": "tools/studio/static/workbench.js",
-      "sha256": "77cbe6fbd63a9c0a1a18c0df50a74be57a720198b909f11e58751e2b6186aa4a",
-      "size": 1058350
+      "sha256": "c37bd0358333e1c01dc343b4bb859305a5e2fcc128e0d04e4c17d32e847e8b9f",
+      "size": 1083317
     },
     {
       "mode": "100644",
@@ -845,6 +844,12 @@
     },
     {
       "mode": "100644",
+      "path": "tools/studio/workbench_ui/CanvasMenus.jsx",
+      "sha256": "80be1425434c6bc3b9448819b115d774831ebbb38e3d26bd6c1f7f553059600e",
+      "size": 3276
+    },
+    {
+      "mode": "100644",
       "path": "tools/studio/workbench_ui/DraftPreview.jsx",
       "sha256": "cc04d19054627d3a4d094d0032978d2a20bf03efa2e5760aee553a090a171a0d",
       "size": 2389
@@ -852,14 +857,14 @@
     {
       "mode": "100644",
       "path": "tools/studio/workbench_ui/EditorToolbar.jsx",
-      "sha256": "7ea2acd13572cf2e4fb0fb9da3f778998dce2b2faca9fec3d6a284516e867f58",
-      "size": 2397
+      "sha256": "856ea37d411af6d98b38999286da375ba6a838ba318aed6e236a62c88f48e4c0",
+      "size": 2846
     },
     {
       "mode": "100644",
       "path": "tools/studio/workbench_ui/HandoffEdge.jsx",
-      "sha256": "d7bbe0c26ebaf07b749977e1be89f938c2a98bb9a1f43fa446a7ab2a44cf5256",
-      "size": 711
+      "sha256": "5d5c9ff2e7d1e01dc423b08c8a006dbea29aea46744aafc77980bf6afe880d2a",
+      "size": 947
     },
     {
       "mode": "100644",
@@ -893,15 +898,27 @@
     },
     {
       "mode": "100644",
+      "path": "tools/studio/workbench_ui/StudioChrome.jsx",
+      "sha256": "e9c89b9d0c1a996b63461ae0450812f3ce642bbe09489765664ab6fa1f76b09b",
+      "size": 3087
+    },
+    {
+      "mode": "100644",
       "path": "tools/studio/workbench_ui/THIRD_PARTY_LICENSES.txt",
-      "sha256": "3b9c5ba21b2bd979d982fe7b508549290d216aa6a94a68c44c1cf06519c03a7e",
-      "size": 148699
+      "sha256": "9fe56f103078c6a02f64f6e9ce51197ebd35047848f268979520bc5d6030ef72",
+      "size": 148933
     },
     {
       "mode": "100644",
       "path": "tools/studio/workbench_ui/ToolActivity.jsx",
       "sha256": "a90aaaed2c4d10380f6b34e5db22d738b332a5cc45e2306a67f945de6d2af509",
       "size": 1585
+    },
+    {
+      "mode": "100644",
+      "path": "tools/studio/workbench_ui/WorkspaceLayout.jsx",
+      "sha256": "e88f13e898aa6b466fb9aee5ca984b8760fa673eb7f084840862012fbba9ecf5",
+      "size": 5363
     },
     {
       "mode": "100644",
@@ -912,14 +929,20 @@
     {
       "mode": "100644",
       "path": "tools/studio/workbench_ui/canvas_editing.mjs",
-      "sha256": "5c7088569734063407f281b1634031c6eafee212dd2c70fa19c80a27d5897a84",
-      "size": 4631
+      "sha256": "95dd51944df7d62b02b931a4fffdef161b9c7ea60db98e89fd139dfad3f0ccff",
+      "size": 5558
     },
     {
       "mode": "100644",
       "path": "tools/studio/workbench_ui/index.jsx",
-      "sha256": "165e59ca3a9d46afd466c3d039a26fd7cfaa44e91737336ce5192689f3906c3c",
-      "size": 76778
+      "sha256": "1e35acfe8d8902dcd865b48710b847fa88172c7b47fef350080b6b3a1dd0a55f",
+      "size": 83861
+    },
+    {
+      "mode": "100644",
+      "path": "tools/studio/workbench_ui/interactions.css",
+      "sha256": "47e575ed4018be3552d9dcd62f50aa169a9df4ac297d27ff7e2da3258f2d4b49",
+      "size": 10151
     },
     {
       "mode": "100644",
@@ -953,6 +976,12 @@
     },
     {
       "mode": "100644",
+      "path": "tools/studio/workbench_ui/studio.css",
+      "sha256": "e8d33c1801dcb061f16da5127d2cf4bff38f19b3e5d5fb8f7d4308a6ff1a2aed",
+      "size": 28202
+    },
+    {
+      "mode": "100644",
       "path": "tools/studio/workbench_ui/style.css",
       "sha256": "7327c047f83ffba16cba75fca3a8a7dbb8f60a96407ec59352c0644ea34de7c7",
       "size": 20789
@@ -971,6 +1000,36 @@
     },
     {
       "mode": "100644",
+      "path": "tools/studio/workbench_ui/vendor/sim/LICENSE",
+      "sha256": "b13f17c74ba17a5cc136e624fd6f78d75124f2b038a25f0b7eba48a1ca00c0ec",
+      "size": 11347
+    },
+    {
+      "mode": "100644",
+      "path": "tools/studio/workbench_ui/vendor/sim/NOTICE",
+      "sha256": "f7c2fd75ef8745b6f966111bbeb1b592649aaae081ed4d689bd3d6f8571786b7",
+      "size": 100
+    },
+    {
+      "mode": "100644",
+      "path": "tools/studio/workbench_ui/vendor/sim/PROVENANCE.md",
+      "sha256": "adbf748fa89ff80668da7b4e2a3d27ecfdd4cc69b394c1743f566dd0505ce2d2",
+      "size": 556
+    },
+    {
+      "mode": "100644",
+      "path": "tools/studio/workbench_ui/vendor/sim/use-canvas-context-menu.ts",
+      "sha256": "405ea73778e4742dd66852da9d76d8a21ae43efb888010472f26b2d7e91dceec",
+      "size": 5205
+    },
+    {
+      "mode": "100644",
+      "path": "tools/studio/workbench_ui/vendor/sim/use-drag-resize.ts",
+      "sha256": "44cdfe5c30069c2869f8c5a866f27ac546d3cb8a7682c7ac78fc4aa1d6baa9f9",
+      "size": 7375
+    },
+    {
+      "mode": "100644",
       "path": "tools/studio/workbench_worker.py",
       "sha256": "3c797115968ca3fdd66af430343970d6c32c4ad5f1c1062fcab69845416091cd",
       "size": 1291
@@ -981,5 +1040,8 @@
       "sha256": "14b3b90a2fab4b1ace14b640c6df9c8d2bda0574f36923bd94766e25517d66db",
       "size": 13188
     }
-  ]
+  ],
+  "git_tree": "496bf759487112ebd34b58f362956996d8da3aca",
+  "head": "1ffadf56842f2891361ee7f6bbe0ef2632496be4",
+  "status": "M tests/test_issue16.py\n M tools/studio/model_catalog.py"
 }
