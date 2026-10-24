@@ -1,11 +1,15 @@
 import React, {useState} from 'react';
-import {MousePointer2, Hand, Undo2, Redo2, Copy, ClipboardPaste, Trash2, AlignLeft, ChevronDown, Map} from 'lucide-react';
+import {MousePointer2, Hand, Undo2, Redo2, Copy, ClipboardPaste, Trash2, AlignLeft, ChevronDown, Map,Minus,Plus,Scan} from 'lucide-react';
 
-export function EditorToolbar({mode, setMode, count, disabled, undo, redo, canUndo, canRedo, command, minimap, setMinimap}) {
-  const [open, setOpen] = useState(false);
+export function EditorToolbar({mode, setMode, count, disabled, undo, redo, canUndo, canRedo, command, minimap, setMinimap,onFit,zoomIn,zoomOut,menuOpen,setMenuOpen}) {
+  const [localOpen,setLocalOpen]=useState(false);const open=menuOpen??localOpen,setOpen=setMenuOpen||setLocalOpen;
   return <div className="canvas-edit-tools" role="toolbar" aria-label="画布编辑工具">
     <button title="选择 / 框选（Shift 多选）" aria-label="选择与框选" aria-pressed={mode === 'select'} onClick={() => setMode('select')}><MousePointer2 size={16}/></button>
     <button title="平移（也可按住空格）" aria-label="平移画布" aria-pressed={mode === 'pan'} onClick={() => setMode('pan')}><Hand size={16}/></button>
+    <i/>
+    <button title="缩小画布" aria-label="缩小画布" onClick={zoomOut}><Minus size={15}/></button>
+    <button title="放大画布" aria-label="放大画布" onClick={zoomIn}><Plus size={15}/></button>
+    <button title="适应画布" aria-label="适应画布" onClick={onFit}><Scan size={15}/></button>
     <i/>
     <button title="撤销 Ctrl/⌘ Z" aria-label="撤销" disabled={disabled || !canUndo} onClick={undo}><Undo2 size={16}/></button>
     <button title="重做 Ctrl/⌘ Shift Z" aria-label="重做" disabled={disabled || !canRedo} onClick={redo}><Redo2 size={16}/></button>
