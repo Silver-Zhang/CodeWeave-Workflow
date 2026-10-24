@@ -1148,8 +1148,23 @@
   "raw_archive_local": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024",
   "probes": [
     {
+      "number": 1,
+      "purpose": "single-request infrastructure probe, not source acceptance",
       "session_id": "aebb7c8a-e5fd-4fbc-9a6a-e8650278c570",
+      "returned_session": "aebb7c8a-e5fd-4fbc-9a6a-e8650278c570",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/probe",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/probe/.claude",
+      "cwd": "/home/workspace/DevFlower",
       "success": true,
+      "is_error": false,
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "physical_backend": "unknown",
+      "effective_effort": "unknown",
+      "native_implicit_retries": 0,
       "process": {
         "bytes": {
           "stderr": 447,
@@ -1173,12 +1188,33 @@
         "status": "EXITED",
         "timeout": false
       },
-      "requests": null,
-      "native_messages_requests": null
+      "transport": {
+        "buffered": 1,
+        "failure_types": {},
+        "refused": 0,
+        "requests": 1,
+        "upstream_errors": 0
+      },
+      "credentials_unchanged": true
     },
     {
+      "number": 2,
+      "purpose": "single-request infrastructure probe, not source acceptance",
       "session_id": "aebb7c8a-e5fd-4fbc-9a6a-e8650278c570",
+      "returned_session": "aebb7c8a-e5fd-4fbc-9a6a-e8650278c570",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/probe",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/probe/.claude",
+      "cwd": "/home/workspace/DevFlower",
       "success": true,
+      "is_error": false,
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_models": [
+        "claude-opus-5-5[1m]"
+      ],
+      "physical_backend": "unknown",
+      "effective_effort": "unknown",
+      "native_implicit_retries": 0,
       "process": {
         "bytes": {
           "stderr": 447,
@@ -1202,8 +1238,14 @@
         "status": "EXITED",
         "timeout": false
       },
-      "requests": null,
-      "native_messages_requests": null
+      "transport": {
+        "buffered": 1,
+        "failure_types": {},
+        "refused": 0,
+        "requests": 1,
+        "upstream_errors": 0
+      },
+      "credentials_unchanged": true
     }
   ],
   "gate_receipts": [
