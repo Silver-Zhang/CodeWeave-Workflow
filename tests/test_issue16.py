@@ -24,7 +24,7 @@ class CatalogTests(unittest.TestCase):
  def test_refresh_failure_keeps_last_good_marked_stale(self):
   with patch.object(self.manager,'rpc',return_value={'data':[{'model':self.profile['model']}]}):first=self.cat.get('default-codex',self.profile,True)
   with patch.object(self.manager,'rpc',side_effect=Blocked('offline')):second=self.cat.get('default-codex',self.profile,True)
-  self.assertEqual(first['updated_at'],second['updated_at']);self.assertTrue(second['stale']);self.assertEqual([m['id'] for m in first['models']],[m['id'] for m in second['models']]);self.assertFalse(second['models'][0]['discovery_current'])
+  self.assertEqual(first['updated_at'],second['updated_at']);self.assertTrue(second['stale']);self.assertEqual([dict(m,discovery_current=False) for m in first['models']],second['models']);self.assertFalse(second['models'][0]['discovery_current'])
  def test_invalid_proxy_envelope_preserves_last_good_catalog(self):
   profile=dict(self.profile,provider='claude')
   response=MagicMock()
@@ -36,7 +36,7 @@ class CatalogTests(unittest.TestCase):
     with self.subTest(envelope=invalid):
      response.__enter__.return_value.read.return_value=json.dumps(invalid).encode()
      value=self.cat.get('proxy',profile,True)
-     self.assertEqual(value['updated_at'],first['updated_at']);self.assertEqual([m['id'] for m in value['models']],[m['id'] for m in first['models']]);self.assertFalse(value['models'][0]['execution_allowed'])
+     self.assertEqual(value['updated_at'],first['updated_at']);self.assertEqual(value['models'],[dict(m,discovery_current=False) for m in first['models']]);self.assertFalse(value['models'][0]['execution_allowed'])
      self.assertTrue(value['stale']);self.assertFalse(value['discovery_complete']);self.assertIn('无效响应格式',value['error'])
  def test_expired_cache_does_not_become_live(self):
   with patch.object(self.manager,'rpc',return_value={'data':[{'model':self.profile['model']}]}):value=self.cat.get('default-codex',self.profile,True)
