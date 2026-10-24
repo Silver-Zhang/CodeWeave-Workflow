@@ -57,7 +57,7 @@ class TerminalTextTests(unittest.TestCase):
 
 class NativeTerminalProtocolTests(unittest.TestCase):
     def setUp(self):
-        self.base, self.rt = fixture(self)
+        self.base, self.rt = fixture(self, admission=True)
         self.workspace = self.base.project['id']
         _, self.session = structured_session(self.base, self.rt, 'pty-protocol', 'codex')
         self.sessions = WorkbenchSessions(self.rt)

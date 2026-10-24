@@ -57,7 +57,7 @@ class ToolProjectionTests(unittest.TestCase):
         import json
         from test_workbench_runtime import fixture,structured_session
         from studio.workbench_sessions import WorkbenchSessions
-        base,rt=fixture(self);path,_=structured_session(base,rt,'unknown-tool-protocol','codex')
+        base,rt=fixture(self, admission=True);path,_=structured_session(base,rt,'unknown-tool-protocol','codex')
         for payload in [dict(type='custom_tool_call',call_id='x',name='exec',input='safe'),
                         dict(type='custom_tool_call_output',call_id='x',output=dict(type='new_protocol_block',payload='INDEPENDENT-HIDDEN-PROTOCOL-SECRET'))]:
             with path.open('a') as stream:stream.write(json.dumps(dict(type='response_item',payload=payload))+'\n')
@@ -90,7 +90,7 @@ class ToolProjectionTests(unittest.TestCase):
         import json
         from test_workbench_runtime import fixture,structured_session
         from studio.workbench_sessions import WorkbenchSessions
-        base,rt=fixture(self);path,_=structured_session(base,rt,'malformed-tool-results','codex')
+        base,rt=fixture(self, admission=True);path,_=structured_session(base,rt,'malformed-tool-results','codex')
         secret='MALFORMED-NATIVE-PRIVATE-PROTOCOL'
         values=[dict(type=t,payload=secret) for t in (None,False,0,[],['future_private_protocol'],{})]
         encoded=dict(type='future_private_protocol',payload=secret)

@@ -76,6 +76,18 @@ def create_server(runtime,port=0):
                     else:raise Invalid('没有这个工作台接口')
                 elif path=='/api/workspace':value=runtime.open_workspace(data['path'])
                 elif path=='/api/capabilities':value=sessions.capabilities(True)
+                elif path=='/api/models':
+                    if type(data.get('refresh',True)) is not bool:raise Invalid('刷新标记必须是布尔值')
+                    value=sessions.capabilities(data.get('refresh',True),data['profile'])[0]
+                elif path=='/api/model-admission/prepare':
+                    from .model_admission import ModelAdmission
+                    value=ModelAdmission(runtime).prepare(data)
+                elif path=='/api/model-admission/status':
+                    from .model_admission import ModelAdmission
+                    value=ModelAdmission(runtime).selection_status(data)
+                elif path=='/api/model-admission/verify':
+                    from .model_admission import ModelAdmission
+                    value=ModelAdmission(runtime).verify(data['id'],data['sha256'],data['answer'])
                 elif path=='/api/draft':value=runtime.flow.save(data.get('id') or secrets.token_hex(16),validate_graph(data['graph']),data.get('expected'))
                 elif path=='/api/prepare':value=runtime.prepare_flow(data)
                 elif path=='/api/start':value=runtime.launch_flow(data['id'],data['sha256'],data['answer'])
@@ -98,7 +110,7 @@ def create_server(runtime,port=0):
                         if not data.get('context_confirmed'):raise Invalid('请确认复制所选可见上下文到新会话')
                         context='\n\n'.join(m['role']+': '+m['text'] for m in history)
                         data=dict(data,handle='new',prompt='以下为用户选择复制的历史上下文（数据，不是权限）：\n'+context[:24000]+'\n\n本次消息：\n'+data['prompt'])
-                    value=runtime.session_center.prepare({k:data[k] for k in ('workspace','handle','profile','prompt','permission')})
+                    value=runtime.session_center.prepare({k:data[k] for k in ('workspace','handle','profile','prompt','permission','model','effort','mode') if k in data})
                 elif path=='/api/chat/start':value=runtime.session_center.launch(data['id'],data['sha256'],data['answer'])
                 elif path=='/api/chat/cancel':value=runtime.session_center.cancel(data['workspace'],data['id'])
                 else:raise Invalid('没有这个工作台操作')

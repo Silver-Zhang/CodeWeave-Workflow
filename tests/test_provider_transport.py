@@ -58,10 +58,25 @@ class TransportTests(unittest.TestCase):
 
     def test_native_default_and_missing_isolation(self):
         with claude_transport({}) as (args, evidence):
-            self.assertEqual(args, [])
-            self.assertEqual(evidence, {"mode": "native"})
+            self.assertEqual(args[0], "--settings")
+            self.assertEqual(len(args), 2)
+            self.assertEqual(json.loads(args[1]), {"env": {"CLAUDE_CODE_MAX_RETRIES": "0"}})
+            self.assertEqual(evidence, {"mode": "native", "automatic_retries": 0})
         with self.assertRaises(Blocked), claude_transport({"buffered_tool_transport": True}):
             pass
+
+    def test_buffered_invocation_bounds_retries_without_changing_auth_model_or_effort(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as root:
+            settings=Path(root)/'settings.json'
+            settings.write_text(json.dumps({'env':{'ANTHROPIC_BASE_URL':'https://approved.invalid','ANTHROPIC_AUTH_TOKEN':'synthetic-private-token'}}))
+            binding=dict(buffered_tool_transport=True,isolation='bwrap',readonly_files=[(str(settings),'.claude/settings.json')],model='claude-example[1m]',effort='high')
+            with patch('orchestration.provider_transport.relay') as transport:
+                transport.return_value.__enter__.return_value=('http://127.0.0.1:1',{'requests':0})
+                with claude_transport(binding,timeout=37) as (args,evidence):
+                    self.assertEqual(json.loads(args[1]),{'env':{'ANTHROPIC_BASE_URL':'http://127.0.0.1:1','CLAUDE_CODE_MAX_RETRIES':'0'}})
+                    self.assertEqual(evidence['automatic_retries'],0)
+                transport.assert_called_once_with('https://approved.invalid','synthetic-private-token','claude-example','high',timeout=37)
 
     def test_http_bytes_unchanged_and_no_message_logging(self):
         message = dict(id="fixture", type="message", role="assistant", model="claude-example",

@@ -5,10 +5,26 @@ import subprocess
 import sys
 import time
 
-METHODS = {'model/list', 'thread/read', 'thread/archive', 'thread/unarchive', 'thread/name/set', 'thread/fork'}
+METHODS = {'model/list', 'account/read', 'thread/read', 'thread/archive', 'thread/unarchive', 'thread/name/set', 'thread/fork'}
 
 
 def request(executable, method, params):
+    if method == 'cli/probe':
+        provider=params['provider']
+        def read(args):
+            result=subprocess.run([executable,*args],capture_output=True,timeout=15)
+            return result.returncode,result.stdout.decode(errors='replace')[:100000]
+        code,version=read(['--version'])
+        _,help_text=read(['exec','--help'] if provider=='codex' else ['--help'])
+        return {'result':{'version':version.strip()[:160],'available':code==0,
+            'machine_output':('--json' if provider=='codex' else '--output-format') in help_text,
+            'resume':'resume' in help_text,'auth_probe_scope':'dedicated profile HOME; see authentication separately'}}
+    if method == 'claude/auth-status':
+        result=subprocess.run([executable,'auth','status','--json'],capture_output=True,timeout=15)
+        if len(result.stdout)>100000:raise ValueError('Native auth status exceeds budget')
+        value=json.loads(result.stdout)
+        return {'result':{'logged_in':value.get('loggedIn') is True,'auth_method':value.get('authMethod','unknown'),
+                          'service_verified':False,'exit':result.returncode}}
     if method not in METHODS: raise ValueError('Unsupported native metadata request')
     p = subprocess.Popen([executable, 'app-server'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     selector = selectors.DefaultSelector();selector.register(p.stdout, selectors.EVENT_READ)

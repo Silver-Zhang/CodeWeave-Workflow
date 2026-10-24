@@ -46,10 +46,13 @@ class NativeTerminals:
         if not binding or binding['provider'] not in ('codex', 'claude'):
             raise Blocked(reason or '该 Provider 尚未支持原生终端')
         if self.sessions.busy(binding, row['native']['session_id']): raise Blocked('此会话已有写入者，请先停止原回合或连接已有终端')
+        selected=self.rt.node_binding(data['workspace'],dict(profile=binding['runtime_profile'],
+            model=binding['model'],effort=binding['effort'],mode='Ask',permission='read'))
         value = dict(purpose='native-terminal', workspace=data['workspace'], handle=data['handle'],
             provider=binding['provider'], model=binding['model'], effort=binding['effort'],
             cwd=row['native']['cwd'], session_id=row['native']['session_id'], native_sha256=row['native']['sha256'],
             home=binding['home'], source_sha256=tree_hash(project['path']), candidate_sha256=self.rt.candidate_sha256,
+            execution_binding=selected['binding'],
             operator_sha256=self.rt.operator_sha256, policy_sha256=self.rt.policy_sha,
             human_questions=['在原生只读CLI中打开此明确会话；使用原目录和HOME，并独占该会话写入锁。'])
         return self.rt.db.prepare(value)
@@ -73,6 +76,8 @@ class NativeTerminals:
             if (binding['home'], row['native']['cwd'], row['native']['session_id'], row['native']['sha256']) != (
                     value['home'], value['cwd'], value['session_id'], value['native_sha256']): raise Conflict('原生身份或历史在确认后变化')
             if tree_hash(project['path']) != value['source_sha256']: raise Conflict('工作区在终端预览后变化，请重新确认')
+            from .model_admission import ModelAdmission
+            ModelAdmission(self.rt).require(value['execution_binding'], project['path'])
             if any(e['home'] == binding['home'] and e['proc'].poll() is None for e in self.entries.values()): raise Blocked('同一HOME已有终端')
             if sum(e['proc'].poll() is None for e in self.entries.values()) >= 4: raise Blocked('已达到本机4个原生终端的上限')
             for old in list(self.entries):
@@ -105,6 +110,7 @@ class NativeTerminals:
             identity = process_identity(process.pid)
             secret = credentials(binding['home'], [x[0] for x in binding.get('readonly_files', [])])
             entry = dict(proc=process, master=master, process=identity, home=binding['home'], text='', first=0, next=0,
+                execution_binding=value['execution_binding'], cwd=value['cwd'],
                 total=0, filter=TerminalText(secret), inputs={}, deadline=time.monotonic()+1800, state='RUNNING')
             self.entries[key] = entry
             self.rt.flow.change('terminal', key, {'state': 'RUNNING', 'process': identity})
@@ -140,6 +146,9 @@ class NativeTerminals:
                 state = ('RECOVERY_REQUIRED' if entry['state'] == 'RECOVERY_REQUIRED' else
                          'CANCELLED' if entry.get('cancelled') else 'FAILED' if reason or code else 'COMPLETED')
                 entry['state'] = state
+                if state in ('FAILED','RECOVERY_REQUIRED'):
+                    from .model_admission import ModelAdmission
+                    ModelAdmission(self.rt).invalidate(entry['execution_binding'],entry['cwd'])
                 self.rt.flow.change('terminal', key, {'state': state, 'exit': code, 'reason': reason,
                     'finished_at': time.time(), 'output_bytes': entry['total']})
         except BaseException:

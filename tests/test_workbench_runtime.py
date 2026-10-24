@@ -19,7 +19,7 @@ from studio.workbench_external import validate_profile,validate_receipt
 import test_agent_sessions
 
 
-def fixture(owner):
+def fixture(owner, admission=False):
     base=test_agent_sessions.CenterTests();base.setUp();owner.addCleanup(base.doCleanups)
     old=base.development_runtime();policy=base.root/'workbench-policy.json'
     save(policy,dict(version=1,models={},external_steps={}))
@@ -27,6 +27,18 @@ def fixture(owner):
     base.runtime=rt;base.project=rt.open_workspace(str(base.source))
     # Reuse the old filesystem-fixture builder without adding a production API.
     rt.sessions=rt.session_center.discover
+    if admission:
+        # Synthetic certificates only for unrelated runtime/browser fixtures.
+        # Admission adversarial tests pass admission=False and exercise the real
+        # verifier. These records never constitute real Provider acceptance.
+        from studio.model_admission import ModelAdmission
+        gate=ModelAdmission(rt)
+        for name,profile in rt.operator['profiles'].items():
+            for mode in ('Ask','Plan','Agent'):
+                selected=rt.node_binding(base.project['id'],dict(profile=name,mode=mode),admission=False)
+                scope=gate.scope(selected['binding'],selected['cwd']);key=gate.key(selected['binding'],selected['cwd'])
+                rt.db.put('model-admission',key,dict(state='VERIFIED',verified_at=time.time(),scope=scope,
+                    evidence='SYNTHETIC fixture certificate, not a real model result'))
     return base,rt
 
 
@@ -38,7 +50,7 @@ def structured_session(base,rt,label='synthetic-structured',provider='claude',na
     """
     home=rt.native/label;sid=test_agent_sessions.SID;workspace=base.project['id']
     path=test_agent_sessions.native(home/('.'+provider),provider,base.source)
-    binding=dict(rt.operator['profiles']['default-'+provider],home=str(home),session_id=sid)
+    binding=dict(rt.operator['profiles']['default-'+provider],runtime_profile='default-'+provider,home=str(home),session_id=sid)
     rt.db.put('chat-profile',label,dict(workspace=workspace,binding=binding))
     run=label+'-run';chat=label+'-chat';node='loop/analyze'
     rt.flow.put('run',run,dict(id=run,workspace=workspace,state='COMPLETED',created_at=10,
@@ -81,7 +93,7 @@ def structured_session(base,rt,label='synthetic-structured',provider='claude',na
 
 class SidebarIdentityTests(unittest.TestCase):
     def setUp(self):
-        self.base,self.rt=fixture(self);self.w=self.base.project['id'];self.manager=WorkbenchSessions(self.rt)
+        self.base,self.rt=fixture(self, admission=True);self.w=self.base.project['id'];self.manager=WorkbenchSessions(self.rt)
     def rows(self):return {r['handle']:r for r in self.manager.listing(self.w)['sessions']}
     def running_operation(self,label):
         chat=self.rt.flow.get('node-session',label+'-chat')
@@ -122,7 +134,7 @@ class SidebarIdentityTests(unittest.TestCase):
 
 class StructuredHistoryTests(unittest.TestCase):
     def setUp(self):
-        self.base,self.rt=fixture(self);self.w=self.base.project['id'];self.manager=WorkbenchSessions(self.rt)
+        self.base,self.rt=fixture(self, admission=True);self.w=self.base.project['id'];self.manager=WorkbenchSessions(self.rt)
     def test_two_round_outputs_are_distinct_from_native_history_and_survive_reload(self):
         for provider in ('claude','codex'):
             with self.subTest(provider=provider):
@@ -240,7 +252,7 @@ class StructuredHistoryTests(unittest.TestCase):
 
 class RuntimeTests(unittest.TestCase):
     def setUp(self):
-        self.base,self.rt=fixture(self);self.w=self.base.project['id'];self.graph=examples(self.rt.operator['profiles'])[0]
+        self.base,self.rt=fixture(self, admission=True);self.w=self.base.project['id'];self.graph=examples(self.rt.operator['profiles'])[0]
     def request(self):return dict(workspace=self.w,graph=copy.deepcopy(self.graph),task='Synthetic transport boundary')
     def test_folder_is_browsable_but_outside_roots_and_links_are_refused(self):
         result=self.rt.folder(str(self.base.source));self.assertEqual(result['path'],str(self.base.source))
@@ -408,7 +420,7 @@ class RuntimeTests(unittest.TestCase):
 
 class HttpTests(unittest.TestCase):
     def setUp(self):
-        self.base,self.rt=fixture(self);self.server,self.token=create_server(self.rt);t=threading.Thread(target=self.server.serve_forever,daemon=True);t.start()
+        self.base,self.rt=fixture(self, admission=True);self.server,self.token=create_server(self.rt);t=threading.Thread(target=self.server.serve_forever,daemon=True);t.start()
         self.addCleanup(t.join);self.addCleanup(self.server.server_close);self.addCleanup(self.server.shutdown)
         self.url='http://127.0.0.1:'+str(self.server.server_port)
     def get(self,path,auth=True,extra=None):

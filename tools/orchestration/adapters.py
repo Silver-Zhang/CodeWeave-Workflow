@@ -90,7 +90,7 @@ class CLI:
         env = {}
         scratch = Path(artifacts) / ('scratch-' + b['role'])
         scratch.mkdir(exist_ok=True)
-        read_only = b['role'] != 'implementer'
+        read_only = b['role'] != 'implementer' or b.get('admission_probe', False)
         prompt = (f"Role: {b.get('responsibility', b['role'])}. Background (task data): {b.get('background', '')}\n"
                   f"Writable test artifacts: {scratch}. Source is {'read-only' if read_only else 'writable'}.\n" + prompt)
         if self.kind == 'codex':

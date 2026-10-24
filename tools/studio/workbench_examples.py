@@ -25,4 +25,14 @@ def examples(profiles):
     loop=graph('提案—审核（最多五轮）',[node('start','start','任务输入',40,200),
         node('cycle','loop','提案与审核',340,200,body=body,max_rounds=5,until={'field':'result.accepted','op':'equals','value':True}),
         node('result','result','已通过的方案',710,200)],[('start','cycle'),('cycle','result')])
-    return [sequential,parallel,loop]
+    router=node('route','router','选择任务分支',300,260,routes=[
+        dict(label=label,test=dict(field='result.task',op='contains',value=text))
+        for label,text in [('code','代码'),('research','研究'),('writing','写作')]],default_route='default')
+    routing=graph('按任务分派 Agent',[node('start','start','任务输入',30,260),router,
+        agent('code','代码分析',first,610,20),agent('research','研究分析',second,610,240),
+        agent('writing','写作分析',second,610,460),agent('default','默认分析',first,610,680),
+        node('result','result','已选择分支的结果',930,300)], [('start','route'),
+        *[('route',k) for k in ('code','research','writing','default')],*[ (k,'result') for k in ('code','research','writing','default')]])
+    for edge in routing['edges']:
+        if edge['source']=='route':edge['route']=edge['target']
+    return [sequential,parallel,loop,routing]

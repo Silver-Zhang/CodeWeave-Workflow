@@ -16,7 +16,7 @@ from orchestration.process import group_alive
 from orchestration.store import lease
 from .agent_sessions import safe_text
 from .graph import Invalid
-from .workbench_graph import predicate, request_text, request_sections, transfer
+from .workbench_graph import field, predicate, request_text, request_sections, transfer
 from .workbench_data import public_data
 
 DONE = {'COMPLETED', 'FAILED', 'SKIPPED', 'CANCELLED', 'RECOVERY_REQUIRED'}
@@ -75,7 +75,7 @@ class Journal:
 
     def input_sent(self,operation,size,sha):
         row=self.s.db.get('activation',self.key)
-        self.s.db.change('activation',self.key,{'input_sent_bytes':size,'input_sent_sha256':sha})
+        self.s.db.change('activation',self.key,{'input_sent_bytes':size,'input_sent_sha256':sha,'input_sent_at':time.time()})
         for item in row.get('inputs',[]):
             self.s.db.event(self.s.run,'handoff-sent',node=row['node'],iteration=row['iteration'],attempt=row['attempt'],
                 **{k:v for k,v in item.items() if k not in ('run','iteration')})
@@ -132,13 +132,16 @@ class Scheduler:
                 if node['run']==self.run and node['state'] not in DONE and not group_alive(node.get('process')):
                     self.db.change('activation',node['id'],{'state':'CANCELLED' if state=='CANCELLED' else 'SKIPPED',
                                    'reason':'本次运行已终止，未继续执行'},event={'kind':'node-cancelled' if state=='CANCELLED' else 'node-skipped'})
+        except Exception as exc:
+            from .workbench_failures import abort_unexpected
+            abort_unexpected(self.rt,self.run,exc)
 
     def activation(self, node, prefix, iteration, iteration_path):
         # A local round repeats when an enclosing loop advances.
         path = prefix + node['id']; key = digest(canonical([self.run, path, iteration_path]))
         try: return self.db.get('activation', key)
         except Invalid:
-            return self.db.put('activation', key, dict(id=key, run=self.run, node=path, iteration=iteration,
+            return self.db.put('activation', key, dict(id=key, run=self.run, node=path, iteration=iteration, round=iteration if iteration else 1,
                 iteration_path=list(iteration_path), attempt=1, state='PENDING', name=node['name'], kind=node['kind']))
 
     def graph(self, graph, prefix, iteration, seed, iteration_path=()):
@@ -150,7 +153,12 @@ class Scheduler:
                 run = self.controls()
                 for future, key in list(futures.items()):
                     if future.done():
-                        future.result(); del futures[future]
+                        try:future.result()
+                        except Exception as exc:
+                            from .workbench_failures import abort_unexpected
+                            abort_unexpected(self.rt,self.run,exc)
+                            raise
+                        del futures[future]
                 states = {k: self.db.get('activation', a['id']) for k, a in states.items()}
                 if all(s['state'] in DONE for s in states.values()): break
                 if run.get('paused'):
@@ -179,6 +187,7 @@ class Scheduler:
                     for e in incoming:
                         upstream = states[e['source']]
                         if upstream['state'] == 'SKIPPED': continue
+                        if 'route' in e and upstream.get('output',{}).get('route',{}).get('label')!=e['route']:continue
                         if e.get('when', 'always') != 'always':
                             flag = upstream.get('output', {}).get('condition')
                             if type(flag) is not bool: raise Invalid('带条件连线必须来自条件节点')
@@ -186,7 +195,9 @@ class Scheduler:
                         content = transfer(upstream['output'], e)
                         inputs.append(dict(edge=e['id'], source=prefix + e['source'], run=self.run,
                             iteration=upstream['iteration'], iteration_path=upstream['iteration_path'],
-                            activation=upstream['id'], content=content))
+                            activation=upstream['id'], source_name=nodes[e['source']]['name'],target_name=n['name'], content=content, source_round=upstream['iteration_path'],target_round=iteration_path,target_activation=a['id'],target_node=prefix+key,
+                            workflow_id=self.db.get('run',self.run).get('graph_sha256',digest(canonical(graph))),content_sha256=digest(canonical(content)),source_content_sha256=digest(canonical(content)),
+                            fields=e.get('field') if e.get('transfer')=='field' else e.get('transfer','result'),received_at=time.time()))
                     if incoming and not inputs:
                         self.db.change('activation', a['id'], {'state': 'SKIPPED', 'reason': '未选择此条件分支'},
                                        event={'kind': 'node-skipped'}); progressed = True; continue
@@ -198,13 +209,14 @@ class Scheduler:
                     active_write = any(writes(nodes[v]) for v in futures.values())
                     if len(futures) >= 2 or active_write or write and futures: continue
                     self.db.change('activation', a['id'], {'state': 'STARTING', 'inputs': inputs,
-                        'started_at': time.time(), 'received': len(received), 'expected': len(incoming), 'waiting': []},
+                        'input_contract':n.get('input_contract',[]),'output_contract':n.get('output_contract',[]),
+                        'workflow_id':self.db.get('run',self.run).get('graph_sha256',digest(canonical(graph))), 'started_at': time.time(), 'received': len(received), 'expected': len(incoming), 'waiting': []},
                         event={'kind': 'node-starting'})
                     for v in inputs:
                         handoff = {k: value for k, value in v.items() if k != 'run'}
                         self.db.event(self.run, 'handoff-ready' if n['kind']=='agent' else 'handoff-received', node=prefix + key, iteration=iteration,
                                       attempt=1, **{k: value for k, value in handoff.items() if k != 'iteration'})
-                    if n['kind'] in ('agent', 'loop'):
+                    if n['kind'] in ('agent', 'loop', 'router'):
                         futures[pool.submit(self.execute_node, n, a['id'], inputs, prefix, iteration, seed, iteration_path)] = key
                     else:
                         self.execute_node(n, a['id'], inputs, prefix, iteration, seed, iteration_path)
@@ -224,9 +236,35 @@ class Scheduler:
         try:
             kind = n['kind']; upstream = inputs[0]['content'] if len(inputs) == 1 else {'result': {'inputs': inputs}, 'answer': ''}
             if not isinstance(upstream, dict): upstream = {'answer': str(upstream), 'result': upstream}
+            from .data_contracts import check
+            check(upstream,n.get('input_contract',[]))
             if kind == 'start': output = seed
             elif kind == 'agent': output = self.executor(n, key, inputs, prefix, iteration)
-            elif kind == 'condition': output = dict(upstream, condition=predicate(upstream, n.get('test', {})))
+            elif kind == 'router':
+                from .routing import rule_route,fallback,semantic_route,classifier_node
+                started=time.monotonic();decision=rule_route(upstream,n)
+                if decision is None and n.get('classifier'):
+                    for attempt in range(n['classifier'].get('retries',0)+1):
+                        try:
+                            result=self.executor(classifier_node(n),key,inputs,prefix,iteration)
+                            decision=semantic_route(result.get('result'),n);break
+                        except (Blocked,Invalid,OSError,ValueError) as exc:
+                            row=self.db.get('activation',key)
+                            if group_alive(row.get('process')) or self.controls().get('cancel_requested'):raise
+                            decision=fallback(n,'分类调用未成功：'+safe_text(str(exc)))
+                            # Never retry after a sent request with an uncertain receipt.
+                            if row.get('input_sent_sha256') or attempt==n['classifier'].get('retries',0):break
+                decision=decision or fallback(n,'没有规则命中')
+                decision['elapsed_ms']=round((time.monotonic()-started)*1000,3)
+                output=dict(upstream,route=decision)
+                self.db.change('activation',key,{'route':decision},event={'kind':'route-selected','route':decision})
+            elif kind == 'condition':
+                test=n.get('test',{});missing=field(upstream,test.get('field','result.accepted')) is None
+                if missing and n.get('missing_policy','false')=='fail':raise Invalid('条件字段缺失或为空：'+test.get('field','result.accepted'))
+                matched=False if missing else predicate(upstream,test)
+                decision=dict(field=test.get('field','result.accepted'),op=test.get('op','equals'),matched=matched,missing=missing,reason='字段缺失或为空，按配置走 ELSE' if missing else '字段比较满足条件' if matched else '字段比较不满足条件')
+                output=dict(upstream,condition=matched,condition_reason=decision['reason'])
+                self.db.change('activation',key,{'condition_decision':decision},event={'kind':'condition-decided','decision':decision})
             elif kind == 'merge': output = {'answer': '\n\n'.join(str(x['content'].get('answer', x['content'])) if isinstance(x['content'], dict) else str(x['content']) for x in inputs), 'result': {'inputs': inputs}, 'sources': inputs}
             elif kind in ('result', 'output'): output = upstream
             elif kind == 'human':
@@ -250,6 +288,7 @@ class Scheduler:
             elif kind in ('verify', 'delivery'):
                 output = self.rt.external_step(self.run, key, n, inputs)
             else: raise Invalid('节点类型不受支持')
+            check(output,n.get('output_contract',[]))
             self.db.change('activation', key, {'state': 'COMPLETED', 'output': output, 'finished_at': time.time()},
                            event={'kind': 'node-completed'})
         except (Blocked, Invalid, OSError, ValueError, KeyError) as exc:
@@ -261,6 +300,18 @@ class Scheduler:
                            'reason': safe_text(str(exc)), 'finished_at': time.time()}, event={'kind':'node-cancelled' if state=='CANCELLED' else 'node-failed','reason':safe_text(str(exc))})
 
     def native_turn(self, node, key, inputs, prefix, iteration):
+        try:
+            return self._native_turn(node, key, inputs, prefix, iteration)
+        except (Blocked, Invalid, OSError, ValueError):
+            chat_key = digest(canonical([self.run, prefix + node['id']]))
+            try: chat = self.db.get('node-session', chat_key)
+            except Invalid: chat = None
+            if chat:
+                from .model_admission import ModelAdmission
+                ModelAdmission(self.rt).invalidate(chat['binding'], chat['cwd'])
+            raise
+
+    def _native_turn(self, node, key, inputs, prefix, iteration):
         run = self.controls();self.rt.check_operator()
         # Persist the reservation and initialization identity before native side effects.
         # Sessions and initialization are shared across every round of this node path.
@@ -268,11 +319,16 @@ class Scheduler:
         try: chat = self.db.get('node-session', chat_key)
         except Invalid:
             chat = run.get('bindings',{}).get(prefix + node['id']) or self.rt.node_binding(run['workspace'], node)
+            from .model_admission import ModelAdmission
+            ModelAdmission(self.rt).require(chat['binding'], chat['cwd'])
             chat.update(id=chat_key, initialized=False, run=self.run, node=prefix + node['id'],name=node['name'])
             self.db.put('node-session', chat_key, chat)
             self.rt.db.put('chat-profile',digest(chat['binding']['home'].encode()),dict(workspace=chat['workspace'],binding=chat['binding']))
+        from .model_admission import ModelAdmission
+        ModelAdmission(self.rt).require(chat['binding'], chat['cwd'])
         if callable(getattr(self.rt,'recipient_inputs',None)):
             inputs=self.rt.recipient_inputs(chat['cwd'],inputs)
+            inputs=[dict(item,content_sha256=digest(canonical(item['content']))) for item in inputs]
             self.db.change('activation',key,{'inputs':inputs})
         first = not chat['initialized'];prompt = request_text(node, inputs, first=first)
         if first and chat.get('contexts'):
@@ -302,6 +358,9 @@ class Scheduler:
             self.db.change('activation',key,{'source_at_request':source_identity})
             self.rt.recheck_session(chat)
             journal = Journal(self, key)
+            from .model_admission import ModelAdmission
+            admission = ModelAdmission(self.rt)
+            verification=admission.require(binding, cwd)
             receipt = CLI(binding['provider'], binding, dict(step_timeout_seconds=node.get('timeout', 300), max_log_bytes=4_000_000)).start(
                 prompt, cwd, artifacts, schema, journal, self.run)
             if not write and tree_hash(cwd) != before: raise Blocked('只读执行后源码身份发生变化')
@@ -318,6 +377,8 @@ class Scheduler:
                 result=structured,
                 evidence=report.get('evidence', []), issues=report.get('issues', []), next=report.get('next', ''),
                 artifacts=self.rt.attachments(cwd, report.get('artifacts', []))), secret)
+            from .data_contracts import check
+            check(result,node.get('output_contract',[]))
             result['receipt'] = visible
             # This local completion receipt is reconciled before any crash recovery; never resubmit blindly.
             completion = dict(run=self.run, activation=key, chat_key=chat_key, output=result,
@@ -330,4 +391,5 @@ class Scheduler:
             native_snapshot=self.rt.native_snapshot(run['workspace'],binding)
             self.db.change('node-session',chat_key,native_snapshot)
             self.db.change('activation', key, {'receipt': visible, 'completion_sha256': digest(canonical(completion))})
+            admission.renew(binding,cwd,receipt,verification)
             return result

@@ -37,6 +37,8 @@ def main():
     binding,reason=rt.session_center._binding(row,project)
     if not binding or WorkbenchSessions(rt).busy(binding,row['native']['session_id']):raise Blocked(reason or '会话占用状态未确认')
     cwd=row['native']['cwd'];home=Path(binding['home']);sid=row['native']['session_id']
+    selected=rt.node_binding(a.workspace,dict(profile=binding['runtime_profile'],model=binding['model'],
+        effort=binding['effort'],mode='Ask',permission='read'))
     if binding['provider']=='codex':
         argv=[binding['executable'],'resume',sid,'--model',binding['model'],'--no-alt-screen','--sandbox','read-only','--ask-for-approval','never','-c','features.multi_agent=false','-c','model_reasoning_effort='+json.dumps(binding['effort'])]
         transport=nullcontext(([],{}))
@@ -47,6 +49,8 @@ def main():
         # All runtime/source mounts are readonly; only this native HOME and the
         # private temporary directory are writable. No PTY is attached in HTTP.
         rt.check_operator();rt.session_center.resolve(a.workspace,a.handle)
+        from studio.model_admission import ModelAdmission
+        ModelAdmission(rt).require(selected['binding'],cwd)
         wrapped=['/usr/bin/bwrap','--die-with-parent','--unshare-user','--unshare-pid','--unshare-ipc','--unshare-uts','--cap-drop','ALL','--proc','/proc','--dev','/dev','--tmpfs','/tmp']
         paths=sorted(set([cwd,*binding['read_paths'],*[x for x in runtime_paths() if not x.startswith(('/proc/','/dev/'))]]),key=lambda x:(len(Path(x).parts),x))
         for path in paths:
@@ -58,7 +62,10 @@ def main():
             dest.parent.mkdir(parents=True,exist_ok=True);wrapped+=['--ro-bind',source,str(dest)]
         wrapped+=['--remount-ro','/','--remount-ro','/tmp','--chdir',cwd,'--',*argv,*extra]
         env=clean_env(home);env['TMPDIR']=scratch;env['TERM']=os.environ.get('TERM','xterm-256color')
-        return subprocess.call(wrapped,cwd=cwd,env=env)
+        code=subprocess.call(wrapped,cwd=cwd,env=env)
+        if code:
+            ModelAdmission(rt).invalidate(selected['binding'],cwd)
+        return code
 
 
 if __name__=='__main__':
