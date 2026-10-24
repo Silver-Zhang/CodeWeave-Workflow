@@ -107,6 +107,20 @@ class StorageTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.store = Storage(Path(self.tmp.name) / "storage")
 
+    def test_unchanged_metadata_discovery_does_not_commit_new_wal_frames(self):
+        self.store.put('session', 'one', {'native_sha256': 'same'})
+        self.store.put('session', 'two', {'native_sha256': 'other'})
+        with self.store.db() as observer:
+            before = observer.execute('PRAGMA data_version').fetchone()[0]
+            order = observer.execute('SELECT id,rowid FROM objects ORDER BY rowid').fetchall()
+            for _ in range(12): self.store.put('session', 'one', {'native_sha256': 'same'})
+            self.assertEqual(observer.execute('PRAGMA data_version').fetchone()[0], before)
+            self.assertEqual(observer.execute('SELECT id,rowid FROM objects ORDER BY rowid').fetchall(), order)
+            self.store.put('session', 'one', {'native_sha256': 'changed'})
+            self.assertNotEqual(observer.execute('PRAGMA data_version').fetchone()[0], before)
+            self.assertEqual(observer.execute('SELECT id FROM objects ORDER BY rowid DESC').fetchone()[0], 'one')
+        self.assertEqual(self.store.get('session', 'one'), {'native_sha256': 'changed'})
+
     def test_metadata_put_survives_real_transient_writer_lock(self):
         self.store.put('session', 'existing', {'unchanged': True})
         with closing(sqlite3.connect(self.store.path)) as writer:

@@ -42,7 +42,10 @@ class Storage:
         for attempt in range(3):
             try:
                 with self.lock, self.db() as db, db:
-                    db.execute("INSERT OR REPLACE INTO objects VALUES(?,?,?)", (kind, key, value))
+                    db.execute("INSERT OR REPLACE INTO objects "
+                               "SELECT ?,?,? WHERE NOT EXISTS "
+                               "(SELECT 1 FROM objects WHERE kind=? AND id=? AND data=?)",
+                               (kind, key, value, kind, key, value))
                 return
             except sqlite3.OperationalError as exc:
                 code = getattr(exc, 'sqlite_errorcode', None)

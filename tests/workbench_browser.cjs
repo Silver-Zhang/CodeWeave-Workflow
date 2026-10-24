@@ -320,6 +320,9 @@ await test('ux-handoff-pulse-is-new-event-bound-finite-and-reduced-motion',async
  await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A'){v.events=phase?[{seq:phase,at:Date.now()/1000,run:'A',edge:'edge1',source:'analyze',node:'review',kind:'handoff-sent',activation:'A',content:{answer:'本轮真实事件形式的合成证据'},iteration:0,iteration_path:[]}]:[];}await route.fulfill({json:v});});
  await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('已完成'));assert.equal(await p.locator('.handoff-pulse').count(),0);
  // Use the selected graph's real edge identity, not a guessed DOM connection.
+ // The overview can commit before React Flow measures and attaches edges.
+ // Keep the identity/pulse assertions, and wait for the real edge before sending its event.
+ await p.locator('.react-flow__edge[data-id="edge1"]').waitFor({state:'attached'});
  const edges=await p.locator('.react-flow__edge').evaluateAll(es=>es.map(e=>e.dataset.id));assert(edges.includes('edge1'));phase=1;await p.locator('.handoff-pulse[data-event="1"]').waitFor({state:'attached'});
  const pulse=p.locator('.handoff-pulse');assert.equal(await pulse.evaluate(e=>getComputedStyle(e).stroke),'rgb(209, 255, 236)');assert.equal(await pulse.getAttribute('data-run'),'A');await delay(1800);assert.equal(await pulse.evaluate(e=>getComputedStyle(e).opacity),'0');
  await p.getByRole('checkbox',{name:'减少动态效果'}).check();assert.equal(await p.locator('.handoff-pulse').count(),0);
