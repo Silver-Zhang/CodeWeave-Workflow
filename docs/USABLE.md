@@ -47,7 +47,7 @@ python3 /path/to/Stable/tools/devflower_usable.py serve \
 3. 配置节点的 Provider、角色、职责、背景、工具、原生会话、模型、effort 和时间预算。模型和 effort 只能使用操作者实际批准的 profile；`unknown` 请求继承该 profile。无法从 CLI 响应证明的实际值仍显示 `unknown`。
 4. 点击画布的 Human Gate 节点，填写任务卡或导入授权仓库的 GitHub Issue URL。任务、路径、验收与授权预览均在该节点的画布内面板操作；Delivery 节点配置当次交付权限。确认目标、允许修改路径、验收正文与测试节点。验证节点可选择操作者预先登记的 JSON 输入/输出断言、固定 DevFlower `baseline` 或 JavaScript 语法检查。浏览器只能选 profile，不能提交任意 shell 或定义命令。
 5. 在 Human Gate 面板生成当次授权预览，核对工作区 HEAD、源码哈希、合同、Agent 配置、步骤预算和 GitHub 权限。每个人工关口均明确标注必填内容，客户端在发送前检查每条回复非空（最多 4000 字），为空时显示中文提示、聚焦缺项并保留可操作按钮；服务端继续校验全部人工合同。发送后遇到网络异常则可能已消费许可，按钮保持锁定，应查询运行记录，不盲目重发。授权只能使用一次；源代码、配置、Stable 身份变化后旧预览失效。
-6. 点击人工确认并运行。固定 runtime 依次执行可选 Planner、Codex 实施、完整候选冻结、真实测试、Claude 独立审核、确定性 gate 和当次批准的交付。NEEDS_CORRECTION 自动进入新候选修复、重测和复审，最多 5 轮。基础设施安全重试最多 2 次；未知会话不能猜测重启。
+6. 点击人工确认并运行。固定 runtime 依次执行可选 Planner、所选 Developer、完整候选冻结、真实测试、独立 Reviewer、确定性 gate 和当次批准的交付。v2 的三个 Agent 角色可使用批准的 Codex/Claude 配置；交换 Developer/Reviewer Provider 必须使用外层 bwrap、独立 HOME 和独立原生会话。原有 v1 绑定不变。NEEDS_CORRECTION 自动进入新候选修复、重测和复审，最多 5 轮。基础设施安全重试最多 2 次；未知会话不能猜测重启。
 
 v2 工作流的人工关口完全由节点决定：启动前至少一个授权节点；Reviewer 与 Delivery 之间可以放置一个或多个结果确认节点。任何模板或空白流程都适用同一规则，C 仅预填研究问题。结果节点存在时，审核通过后进入 `AWAITING_HUMAN`；用户须逐节点回答，确认请求绑定当前候选、合同及严格整数轮次，回执还绑定工作流哈希。未完成全部结果确认不能交付，恢复按钮也不能跳过。删改草稿不会修改已授权运行，新的执行必须重新确认。
 
@@ -57,7 +57,15 @@ v1 草稿被打开编辑时，只转换为内存中的 v2 副本并明确提示�
 
 ## 原生会话与监控
 
-M0 发现接口继续只读扫描原生会话；未托管会话显示“发现/运行未确认”。托管会话在专用持久 HOME 中保存原生记录，并显示 HOME、配置根、原生目录、项目、角色和确切 UUID。恢复要求同项目、同角色、明确 UUID；一个 HOME 同时只能有一个运行持有会话锁。
+旧 Studio 的 M0 元数据接口保持只读。新的工作台会话中心支持 Codex/Claude 可见历史、脱敏搜索、DevFlower 隐藏/取消隐藏，以及受批准专用 HOME 中原生 CLI 的新建和精确 UUID 续聊。隐藏元数据仅写 Studio 数据库；原始会话、子会话、源码和 worktree 均不删除。没有可靠的原生归档/删除接口，按钮与 HTTP 操作明确禁用。
+
+选择本机目录即可只读打开非 Git 或非执行授权工作区；只有实际仓库和操作员批准的执行根通过检查才能发送原生请求。WSL 进程使用本机 Linux 路径；远端和 WSL URI 不支持。最近工作区持久保存。默认存储根按本机 HOME、CODEX_HOME、CLAUDE_CONFIG_DIR 发现，并在工作区内有界寻找真正包含 sessions/projects 的嵌套配置根，不遍历整个 HOME。私有隔离 HOME 可由操作员的 `session_profiles` 登记；旧审核副本的 cwd 不同于项目时，必须明确配置 `workspace` 和 `original_project_root` 归属映射。界面登记只读目录限当前工作区或 `session_read_roots`，不会授予执行权。
+
+HTTP 读取/隐藏/续聊只接受索引生成的 workspace + opaque handle，不能传入任意会话 path 或 argv。会话身份包含 Provider、native UUID、存储 Profile、原 cwd 和工作区，重复冲突只读。读取以扫描时的完整文件哈希再次绑定，隐藏推理与工具输入输出不进入历史响应。外部导入历史只读；新建会话及精确恢复使用批准的模型/effort/认证绑定、原 HOME/cwd、独立权限预览和单次实际确认。HOME 与仓库锁与 Controller 共用；占用和未确认副作用不接管。后台进程与操作回执写入 Studio 存储，不写 Controller 裁决。服务或浏览器重开后可查询操作，失去 supervisor 显示 RECOVERY_REQUIRED，先显式取消再处理实际副作用。
+
+历史搜索在已知凭据脱敏之后匹配。Codex 的 analysis channel、非最终 phase 和工具 recipient 消息不会显示。记录中任何 cwd（含 Codex turn_context）超出批准的工作区或旧运行归属映射时，只显示元数据，拒绝读取正文及续聊；同一已登记运行内的多个冻结候选仍可只读查看。新原生 UUID 必须与实际请求/回执绑定，不能仅因文件出现在托管 HOME 中就获得写入权。超过 32 个显式存储 Profile 时保留扫描上限与 partial 提示，并优先纳入 Controller 管理的会话。
+
+新建工作流任务总会产生新的隔离执行 cwd，当前不支持把其他运行的原生会话移到这个 cwd。节点选择新会话；已有会话从会话中心按原 cwd 续聊，已有运行从 run_id 恢复。此限制不改写已保存的 v1/v2 合同或原运行内的有界修复回路。
 
 Codex 只读挂载原认证文件到独立 `.codex/auth.json`；Claude 只读挂载明确批准的 settings 文件。CLI 写入自己的原生会话目录，不覆盖全局认证或其他项目会话。恢复仍使用原 HOME 和同一只读认证绑定。
 
@@ -141,6 +149,22 @@ Verifier 的计数必须恰含 tests/failures/errors/skipped 四个非负整数�
 
 新增 `tests/test_template_governance.py` 覆盖模板来源不影响执行、任意数量的起始/结果确认、逐节点回答、过期候选/轮次/图回执拒绝、旧版只读兼容和迁移后重新授权。`tests/template_browser.py` 使用真实本地 HTTP/Chromium 验证空白入口、可选模板、删除 C 默认关口、A 添加结果节点和旧草稿版本保留。此套件不使用真实模型。
 
-`.github/workflows/usable.yml` 对 tools/tests 等变更执行完整 Python 回归、baseline、四个前端语法检查、实际宿主隔离，以及五组普通 Chromium 测试。隔离能力缺失计为失败，不通过 Skip 假装验证。GitHub Actions 只运行合成任务，无模型调用、用户凭据或生产仓库；归档仅含已提交公开源码身份、测试日志和合成截图，不上传本机原始会话。
+`.github/workflows/usable.yml` 对 tools/tests 等变更执行完整 Python 回归、baseline、前端语法检查、实际宿主隔离，以及六组普通 Chromium 测试。隔离能力缺失计为失败，不通过 Skip 假装验证。GitHub Actions 只运行合成任务，无模型调用、用户凭据或生产仓库；归档仅含已提交公开源码身份、测试日志和合成截图，不上传本机原始会话。
 
 该代码仍须作为新候选独立审核并固定发布，不能覆盖正在运行的 Stable 目录。历史 Stable 审批不自动批准本次修改。
+
+## Development 会话候选的独立测试
+
+`tools/devflower_sessions.py` 提供明确标注的 Development 会话测试入口，必须由外部操作者给定配置哈希和完整候选树哈希。它不读取或签发 Stable 批准，不开放 Controller 授权、运行恢复、结果 gate 或 Git 交付；原 Stable 继续负责真实任务闭环。这样可以在正式晋升前测试候选的 UI/HTTP/CLI 会话功能。
+
+配置形状见 `examples/usable/session_operator.example.json`。所有路径须是实际绝对路径，不跟随符号链接。storage/native 是两个新建、互不重叠的私有目录，其父目录需已存在；首次启动创建专用标记，重启不会采用无标记的原有目录。原生可执行文件、认证/settings 和 read_paths 的文件或目录必须分别由 dependencies/dependency_trees 固定。模型、effort、只读认证挂载和 bwrap 隔离与 Stable 适配器相同，不复制原 HOME，不修改全局认证。
+
+```bash
+python3 -B tools/devflower_sessions.py \
+  --operator /private/operator.json --operator-sha256 <externally-pinned-config-sha256> \
+  --candidate-sha256 <externally-computed-current-tree-hash> --port 8766
+```
+
+普通 UI 回归：`python3 -B tests/session_browser.py --chromium <ordinary-chromium> --playwright-module <playwright> --artifacts <new-evidence-directory>`。它使用合成历史、真实 HTTP 与 Chromium，覆盖可见历史/搜索、隐藏、精确权限预览、过期响应、只读目录、浏览器重开和禁用删除，不能当原生模型验收。
+
+真实原生 API 测试：`python3 -B tests/native_sessions.py --operator <file> --operator-sha256 <sha> --candidate-sha256 <sha> --workspace <approved-git-root> --artifacts <new-disjoint-directory> --profiles default-codex default-claude --allow-native-turns`。外部操作者提供实际批准的配置与凭据；脚本经 HTTP 新建后在原 HOME/cwd 精确恢复 UUID，以前一轮随机标记的回忆证明续聊，并保留脱敏回执及过期授权/未授权删除反例。它只证明会话 API，不能代替 Stable 发起的 Developer→非零验证→独立审核→修复复审闭环、独立审查或最终人工验收。

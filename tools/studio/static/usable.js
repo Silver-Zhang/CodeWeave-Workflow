@@ -15,7 +15,7 @@ function confirmedPR(receipt) {
     &&Number.isSafeInteger(pr.number)&&match&&String(pr.number)===match[1]?pr:null;
 }
 let panelOrigin=null;
-function closePanels() { for(const e of document.querySelectorAll('.floating-panel'))e.hidden=true; $('node-menu').hidden=true; }
+function closePanels() { window.sessionDesk?.invalidate();for(const e of document.querySelectorAll('.floating-panel'))e.hidden=true; $('node-menu').hidden=true; }
 function openPanel(id) {
   closePanels();panelOrigin=document.activeElement;const panel=$(id);panel.hidden=false;
   const node=canvas.svg.querySelector(`[data-node="${state.mode==='run'?state.runSelected:state.selected}"]`);
@@ -68,7 +68,9 @@ async function newDraft(kind) {
 }
 async function status() {
   const epoch=++state.statusEpoch,value=await api('/api/status');if(epoch!==state.statusEpoch)return;state.profiles=value.profiles;state.verificationProfiles=value.verification_profiles||[];state.drafts=value.drafts;
-  $('trust').textContent='Stable '+value.stable.slice(0,16);
+  state.sessionOnly=value.execution_context==='development-sessions';
+  $('trust').textContent=state.sessionOnly?'Development 会话候选 · 无 Controller/Stable 权限':'Stable '+value.stable.slice(0,16);
+  $('canvas-run').disabled=state.sessionOnly;$('prepare').disabled=state.sessionOnly;
   options($('recent'),[['','最近工作区'],...value.workspaces.map(w=>[w.id,w.path])],state.workspace?.id);
   options($('drafts'),[['','已保存流程'],...value.drafts.map(d=>[d.id,d.document.name])],state.saved?.id);
   options($('runs'),[['','选择运行'],...value.runs.filter(r=>!state.workspace||r.project===state.workspace.id).map(r=>[r.id,r.id.slice(0,12)+' · '+r.state])],state.run);
@@ -76,7 +78,7 @@ async function status() {
 }
 function setWorkspace(workspace) {
   state.workspace=workspace;state.snapshot=null;state.runSelected=null;state.workspaceEpoch++;state.owned=[];invalidatePreview();state.run=null;state.runEpoch++;
-  $('workspace-path').value=workspace.path;$('workspace-info').textContent=`${workspace.path} · ${workspace.branch} · ${workspace.head}`;
+  $('workspace-path').value=workspace.path;$('workspace-info').textContent=`${workspace.path} · ${workspace.environment||'local'} · ${workspace.execution_allowed===false?'只读 · '+workspace.execution_reason:workspace.branch+' · '+workspace.head}`;
   $('sessions').replaceChildren();$('preview').replaceChildren();$('monitor').replaceChildren();if(state.mode==='run')canvas.render({nodes:[],edges:[]});$('run-title').textContent='未选择运行';sessionStorage.setItem('devflower-workspace',workspace.id);status().catch(e=>notice(e.message));sessions().catch(e=>notice(e.message));
 }
 async function saveDraft() {
@@ -119,11 +121,11 @@ function configure() {
   parent.append(text('strong',n.type+' · '+n.id));field(parent,'显示名称','label',n.label);
   const c=n.config;
   if(['developer','reviewer','planner'].includes(n.type)) {
-    const providers=n.type==='developer'?['codex']:n.type==='reviewer'?['claude']:['codex','claude'];
+    const providers=[...new Set(state.profiles.map(p=>p.provider).filter(p=>['codex','claude'].includes(p)))];
     field(parent,'Provider','provider',c.provider,'text',providers.map(p=>[p,p==='codex'?'Codex':'Claude Code']));
-    field(parent,'运行配置','profile',c.profile,'text',state.profiles.filter(p=>providers.includes(p.provider)).map(p=>[p.id,`${p.provider} · ${p.model} / ${p.effort}`]));
-    const role=n.type==='developer'?'implementer':n.type;
-    field(parent,'原生会话','session',c.session,'text',[['new','新建独立原生会话'],...state.owned.filter(s=>s.role===role&&s.provider===c.provider&&s.resume).map(s=>[s.id,s.id])]);
+    field(parent,'运行配置','profile',c.profile,'text',state.profiles.filter(p=>p.provider===c.provider).map(p=>[p.id,`${p.provider} · ${p.model} / ${p.effort}`]));
+    field(parent,'原生会话','session',c.session,'text',[['new','新建独立原生会话']]);
+    parent.append(text('p','新任务使用新的隔离 cwd；已有会话请在会话中心按原环境续聊，已有运行从运行记录恢复。'));
     field(parent,'系统职责','responsibility',c.responsibility,'textarea');
     field(parent,'项目背景','background',c.background,'textarea');
     const advanced=document.createElement('details');advanced.className='agent-advanced';advanced.append(text('summary','高级：模型覆盖、工具与预算'));parent.append(advanced);
@@ -259,6 +261,7 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo(e.shiftKey?1:-1);}
 });
 async function sessions() {
+  if(window.sessionDesk)return window.sessionDesk.refresh();
   if(!state.workspace)throw new Error('先打开工作区');
   const epoch=state.workspaceEpoch, value=await api('/api/sessions?workspace='+state.workspace.id);
   if(epoch!==state.workspaceEpoch)return;state.owned=value.owned;$('sessions').replaceChildren();
@@ -304,7 +307,7 @@ async function prepare() {
   if(target)parent.append(text('p',`GitHub ${target.repository} · ${target.branch} → ${target.base}`),
     text('p',`绑定 PR：${target.existing_pr===null?'新建':`#${target.existing_pr}`} · 预期远端 tip：${target.expected_tip||'分支尚不存在'}`));
   parent.append(text('p',`测试隔离：${value.data.config.verification_isolation||'landlock'}`));
-  for(const[role,b]of Object.entries(value.data.config.bindings))parent.append(text('p',`${role}: ${b.provider} · ${b.model}/${b.effort} · ${b.session_id||'新会话'} · ${b.timeout_seconds} 秒`));
+  for(const[role,b]of Object.entries(value.data.config.bindings))parent.append(text('p',`${role}: ${b.provider} · ${b.model}/${b.effort} · ${b.session_id||'新会话'} · HOME ${b.home} · ${b.role==='implementer'?'实施副本可写':'源码只读'} · 工具 ${b.tools.join(', ')} · ${b.timeout_seconds} 秒`));
   const tests=document.createElement('details');tests.append(text('summary','查看绑定的测试断言与执行配置'),text('pre',JSON.stringify(value.data.config.policy.verification,null,2)));parent.append(tests);
   const answers=value.data.human_questions.map(question=>{const label=text('label','必填：请说明你确认的任务范围、允许路径、外部模型使用与本次交付权限。'),answer=document.createElement('textarea');answer.rows=3;answer.required=true;answer.maxLength=4000;answer.placeholder='例如：我确认上述任务和允许路径，同意本次外部模型执行；交付权限以预览为准。';const detail=text('details',''),summary=text('summary','查看此关口的具体问题');detail.append(summary,text('p',question));label.append(detail,answer);parent.append(label);return answer;});
   const button=text('button','人工确认并运行');
@@ -386,7 +389,7 @@ function renderSnapshot(run,snapshot) {
   if(snapshot.reason)parent.append(text('p',snapshot.reason));
   if(snapshot.current_agent) {
     const a=snapshot.current_agent;
-    parent.append(text('p',`${a.role} · ${a.provider} · 会话 ${a.session_id} · 请求 ${a.requested_model}/${a.requested_effort} · PID ${a.process?.pid??'unknown'} · ${a.alive?'实际进程存活':'进程已结束或活性未确认'}`));
+    parent.append(text('p',`${a.role} · ${a.provider} · 会话 ${a.session_id} · 请求 ${a.requested_model}/${a.requested_effort} · cwd ${a.cwd||'unknown'} · ${a.permission||'unknown'} · tools ${(a.tools||[]).join(', ')} · PID ${a.process?.pid??'unknown'} · ${a.alive?'实际进程存活':'进程已结束或活性未确认'}`));
   }
   const stages=text('div','','row');
   for(const n of (snapshot.workflow_graph||snapshot.graph)?.nodes||[]) {
@@ -457,4 +460,4 @@ act('prepare',prepare);$('runs').addEventListener('change',()=>selectRun($('runs
 act('resume',async()=>{if(!state.run)throw new Error('选择运行');await api('/api/resume',{run_id:state.run});await poll();});
 act('cancel',async()=>{if(!state.run)throw new Error('选择运行');await api('/api/cancel',{run_id:state.run});await poll();});
 setInterval(poll,2000);
-(async()=>{try{await status();await newDraft();const workspace=state.workspaces.find(w=>w.id===sessionStorage.getItem('devflower-workspace'));if(workspace){setWorkspace(await api('/api/workspace',{path:workspace.path}));const run=sessionStorage.getItem('devflower-run');if(run){await status();if([...$('runs').options].some(o=>o.value===run)){$('runs').value=run;selectRun(run);}}}notice('Stable 身份已核验。画布中双击人工确认节点填写任务；双击 Agent 节点配置。运行快照与草稿独立。');}catch(e){notice(e.message);}finally{$('studio').inert=false;$('studio').dataset.ready='true';}})();
+(async()=>{try{await status();await newDraft();const workspace=state.workspaces.find(w=>w.id===sessionStorage.getItem('devflower-workspace'));if(workspace){setWorkspace(await api('/api/workspace',{path:workspace.path}));const run=sessionStorage.getItem('devflower-run');if(run){await status();if([...$('runs').options].some(o=>o.value===run)){$('runs').value=run;selectRun(run);}}}notice(state.sessionOnly?'Development 会话候选已固定；可测试已授权原生会话。Controller 运行与交付仅由另行批准的 Stable 提供。':'Stable 身份已核验。画布中双击人工确认节点填写任务；双击 Agent 节点配置。运行快照与草稿独立。');}catch(e){notice(e.message);}finally{$('studio').inert=false;$('studio').dataset.ready='true';}})();

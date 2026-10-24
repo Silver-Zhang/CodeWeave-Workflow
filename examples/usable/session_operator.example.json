@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "kind": "development-sessions",
+  "storage": "/private/devflower/session-storage",
+  "native": "/private/devflower/native-homes",
+  "allowed_roots": ["/approved/development"],
+  "profiles": {
+    "default-codex": {
+      "provider": "codex",
+      "executable": "/absolute/resolved/bin/codex",
+      "model": "gpt-6.1-sol",
+      "effort": "xhigh",
+      "read_paths": ["/absolute/resolved/codex-dependencies"],
+      "readonly_files": [["/private/credentials/codex-auth.json", ".codex/auth.json"]],
+      "timeout_seconds": 1800
+    },
+    "default-claude": {
+      "provider": "claude",
+      "executable": "/absolute/resolved/bin/claude",
+      "model": "deepseek-flash[1m]",
+      "effort": "high",
+      "read_paths": ["/absolute/resolved/bin/claude"],
+      "readonly_files": [["/private/credentials/claude-settings.json", ".claude/settings.json"]],
+      "timeout_seconds": 1800
+    }
+  },
+  "dependencies": {
+    "/absolute/resolved/bin/codex": "REPLACE_WITH_ACTUAL_SHA256",
+    "/absolute/resolved/bin/claude": "REPLACE_WITH_ACTUAL_SHA256",
+    "/private/credentials/codex-auth.json": "REPLACE_WITH_ACTUAL_SHA256",
+    "/private/credentials/claude-settings.json": "REPLACE_WITH_ACTUAL_SHA256"
+  },
+  "dependency_trees": {
+    "/absolute/resolved/codex-dependencies": "REPLACE_WITH_ACTUAL_TREE_HASH"
+  },
+  "session_read_roots": ["/private/old-reviewer-home"],
+  "session_profiles": [{
+    "provider": "claude",
+    "home": "/private/old-reviewer-home",
+    "config_root": "/private/old-reviewer-home/.claude",
+    "workspace": "/approved/development",
+    "original_project_root": "/private/old-control/run/round-1/candidate"
+  }]
+}

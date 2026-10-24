@@ -22,6 +22,10 @@ class Storage:
                 raise Invalid("Studio storage must contain private regular files")
         self.lock = threading.RLock()
         with self.db() as db, db:
+            # History scans must not block a concurrent save/permit commit.
+            # Keep FULL durability; only reader/writer concurrency changes.
+            if db.execute('PRAGMA journal_mode=WAL').fetchone()[0].lower() != 'wal':
+                raise Invalid('Studio storage requires WAL reader/writer isolation')
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS objects(kind TEXT,id TEXT,data TEXT,PRIMARY KEY(kind,id));
                 CREATE TABLE IF NOT EXISTS revisions(id TEXT,revision TEXT,data TEXT,at REAL,PRIMARY KEY(id,revision));
@@ -34,8 +38,22 @@ class Storage:
         return closing(sqlite3.connect(self.path, timeout=10))
 
     def put(self, kind, key, data):
-        with self.lock, self.db() as db, db:
-            db.execute("INSERT OR REPLACE INTO objects VALUES(?,?,?)", (kind, key, canonical(data).decode()))
+        value = canonical(data).decode()
+        for attempt in range(3):
+            try:
+                with self.lock, self.db() as db, db:
+                    db.execute("INSERT OR REPLACE INTO objects "
+                               "SELECT ?,?,? WHERE NOT EXISTS "
+                               "(SELECT 1 FROM objects WHERE kind=? AND id=? AND data=?)",
+                               (kind, key, value, kind, key, value))
+                return
+            except sqlite3.OperationalError as exc:
+                code = getattr(exc, 'sqlite_errorcode', None)
+                if type(code) is not int or code & 255 != sqlite3.SQLITE_BUSY or attempt == 2:
+                    raise
+                # Only an atomic metadata upsert retries, after rollback/close.
+                # Never repeat the caller's native Agent or permit consumption.
+                time.sleep(.05 * (2 ** attempt))
 
     def get(self, kind, key):
         with self.db() as db:
@@ -44,10 +62,32 @@ class Storage:
             raise Invalid("Unknown " + kind)
         return json.loads(row[0])
 
-    def listing(self, kind):
+    def listing(self, kind, *, filters=None, limit=100):
+        conditions, params = ['kind=?'], [kind]
+        for field, value in (filters or {}).items():
+            conditions.append('json_extract(data, ?) = ?')
+            params.extend(['$.' + field, value])
+        query = 'SELECT data FROM objects WHERE ' + ' AND '.join(conditions) + ' ORDER BY rowid DESC'
+        if limit is not None:
+            query += ' LIMIT ?'
+            params.append(limit)
         with self.db() as db:
-            rows = db.execute("SELECT data FROM objects WHERE kind=? ORDER BY rowid DESC LIMIT 100", (kind,)).fetchall()
+            rows = db.execute(query, params).fetchall()
         return [json.loads(row[0]) for row in rows]
+
+    def update(self, kind, key, changes, states=None):
+        """Merge atomically across the HTTP service and detached session worker."""
+        with self.lock, self.db() as db, db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT data FROM objects WHERE kind=? AND id=?', (kind, key)).fetchone()
+            if not row:
+                raise Invalid('Unknown ' + kind)
+            data = json.loads(row[0])
+            if states is not None and data.get('state') not in states:
+                raise Conflict('Operation state changed; reload before acting')
+            data.update(changes)
+            db.execute('UPDATE objects SET data=? WHERE kind=? AND id=?', (canonical(data).decode(), kind, key))
+        return data
 
     def save_draft(self, document, identity=None, expected=None):
         document = draft(document)

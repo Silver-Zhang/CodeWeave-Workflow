@@ -1,5 +1,6 @@
 """Strict validation for the shipped contracts and locally approved bindings."""
 from pathlib import Path
+import copy
 import re
 import uuid
 from .common import Blocked, canonical, controller_hash, digest, identity, load, relative
@@ -91,7 +92,14 @@ def config_check(config, *, execution=False):
         raise Blocked('prior_reviews must be an operator-bound list')
     for report in config.get('prior_reviews', []):
         validate(report, schema('review-result'))
-    validate(config['policy'], schema('workflow-policy'))
+    v2 = config.get('studio_workflow', {}).get('document', {}).get('version') == 2
+    policy_schema = schema('workflow-policy')
+    if v2:
+        # Extend v2 only. Saved CLI/v1 policies retain their original semantics.
+        policy_schema = copy.deepcopy(policy_schema)
+        for role in ('implementer', 'reviewer'):
+            policy_schema['properties']['agents']['properties'][role]['properties']['adapter'] = {'enum': ['codex-cli', 'claude-cli']}
+    validate(config['policy'], policy_schema)
     if any(not isinstance(config[x], str) or not config[x].strip() for x in ('task_id', 'project', 'goal')):
         raise Blocked('task/project/goal required')
     for key in ('scope', 'excludes'):
@@ -131,11 +139,11 @@ def config_check(config, *, execution=False):
     require_keys(config['bindings'], ('implementer', 'reviewer'), ('planner',))
     for role, binding in config['bindings'].items():
         require_keys(binding, ('project', 'role', 'executable', 'home', 'read_paths', 'model', 'effort', 'session_id'), ('isolation', 'external_sandbox', 'provider', 'tools',
-            'responsibility', 'background', 'timeout_seconds', 'readonly_files', 'buffered_tool_transport'))
+            'responsibility', 'background', 'timeout_seconds', 'readonly_files', 'buffered_tool_transport', 'runtime_profile'))
         if binding.get('isolation', 'landlock') not in ('landlock', 'bwrap'):
             raise Blocked('unknown isolation backend')
         if type(binding.get('external_sandbox', False)) is not bool or binding.get('external_sandbox') and (
-                role not in ('implementer', 'planner') or binding.get('isolation') != 'bwrap'):
+                (role == 'reviewer' and not v2) or binding.get('isolation') != 'bwrap'):
             raise Blocked('external CLI sandbox requires explicit outer bwrap implementer binding')
         if binding['project'] != config['project'] or binding['role'] != role:
             raise Blocked('cross-project/role session binding')
@@ -153,8 +161,16 @@ def config_check(config, *, execution=False):
         if not isinstance(binding['read_paths'], list) or any(not isinstance(p, str) or not Path(p).is_absolute() for p in binding['read_paths']):
             raise Blocked('absolute read_paths required')
         provider = binding.get('provider', 'claude' if role == 'reviewer' else 'codex')
-        if provider not in ('codex', 'claude') or role == 'reviewer' and provider != 'claude' or role == 'implementer' and provider != 'codex':
+        if provider not in ('codex', 'claude') or not v2 and (role == 'reviewer' and provider != 'claude' or role == 'implementer' and provider != 'codex'):
             raise Blocked('unsupported role/provider')
+        if v2:
+            swapped = role == 'implementer' and provider == 'claude' or role == 'reviewer' and provider == 'codex'
+            if swapped and binding.get('isolation') != 'bwrap':
+                raise Blocked('v2 Provider combinations require mandatory outer bwrap')
+            if role != 'planner' and config['policy']['agents'][role]['adapter'] != provider + '-cli':
+                raise Blocked('policy adapter differs from effective provider')
+            if swapped and provider == 'codex' and not binding.get('external_sandbox'):
+                raise Blocked('Codex v2 roles require an explicit outer sandbox')
         if type(binding.get('buffered_tool_transport', False)) is not bool:
             raise Blocked('buffered_tool_transport must be an explicit boolean')
         if binding.get('buffered_tool_transport') and (provider != 'claude' or binding.get('isolation') != 'bwrap'):
@@ -249,6 +265,27 @@ def studio_workflow_check(config):
              if n['type'] in ('developer', 'planner', 'reviewer')}
     if roles != set(config['bindings']):
         raise Blocked('studio workflow roles differ from bindings')
+    if plan['document']['version'] == 2:
+        for n in nodes.values():
+            if n['type'] not in ('developer', 'planner', 'reviewer'):
+                continue
+            c = n['config']
+            role = 'implementer' if n['type'] == 'developer' else n['type']
+            b = config['bindings'][role]
+            provider = b.get('provider', 'claude' if role == 'reviewer' else 'codex')
+            if provider != c['provider']:
+                raise Blocked('canvas Provider differs from actual adapter binding')
+            if 'runtime_profile' in b and b['runtime_profile'] != c['profile']:
+                raise Blocked('canvas storage profile differs from approved runtime binding')
+            for field in ('tools', 'timeout_seconds'):
+                if field in b and b[field] != c[field]:
+                    raise Blocked('canvas tools/budget differs from actual binding')
+            for field in ('model', 'effort'):
+                if c[field] != 'unknown' and c[field] != b[field]:
+                    raise Blocked('canvas model/effort differs from actual binding')
+        homes = [Path(b['home']).resolve() for b in config['bindings'].values()]
+        if any(a.is_relative_to(b) or b.is_relative_to(a) for i, a in enumerate(homes) for b in homes[i+1:]):
+            raise Blocked('independent Agent roles require disjoint native homes')
     return plan
 
 

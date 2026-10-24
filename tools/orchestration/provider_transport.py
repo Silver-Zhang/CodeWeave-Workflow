@@ -149,7 +149,9 @@ def relay(base_url, token, model, effort, timeout=300):
 @contextmanager
 def claude_transport(binding, timeout=300):
     if not binding.get("buffered_tool_transport", False):
-        yield [], {"mode": "native"}
+        yield ["--settings", json.dumps({"env": {"CLAUDE_CODE_MAX_RETRIES": "0"}})], {
+            "mode": "native", "automatic_retries": 0,
+        }
         return
     sources = [src for src, dest in binding.get("readonly_files", []) if dest == ".claude/settings.json"]
     if binding.get("isolation") != "bwrap" or len(sources) != 1:
@@ -160,10 +162,11 @@ def claude_transport(binding, timeout=300):
     if not isinstance(base, str) or model == "unknown" or effort == "unknown":
         raise Blocked("Buffered tool transport requires an explicit gateway, model and effort")
     with relay(base, token, model.removesuffix("[1m]"), effort, timeout=timeout) as (url, counters):
-        # Only this CLI invocation changes its endpoint. Original credentials,
-        # settings, model, effort, tools and outer sandbox remain unchanged.
-        yield ["--settings", json.dumps({"env": {"ANTHROPIC_BASE_URL": url}})], {
-            "mode": "buffered-tools", "statistics": counters,
+        # Bound retries in this invocation; only the controller may retry a step.
+        # Credentials, model, effort, tools and outer sandbox remain unchanged.
+        yield ["--settings", json.dumps({"env": {"ANTHROPIC_BASE_URL": url,
+            "CLAUDE_CODE_MAX_RETRIES": "0"}})], {
+            "mode": "buffered-tools", "statistics": counters, "automatic_retries": 0,
         }
 
 

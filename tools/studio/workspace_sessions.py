@@ -47,7 +47,7 @@ def configuration(path):
 
 
 class WorkspaceSessions:
-    def __init__(self, storage, project_roots=(), registration=None, environ=None, persist=True):
+    def __init__(self, storage, project_roots=(), registration=None, environ=None, persist=True, profile_config=None):
         env = os.environ if environ is None else environ
         self.lock = threading.Lock()
         self.machine = identity(socket.gethostname())
@@ -55,7 +55,7 @@ class WorkspaceSessions:
         self.profiles = []
         self.storage = Path(storage)
         self.path = self.storage/'sessions.sqlite'
-        cfg = configuration(registration)
+        cfg = configuration(registration) if profile_config is None else profile_config
         self.limits = dict(LIMITS)
         if not isinstance(cfg.get('limits', {}), dict):
             raise Invalid('Scan limits must be an object')

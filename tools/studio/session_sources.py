@@ -77,7 +77,10 @@ def clean_path(value):
 def opened(path, directory=False):
     """Resolve every component with openat/O_NOFOLLOW; never follow symlinks."""
     path = clean_path(str(path))
-    fd = os.open('/', os.O_RDONLY | os.O_DIRECTORY)
+    # Ancestors are lookup handles, not directory listings. Requesting READ_DIR
+    # on / (or an unrelated parent) breaks a workspace-only Landlock allowlist.
+    # O_PATH grants no read access; the final inode still needs a real read open.
+    fd = os.open('/', os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW)
     try:
         parts = Path(path).parts[1:]
         for n, part in enumerate(parts):
@@ -85,17 +88,17 @@ def opened(path, directory=False):
                 with regular_at(part, dir_fd=fd) as file_fd:
                     yield file_fd
                 return
-            flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
-            if n < len(parts)-1 or directory:
-                flags |= os.O_DIRECTORY
+            flags = os.O_PATH | os.O_NOFOLLOW | os.O_DIRECTORY
             nxt = os.open(part, flags, dir_fd=fd)
             os.close(fd); fd = nxt
-            st = os.fstat(fd)
-            if not st.st_mode & 0o444:
-                raise PermissionError()
-        st = os.fstat(fd)
-        if directory and not stat.S_ISDIR(st.st_mode) or not directory and not stat.S_ISREG(st.st_mode):
+        if not directory:
             raise Refused('not_regular')
+        if not os.fstat(fd).st_mode & 0o444:
+            raise PermissionError()
+        # Reopen the pinned directory, so replacing a component after lookup
+        # cannot redirect the listing. This open enforces DAC and Landlock.
+        nxt = os.open('.', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
+        os.close(fd); fd = nxt
         yield fd
     finally:
         os.close(fd)
@@ -112,6 +115,7 @@ def read_session(fd, provider, filename, limits, initial_stat=None):
     if st.st_size > limits['file_bytes']:
         raise Refused('oversized')
     sid = cwd = version = created = updated = None
+    cwds = []
     seen = 0; changed_cwd = False; sha = hashlib.sha256()
     # The caller owns fd. Buffered read-ahead is bounded at the raw IO layer.
     with io.BufferedReader(SnapshotReader(fd, st.st_size)) as stream:
@@ -132,9 +136,9 @@ def read_session(fd, provider, filename, limits, initial_stat=None):
                 raise Refused('corrupt_jsonl') from None
             if not isinstance(obj, dict):
                 raise Refused('invalid_metadata')
-            meta = obj.get('payload') if provider == 'codex' and obj.get('type') == 'session_meta' else obj if provider == 'claude' else None
+            meta = obj.get('payload') if provider == 'codex' and obj.get('type') in ('session_meta', 'turn_context') else obj if provider == 'claude' else None
             if isinstance(meta, dict):
-                identity = meta.get('id' if provider == 'codex' else 'sessionId')
+                identity = meta.get('id') if provider == 'codex' and obj.get('type') == 'session_meta' else meta.get('sessionId') if provider == 'claude' else None
                 if identity is not None:
                     if not isinstance(identity, str) or not UUID.fullmatch(identity) or sid and identity != sid:
                         raise Refused('identity_conflict')
@@ -144,6 +148,10 @@ def read_session(fd, provider, filename, limits, initial_stat=None):
                     if cwd and cwd != value:
                         changed_cwd = True
                     cwd = cwd or value
+                    if value not in cwds:
+                        if len(cwds) >= 32:
+                            raise Refused('cwd_budget')
+                        cwds.append(value)
                 v = meta.get('cli_version' if provider == 'codex' else 'version')
                 if isinstance(v, str) and VERSION.fullmatch(v):
                     version = v
@@ -158,11 +166,11 @@ def read_session(fd, provider, filename, limits, initial_stat=None):
     codex_name = re.fullmatch(r'rollout-\d{4}-\d\d-\d\dT[0-9-]+-('+UUID.pattern+r')(?:_'+UUID.pattern+r')?\.jsonl', filename)
     if provider == 'claude' and filename != sid+'.jsonl' or provider == 'codex' and (not codex_name or codex_name[1] != sid):
         raise Refused('identity_conflict')
-    return dict(session_id=sid, cwd=cwd, cwd_changed=changed_cwd, version=version,
+    return dict(session_id=sid, cwd=cwd, cwds=cwds, cwd_changed=changed_cwd, version=version,
                 created=created, updated=updated, sha256=sha.hexdigest())
 
 
-def scan(root, provider, limits=None, session_ids=None):
+def scan(root, provider, limits=None, session_ids=None, *, include_paths=False):
     limits = dict(LIMITS, **(limits or {}))
     coverage = dict(status='complete', entries=0, files=0, bytes=0, accepted=0, rejected={},
                     limits=limits)
@@ -219,6 +227,9 @@ def scan(root, provider, limits=None, session_ids=None):
                             coverage['bytes'] += actual.st_size
                             row = read_session(child, provider, ent.name, limits, initial_stat=actual)
                             row['file_key'] = hashlib.sha256('/'.join(rel).encode()).hexdigest()
+                            if include_paths:
+                                # Internal locator only. Never include this in an HTTP projection.
+                                row['path'] = str(Path(root).joinpath(*rel))
                             rows.append(row); coverage['accepted'] += 1
                     elif stat.S_ISREG(st.st_mode):
                         reject('unscanned_file')

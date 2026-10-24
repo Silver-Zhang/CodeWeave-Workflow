@@ -19,6 +19,8 @@ Agent 先读 [AGENTS.md](AGENTS.md)，存在项目实例时再读 `project/STATU
 
 需要在本机打开项目、配置工作流并驱动真实 Agent 时，见 [Stable Studio 使用说明](docs/USABLE.md)。原有画布和只读会话发现见 [Studio](docs/STUDIO.md)。
 
+新的命名会话、React Flow 可执行画布与 v3 图协议见 [Development Agent 工作台](docs/WORKBENCH.md)。这是单独的开发预览，仍需完整验收和独立审核，不能替代当前可信 Stable。
+
 ## 开始一个项目
 
 需要 Python 3.11+ 和 Git，无第三方 Python 依赖。先在干净的工作流 clone 中确认远端与基线，再创建 `project/<slug>` 分支：
@@ -47,4 +49,4 @@ Linux 本地双 Agent 运行器的实际接口、最小任务例、授权格式�
 
 现有项目记录先保留到项目分支，再从通用基线的当前树移除；不重写旧提交。物理仓库重命名由管理员执行，品牌名称不等于远端已改名。公开仓库的所有项目分支都公开，分支不提供权限隔离。
 
-本轮不改变既有仓库许可证，不拷贝外部框架的实现或技能文件；调研与取舍见 [REFERENCES](docs/REFERENCES.md)。
+既有仓库许可证保持不变。Development 工作台直接使用 React Flow 等前端依赖，版本及第三方许可证见 [工作台说明](docs/WORKBENCH.md)；其余调研与取舍见 [REFERENCES](docs/REFERENCES.md)。

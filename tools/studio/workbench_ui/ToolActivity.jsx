@@ -1,0 +1,6 @@
+import React from 'react';
+const when=t=>typeof t==='number'&&Number.isFinite(t)?new Date(t*1000).toLocaleString('zh-CN'):'unknown';
+export function ToolActivity({items}){
+ if(!items?.length)return null;
+ return <details className="request-group tool-activity"><summary>工具活动（默认折叠，已脱敏） · {items.length} 项</summary>{items.some(a=>a.history_truncated)&&<p className="history-limit" role="note">仅显示最近的工具记录；更早活动已省略，请查看原生历史。</p>}<p className="hint">按原生调用身份关联；记录耗时来自调用与结果的时间差。缺失时间或身份明确为 unknown，不按同名或顺序猜测。</p>{items.map((a,i)=><details key={a.call_id||i} className="tool-entry"><summary>{a.name} · {a.association==='matched'?'已关联结果':a.association==='conflict'?'关联冲突，待确认':'关联待确认'} · 记录耗时 {typeof a.duration_seconds==='number'?a.duration_seconds+' 秒':'unknown'}{a.truncated?' · 已截断':''}</summary><h4>参数摘要</h4><pre>{a.arguments??'unknown（没有对应的可见调用）'}</pre><h4>工具结果</h4><pre>{a.association==='conflict'?'关联冲突，不归属到某次调用；请核对原始工具事件。':a.result??'unknown（尚未收到可关联结果）'}</pre><small>开始 {when(a.started_at)} · 返回 {when(a.finished_at)}</small><details className="identity-evidence"><summary>原始工具事件与身份</summary><p>调用身份：{a.call_id||'unknown'}</p><pre>{JSON.stringify(a.events||[],null,2)}</pre></details></details>)}</details>;
+}

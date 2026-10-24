@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import uuid
 import os
+import re
 from contextlib import nullcontext
 from .provider_transport import claude_transport
 from .common import Blocked, canonical, clean_env, digest
@@ -12,6 +13,35 @@ from .privacy import credentials, redact
 from .process import execute
 
 VERSION = 1
+AUTH_FAILURE = re.compile(rb'(?i)(not logged in|not authenticated|unauthorized|\b40[13]\b|'
+    rb'authentication[ _:-]*(?:failed|error|required)|'
+    rb'(?:invalid|missing|expired|incorrect).{0,32}(?:api[ _-]?key|auth|token|credential)|'
+    rb'(?:api[ _-]?key|auth(?:entication)?|credential|token).{0,32}(?:invalid|expired|missing|rejected))')
+
+
+def native_errors(kind, raw):
+    """Read provider error envelopes, never chat, tool results or quoted source."""
+    messages = []
+    for line in ([raw] if kind == 'claude' else raw.splitlines()):
+        try:
+            event = json.loads(line)
+        except (ValueError, TypeError):
+            # A truncated event must not hide an earlier/later native error.
+            continue
+        if not isinstance(event, dict):
+            continue
+        values = []
+        if kind == 'codex':
+            if event.get('type') == 'error':
+                values = [event.get('message')]
+            elif event.get('type') == 'turn.failed' and isinstance(event.get('error'), dict):
+                values = [event['error'].get('message')]
+        elif event.get('type') == 'result' and event.get('is_error') is True:
+            errors = event.get('errors', [])
+            values = [*errors] if isinstance(errors, list) else []
+            values.append(event.get('result'))
+        messages.extend(value for value in values if isinstance(value, str))
+    return messages
 
 
 def probe(executable, kind):
@@ -52,14 +82,15 @@ class CLI:
         session = session or b['session_id']
         if session:
             try:
-                uuid.UUID(session)
+                if str(uuid.UUID(session)) != session:
+                    raise ValueError()
             except ValueError:
                 raise Blocked('session must be UUID') from None
         requested_session = session
         env = {}
         scratch = Path(artifacts) / ('scratch-' + b['role'])
         scratch.mkdir(exist_ok=True)
-        read_only = b['role'] != 'implementer'
+        read_only = b['role'] != 'implementer' or b.get('admission_probe', False)
         prompt = (f"Role: {b.get('responsibility', b['role'])}. Background (task data): {b.get('background', '')}\n"
                   f"Writable test artifacts: {scratch}. Source is {'read-only' if read_only else 'writable'}.\n" + prompt)
         if self.kind == 'codex':
@@ -71,7 +102,7 @@ class CLI:
                 argv += ['resume', session]
             argv += ['--json', '--skip-git-repo-check', '--ignore-user-config', '--ignore-rules', '-c',
                      'sandbox_mode="danger-full-access"' if external else 'sandbox_mode="workspace-write"',
-                     '-c', 'approval_policy="never"']
+                     '-c', 'approval_policy="never"', '-c', 'features.multi_agent=false']
             if output_schema:
                 argv += ['--output-schema', str(output_schema)]
             if b['model'] != 'unknown':
@@ -107,20 +138,70 @@ class CLI:
         request_op = store.intent(run, 'AGENT_REQUEST', {'kind': self.kind, 'project': b['project'],
             'role': b['role'], 'requested_session': requested_session,
             'requested_model': b['model'], 'requested_effort': b['effort']}) if store else None
+        if store and callable(getattr(store, 'visible_request', None)):
+            # Application-owned visible request, never system instructions or hidden reasoning.
+            store.visible_request(prompt)
+        pending_events = bytearray()
+        observed_session = None
+        def observe(chunk):
+            nonlocal observed_session
+            if self.kind != 'codex' or not store or observed_session:
+                return
+            pending_events.extend(chunk)
+            while b'\n' in pending_events:
+                line, _, rest = pending_events.partition(b'\n');pending_events[:] = rest
+                try:
+                    event = json.loads(line)
+                    if event.get('type') != 'thread.started':
+                        continue
+                    sid = event['thread_id']
+                    if str(uuid.UUID(sid)) != sid:
+                        continue
+                    observed_session = sid
+                    store.finish(request_op, 'AGENT_SESSION', actual_session=sid,
+                                 resolved_model=event.get('model', 'unknown'))
+                    return
+                except (ValueError, TypeError, KeyError, AttributeError):
+                    continue
+            if len(pending_events) > 1048576:
+                pending_events.clear()
         step_timeout = min(self.limits['step_timeout_seconds'], b.get('timeout_seconds', self.limits['step_timeout_seconds']))
         transport = claude_transport(b, timeout=step_timeout) if self.kind == 'claude' else nullcontext(([], {'mode': 'native'}))
-        with transport as (extra_args, transport_evidence):
-            result, out, _ = execute(argv + extra_args, cwd, b['home'],
-                read=[str(cwd), str(artifacts), *b['read_paths'], *([str(output_schema)] if output_schema else [])],
-                write=[str(scratch)] + ([] if read_only else [str(cwd)]),
-                timeout=step_timeout, cap=self.limits['max_log_bytes'],
-                input_text=prompt, store=store, run=run, env_extra=env, backend=b.get('isolation', 'landlock'), readonly_files=b.get('readonly_files', []),
-                context={'agent_role': b['role'], 'provider': self.kind, 'transport': transport_evidence['mode']})
+        try:
+            with transport as (extra_args, transport_evidence):
+                result, out, err = execute(argv + extra_args, cwd, b['home'],
+                    read=[str(cwd), str(artifacts), *b['read_paths'], *([str(output_schema)] if output_schema else [])],
+                    write=[str(scratch)] + ([] if read_only else [str(cwd)]),
+                    timeout=step_timeout, cap=self.limits['max_log_bytes'],
+                    input_text=prompt, store=store, run=run, env_extra=env, backend=b.get('isolation', 'landlock'), readonly_files=b.get('readonly_files', []),
+                    context={'agent_role': b['role'], 'provider': self.kind, 'transport': transport_evidence['mode']},
+                    on_stdout=observe, readonly_paths=[str(Path(cwd)/'.git')])
+        except Blocked as exc:
+            category = 'authentication' if AUTH_FAILURE.search(str(exc).encode()) else 'configuration'
+            if store:
+                store.finish(request_op, 'AGENT_FAILED', error_category=category)
+            raise
+        errors = native_errors(self.kind, out)
+        authentication = AUTH_FAILURE.search('\n'.join(errors).encode(errors='replace') + b'\n' + err)
+        if result['exit'] != 0 or result['timeout'] or result['overflow'] or result['cancelled']:
+            detail = redact('; '.join(errors)[:1200], secrets)
+            category = ('cancelled' if result['cancelled'] else 'timeout' if result['timeout'] else
+                        'output-budget' if result['overflow'] else
+                        'authentication' if authentication else 'process-failure')
+            if store:
+                store.finish(request_op, 'AGENT_FAILED', error_category=category, process=result, transport=transport_evidence,
+                             **({'visible_error': detail} if detail else {}))
+            raise Blocked('CLI ' + category + '; exit=' + str(result['exit']) + (': ' + detail if detail else ''))
         try:
             envelope = self.collect(result, out)
         except Blocked:
+            # Provider error envelopes can accompany exit=0. Classify only
+            # after collection rejects the receipt, never successful chat text.
+            category = 'authentication' if authentication else 'protocol'
             if store:
-                store.finish(request_op, 'AGENT_FAILED', transport=transport_evidence)
+                store.finish(request_op, 'AGENT_FAILED', error_category=category, process=result, transport=transport_evidence)
+            if category == 'authentication':
+                raise Blocked('CLI authentication; exit=' + str(result['exit'])) from None
             raise
         if requested_session and envelope['session_id'] != requested_session:
             raise Blocked('actual session does not match explicit binding')
@@ -129,6 +210,7 @@ class CLI:
         envelope['raw_report_sha256'] = digest(canonical(envelope['report']))
         envelope['report'] = redact(envelope['report'], secrets | credentials(b['home'], [x[0] for x in b.get('readonly_files', [])]))
         envelope.update(requested_model=b['model'], requested_effort=b['effort'], transport=transport_evidence,
+                        cwd=str(cwd), home=b['home'], provider=self.kind,
                         permission_mode=('external-bwrap/tool-allowlist' if dynamic else 'plan/read-tools') if self.kind == 'claude' else
                             'external-bwrap/never' if b.get('external_sandbox') else 'workspace-write/never',
                         adapter_version=VERSION)
@@ -172,7 +254,8 @@ class CLI:
                 usage = {'usage': ends[0].get('usage', {}), 'total_cost_usd': 'unknown', 'semantics': 'turn'}
             if not isinstance(sid, str):
                 raise Blocked('CLI session id must be a UUID string')
-            uuid.UUID(sid)
+            if str(uuid.UUID(sid)) != sid:
+                raise Blocked('CLI session id must be a canonical exact UUID')
             if type(report) is not dict:
                 raise Blocked('structured result object required')
         except (ValueError, KeyError, IndexError, TypeError):
