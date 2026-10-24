@@ -1,7 +1,7 @@
 """Adversarial synthetic catalog/routing contracts, distinct from native acceptance."""
-import copy,time,unittest,sys
+import copy,time,unittest,sys,json
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch,MagicMock
 sys.path[:0]=[str(Path(__file__).resolve().parents[1]/'tools'),str(Path(__file__).parent)]
 from test_workbench_runtime import fixture
 from studio.workbench_sessions import WorkbenchSessions
@@ -25,6 +25,19 @@ class CatalogTests(unittest.TestCase):
   with patch.object(self.manager,'rpc',return_value={'data':[{'model':self.profile['model']}]}):first=self.cat.get('default-codex',self.profile,True)
   with patch.object(self.manager,'rpc',side_effect=Blocked('offline')):second=self.cat.get('default-codex',self.profile,True)
   self.assertEqual(first['updated_at'],second['updated_at']);self.assertTrue(second['stale']);self.assertEqual(first['models'],second['models'])
+ def test_invalid_proxy_envelope_preserves_last_good_catalog(self):
+  profile=dict(self.profile,provider='claude')
+  response=MagicMock()
+  with patch('studio.model_catalog.configured_env',return_value={'ANTHROPIC_AUTH_TOKEN':'synthetic-not-a-secret'}),patch('studio.model_catalog.urllib.request.build_opener') as opener,patch.object(self.manager,'rpc',return_value={}):
+   opener.return_value.open.return_value=response
+   response.__enter__.return_value.read.return_value=json.dumps({'data':[{'id':profile['model']}]}).encode()
+   first=self.cat.get('proxy',profile,True)
+   for invalid in ([],None,'invalid',42):
+    with self.subTest(envelope=invalid):
+     response.__enter__.return_value.read.return_value=json.dumps(invalid).encode()
+     value=self.cat.get('proxy',profile,True)
+     self.assertEqual(value['updated_at'],first['updated_at']);self.assertEqual(value['models'],first['models'])
+     self.assertTrue(value['stale']);self.assertFalse(value['discovery_complete']);self.assertIn('无效响应格式',value['error'])
  def test_expired_cache_does_not_become_live(self):
   with patch.object(self.manager,'rpc',return_value={'data':[{'model':self.profile['model']}]}):value=self.cat.get('default-codex',self.profile,True)
   with patch('studio.model_catalog.time.time',return_value=value['updated_at']+301):self.assertTrue(self.cat.get('default-codex',self.profile)['stale'])

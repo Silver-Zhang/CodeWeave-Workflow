@@ -51,6 +51,8 @@ def proxy_models(profile):
         raise Blocked(f'代理模型接口 HTTP {exc.code}；请检查认证或让中转站提供 /v1/models。预登记配置不代表完整目录') from None
     except (urllib.error.URLError, TimeoutError):
         raise Blocked('代理模型接口超时或网络不可用；可刷新或明确使用上次有效目录') from None
+    if not isinstance(value, dict):
+        raise Invalid('代理模型接口返回了无效响应格式；请检查 /v1/models，旧目录仅作过期缓存展示')
     if value.get('has_more'):raise Invalid('代理模型目录需要分页；当前接口未返回完整目录，请检查代理支持')
     rows = value.get('data')
     if not isinstance(rows, list) or not rows or len(rows) > 2000:
