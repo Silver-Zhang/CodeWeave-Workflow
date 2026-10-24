@@ -1,15 +1,13 @@
 # DevFlower 接续入口
 
-先读STATUS，再按需读tasks/2026-10/20261024_05_branch-cleanup-guide的README、使用指南.md和cleanup.json；软件独立审核与运行阻断读任务04，原始报告和预算保持原样。
+当前先读STATUS，再读tasks/2026-10/20261024_06_main-stable-integration的README、使用指南.md、integration.json。旧任务05是清理/指南快照，任务04保存原始审核；不改写历史。
 
-主线DevFlower目录HEAD e35dec13825ecbce39ae4092c3d94a059bc732b8；最终开发在development/model-admission-cas-fix，活动分支已统一为flow/model-session-routing，HEAD4ebfcd169b60e203b61d6ce7d32a0f624027c50e，tree2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79，完整候选7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210/175文件。源码未修改。
+2026-10-24用户明确指令所有PR合入main、保留project并更新固定版本，已人工整合PR15/17。main工作树位于/home/workspace/DevFlower/DevFlower，HEADbedee3229e0c4420c9112a5b62eac9a0e81d6458，tree2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79，CF7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210/175文件。两个开发分支已删；历史工作树detached保留。records已普通merge接收main，project.json framework_base同步。project/codeweave不改动。
 
-PR17基于flow/workbench-ux-polish；该分支现位于development/final-pr15，HEAD546cba4ec92390eeef2218e119647485ee358ce1。两个PR保持Draft。清理9旧本地引用与4已合并远端分支；其余旧worktree在原HEAD detached保存。不要将detached工作树当成新开发入口，也不删除其目录/会话。Git refs备份在archives/devflower-branch-cleanup-20261024。
+当前唯一推荐入口python3 /home/workspace/DevFlower/.local/open-devflower.py；默认固定包stable/main-7b0c0b3bcc95，指针stable/current.json，私有部署与操作证据archives/devflower-main-stable-integration-20261024。原Stable5816源码、批准记录、旧安装/会话保留；旧启动脚本原文在本任务archive备份。新服务沿用archives/devflower-model-admission-20261024/stage-final-r2的storage/native-homes，停止旧服务前确认无活动工作/PTY并做SQLite备份。不要清理正在使用的archives。
 
-任务04的run77f822033450473d8b1040ab620ef4f3：I16-A和MA-05两个P1均独立CLOSED，R1 NEEDS_CORRECTION、R2 BLOCKED原文见任务04。547 Python、6host、165browser、20JS是此前7b0同候选结果；本次整理未重跑。剩余关口为真实顺序Claude300秒超时、汇合未运行、最终Gate exit2/BLOCKED。基础设施恢复2次已用尽，不隐式重开旧运行；没有硬ACCEPT不合并。用户本次表达同意合并，未豁免必需合同。
+本轮新回归547Python、6host、165浏览器、20JS全0，baseline/语法通过；实际测试HEAD27864fc与最终main同完整源码tree/CF。无新模型调用或独立审核。原run77f822033450473d8b1040ab620ef4f3的两个P1均独立CLOSED；R2原始BLOCKED、固定Gateexit2仍保留，真实顺序Claude300秒超时、merge未补证的缺口未消失。人工集成不冒充技术ACCEPT。
 
-Development入口：python3 /home/workspace/DevFlower/.local/open-model-admission-workbench.py，已检查，未晋升Stable。实际storage/native-homes在archives/devflower-model-admission-20261024/stage-final-r2；不能把archives当临时缓存清理。当前allowed_root仅最新开发工作树，external_steps为空。
+v3入口硬编码Development和stable_approved=false，当前未伪造TrustedRelease批准或修改门禁；本轮仅人工固定日常版启用。后续正式可信Stable需要解决实际证明/入口能力，不能以文件名或用户批准推导模型审核通过。当前external_steps为空，自动业务交付未启用。原任务预算不得隐式重开。
 
-原Stable路径stable/usable-v1-5816ba4776b3及源码哈希保持5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821，但旧启动器本次真实HTTP400：Approved executable or native configuration changed。需外部核验依赖/配置漂移；不要改信任pin冒充仍受批准。
-
-records/project是日期任务台账与Git归档；Studio SQLite/原生HOME是本地运行细节。目前未实现任意Studio运行结束后通用自动生成项目五节档案并同步Git。公开分支不隔离隐私，原始日志/截图/会话仍仅本机。
+按时间研发台账在records/project；Studio SQLite/原生HOME保留运行细节。通用Studio运行结束自动归档到project分支仍未实现，应在产品层补齐，不能说已完成。

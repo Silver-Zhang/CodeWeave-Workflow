@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "task_id": "20261024_06_main-stable-integration",
+  "source": {
+    "source_commit": "bedee3229e0c4420c9112a5b62eac9a0e81d6458",
+    "git_tree": "2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79",
+    "candidate_sha256": "7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210",
+    "files": 175
+  },
+  "regression_actual_head": "27864fcfd6b24fa374f9bbc89fb8cc680f32fa96",
+  "same_complete_source_bytes": true,
+  "prs": [
+    {
+      "number": 15,
+      "state": "MERGED",
+      "merge_commit": "ee0a49384b2fbfd5feee9654ef8289733ead9be5",
+      "head": "546cba4ec92390eeef2218e119647485ee358ce1"
+    },
+    {
+      "number": 17,
+      "state": "MERGED",
+      "merge_commit": "bedee3229e0c4420c9112a5b62eac9a0e81d6458",
+      "head": "27864fcfd6b24fa374f9bbc89fb8cc680f32fa96",
+      "base_at_merge": "main",
+      "integration_source_unchanged": true
+    }
+  ],
+  "owner_decision": {
+    "user_instruction": "我的意思是main分支就是最终开发版本了，把所有的PR都合并了，最终状态就是main就是最新的，然后project分支，其他的分支就整理或者清除解决。stable我认为可以更新了",
+    "authorization_sha256": "c68e8f09637d659278212e68e46c875119316426114696bc93fb453bdb300f89",
+    "kind": "manual owner integration after disclosed limitations",
+    "does_not_rewrite_original_verdict": true
+  },
+  "tests": {
+    "python": {
+      "tests": 547,
+      "exit": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "host": {
+      "tests": 6,
+      "exit": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "browser": {
+      "tests": 165,
+      "exit": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "suites": [
+        {
+          "suite": "session_browser",
+          "checks": 32,
+          "failures": 0,
+          "exit": 0
+        },
+        {
+          "suite": "studio_identity_races",
+          "checks": 17,
+          "failures": 0,
+          "exit": 0
+        },
+        {
+          "suite": "studio_races",
+          "checks": 9,
+          "failures": 0,
+          "exit": 0
+        },
+        {
+          "suite": "template_browser",
+          "checks": 6,
+          "failures": 0,
+          "exit": 0
+        },
+        {
+          "suite": "usable_browser",
+          "checks": 34,
+          "failures": 0,
+          "exit": 0
+        },
+        {
+          "suite": "workbench_browser",
+          "checks": 60,
+          "failures": 0,
+          "exit": 0
+        },
+        {
+          "suite": "workspace_browser",
+          "checks": 7,
+          "failures": 0,
+          "exit": 0
+        }
+      ]
+    },
+    "frontend": {
+      "tests": 20,
+      "exit": 0,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "baseline_and_syntax": "all exit 0",
+    "separate_post_merge_main": "baseline and 6 host tests exit 0"
+  },
+  "review": {
+    "new_model_calls": 0,
+    "new_review_rounds": 0,
+    "original_verdict": "BLOCKED",
+    "original_gate": "BLOCKED",
+    "original_gate_exit": 2,
+    "source_p1_findings": "CLOSED",
+    "old_full_product_acceptance": "NOT_PASSED",
+    "remaining": "final-candidate native Claude positive sequence timeout at 300s; merge scenario not run"
+  },
+  "refs": {
+    "local_kept": [
+      "main",
+      "project/devflower"
+    ],
+    "remote_kept": [
+      "main",
+      "project/devflower",
+      "project/codeweave"
+    ],
+    "deleted_after_merge": [
+      "flow/model-session-routing",
+      "flow/workbench-ux-polish"
+    ],
+    "other_original_heads_retained_in_detached_worktrees": true,
+    "no_worktree_deleted": true
+  },
+  "deployment": {
+    "install": "/home/workspace/DevFlower/stable/main-7b0c0b3bcc95",
+    "startup": "python3 /home/workspace/DevFlower/.local/open-devflower.py",
+    "base_url": "http://127.0.0.1:43405",
+    "owner_approved_daily_version": true,
+    "actual_v3_stable_approved": false,
+    "reason": "v3 entry hardcodes Development and stable_approved=false; no formal Stable activation path in this version",
+    "old_trusted_stable_preserved": true,
+    "storage": "/home/workspace/DevFlower/archives/devflower-model-admission-20261024/stage-final-r2/storage",
+    "native": "/home/workspace/DevFlower/archives/devflower-model-admission-20261024/stage-final-r2/native-homes",
+    "original_native_homes_relocated": false,
+    "private_sqlite_backup_local": true,
+    "auto_delivery_profiles": 0,
+    "approval_or_review_accept_fabricated": false,
+    "old_launchers_backed_up": true
+  },
+  "raw_logs_sessions_screenshots_local_only": true,
+  "guide_sha256": "b5f00eb96e72bda85b60c1d0a2915820a3a727f2f9e85142ff6b7711e51f230f"
+}

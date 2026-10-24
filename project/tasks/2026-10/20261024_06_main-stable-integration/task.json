@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "20261024_06_main-stable-integration",
+  "date": "2026-10-24",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "main",
+      "base": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+      "head": "bedee3229e0c4420c9112a5b62eac9a0e81d6458",
+      "git_tree": "2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79",
+      "candidate_sha256": "7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210",
+      "prs": [
+        "https://github.com/Silver-Zhang/DevFlower/pull/15",
+        "https://github.com/Silver-Zhang/DevFlower/pull/17"
+      ]
+    }
+  ]
+}
