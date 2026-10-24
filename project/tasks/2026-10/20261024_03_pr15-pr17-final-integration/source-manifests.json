@@ -1,0 +1,1982 @@
+{
+  "pr15-final-review": {
+    "branch": "flow/pr15-final-correction",
+    "candidate_sha256": "302125c7e87ff5f7bb4e6bcc57ac38ae0ecb375ac445d22410a5adc7ab9f28c9",
+    "files": [
+      {
+        "mode": "100644",
+        "path": ".github/workflows/studio.yml",
+        "sha256": "5dbde6eb18d6d823e249fc9f4597500a1cbddb857b2deabb370b7f21512af7ad",
+        "size": 1154
+      },
+      {
+        "mode": "100644",
+        "path": ".github/workflows/usable.yml",
+        "sha256": "20c96b09094e21321507c5b4e6ac730f0c608db2a1c404f86f3835677e64360a",
+        "size": 6641
+      },
+      {
+        "mode": "100644",
+        "path": ".gitignore",
+        "sha256": "1118ee6938acb2eda78950ce0a4a16e2990c1a601812a66fad2a0d6093c24580",
+        "size": 204
+      },
+      {
+        "mode": "100644",
+        "path": "AGENTS.md",
+        "sha256": "359f5e5540a1690ba3ea481452967dcb2b0190543a70565e2ad1e513b46f2f25",
+        "size": 2887
+      },
+      {
+        "mode": "100644",
+        "path": "CLAUDE.md",
+        "sha256": "1dc6e5b9b0c8d7b0c9a0c7c3f0b355c82437fd1a87080ef3327cfd2c607e5028",
+        "size": 330
+      },
+      {
+        "mode": "100644",
+        "path": "README.md",
+        "sha256": "6c5136fd2e096b4c1842fe91e0fe11f132373e440379943ec40f04018573769d",
+        "size": 3294
+      },
+      {
+        "mode": "100644",
+        "path": "WORKFLOW.md",
+        "sha256": "1b6668049d625e135ddeb17d5099ad06d122e18d6de866b8f051e20d3f2e11d2",
+        "size": 7927
+      },
+      {
+        "mode": "100644",
+        "path": "docs/BRANCHING.md",
+        "sha256": "b7ca35f5a67108981624bb6bcb86957ab29c4433fe341952699baa8b86dd8964",
+        "size": 3245
+      },
+      {
+        "mode": "100644",
+        "path": "docs/ORCHESTRATOR.md",
+        "sha256": "cee650dd57d5f3be6bdeaac7f7a23db4546d3ab7a91e6a71d1c795fd09ab542f",
+        "size": 13918
+      },
+      {
+        "mode": "100644",
+        "path": "docs/REFERENCES.md",
+        "sha256": "678d91543ccbcc3a24f184dbd44901ae9148ff49ffd7f4a087b63f45caf12f46",
+        "size": 1943
+      },
+      {
+        "mode": "100644",
+        "path": "docs/REVIEW_HANDOFF.md",
+        "sha256": "fb08fe60304c3672d8707821d07c5439cf2c28cdd794a795c7ebc14099f9e0e3",
+        "size": 4128
+      },
+      {
+        "mode": "100644",
+        "path": "docs/STUDIO.md",
+        "sha256": "b2d7dd87708b5efaeda3c7bab14c24580fde4436c5064328663ccc96bc96dc55",
+        "size": 16211
+      },
+      {
+        "mode": "100644",
+        "path": "docs/USABLE.md",
+        "sha256": "3c8b56c03aad125f673e0d1f97fbab0404873302e45845141f52c0bb0fa9ae0c",
+        "size": 25603
+      },
+      {
+        "mode": "100644",
+        "path": "docs/WORKBENCH.md",
+        "sha256": "694ab865db151723e0b610c4fce8d24c18c8e2dd7c2921e6560f7227fdec48b3",
+        "size": 13407
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/issue9/README.md",
+        "sha256": "9de1dfbc21b88bed370d9a8cf5203ed96470db4579bb6325e2bec2a085d54fe5",
+        "size": 7836
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/ACCEPTANCE.md",
+        "sha256": "3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242",
+        "size": 3785
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/LOCAL_AGENT_PROMPT.md",
+        "sha256": "89b383ccc95a8732e23898b006ba05466fea50f24dfd75a4d7815b8e556c0b9f",
+        "size": 5542
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/README.md",
+        "sha256": "8a8feb207ffcae2493a6ee244c55b9debac9e4aa523ebfaab23a390cc155a5bd",
+        "size": 15265
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/examples/review-result.example.json",
+        "sha256": "f36a1e52aa57f3272d37f426a91a3889185c717db6eca20284151a719a7ee69d",
+        "size": 434
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/examples/workflow-policy.example.json",
+        "sha256": "510cb3c07ef9f18748a6b30b3645d316b56b0903cb8ef5ee4ec49ee66984730b",
+        "size": 1037
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/schemas/README.md",
+        "sha256": "2ba2ca5df30f542bb8659e56666b1a931b10d0a023d83a373e2ffb5b97c3f34a",
+        "size": 1383
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/schemas/review-result.schema.json",
+        "sha256": "3b0fc0ddcb965c47a2475a14e67b6628c895cffc5af1242a0549874496b0ed0d",
+        "size": 1529
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/schemas/workflow-policy.schema.json",
+        "sha256": "3f42a72bfdad8b43d9a7e6974ea9a639cd354d0338567af4613fa7a8f812712e",
+        "size": 2672
+      },
+      {
+        "mode": "100644",
+        "path": "examples/orchestrator/prepare.py",
+        "sha256": "ffef8796d3bfb0805a1b8022415d8a2a72a8bd045008d843dd14afed4fc84fff",
+        "size": 4963
+      },
+      {
+        "mode": "100644",
+        "path": "examples/usable/session_operator.example.json",
+        "sha256": "5a031e3dfad0e4caeb102b00f4448036ad76ceb658d46e4702a0f4b0f325157d",
+        "size": 1662
+      },
+      {
+        "mode": "100644",
+        "path": "examples/usable/verification_profiles.py",
+        "sha256": "26249d31efc014a62e37c7ab12421eaa0eab1f7e4a6f176c5f67c5265da764a2",
+        "size": 1189
+      },
+      {
+        "mode": "100644",
+        "path": "templates/PROJECT.md",
+        "sha256": "3de1d87ca31d533ef95c0ba6f28c9eb370a8a473e9e34b0c18bbf1e69589c629",
+        "size": 582
+      },
+      {
+        "mode": "100644",
+        "path": "templates/TASK.md",
+        "sha256": "cf90dd8ca345dca7f048e3295e1e8fd4e478a5edb11fc73e9c034c8a2bf596e8",
+        "size": 1155
+      },
+      {
+        "mode": "100644",
+        "path": "tests/browser_driver.cjs",
+        "sha256": "a4ebea6ef762ce690618b8fe02b8a4b03c7b4913d802062a33abf8523fee5eec",
+        "size": 1093
+      },
+      {
+        "mode": "100644",
+        "path": "tests/host_isolation.py",
+        "sha256": "5cde538a41a662f431519ef23c31f4582a8015224b9a59310cadd22af8a0a141",
+        "size": 5418
+      },
+      {
+        "mode": "100644",
+        "path": "tests/native_sessions.py",
+        "sha256": "29c5f1b55f983831d1073261953f3ced6f0040daa7ca4c9c9c4691173c3362cb",
+        "size": 7331
+      },
+      {
+        "mode": "100644",
+        "path": "tests/session_browser.cjs",
+        "sha256": "f20c98129cde66fddc2072398854c6084435a26825e355bd998c8c05a612422f",
+        "size": 12732
+      },
+      {
+        "mode": "100644",
+        "path": "tests/session_browser.py",
+        "sha256": "8bf17c623acb297c82c611336e507326a3851e9383846224fd6bd6e1dd20af15",
+        "size": 5141
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_browser.py",
+        "sha256": "dd348f444247a044a688084741deb51c36418aacd8bb413aff883b800ea4bbd1",
+        "size": 7730
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_identity_races.cjs",
+        "sha256": "9a12e8a502b7439e671e024d8fb17027e43eb093cf5987417a2953229cbb5dd6",
+        "size": 16630
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_identity_races.py",
+        "sha256": "4912977cf45ee586bc96fa24d67ab35a3b82e32c84df6ddfa3bc3f61f0f268dd",
+        "size": 3261
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_races.cjs",
+        "sha256": "2923e221ad089beca3fe7d63a2a7f2c8f7cf7894f637049299ae0d77e2640479",
+        "size": 5394
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_races.py",
+        "sha256": "9dfc3857f67d49d95fb42cd437949462f0b6739d581fad196bae2597e0db5aad",
+        "size": 1915
+      },
+      {
+        "mode": "100644",
+        "path": "tests/template_browser.cjs",
+        "sha256": "05ea6e3f4cd4b733d24ce75d39653acded82a9ee1bcdf2384b91b297eff84437",
+        "size": 5899
+      },
+      {
+        "mode": "100644",
+        "path": "tests/template_browser.py",
+        "sha256": "b4ca99ef7d55186e5c25a0142a389f777d01f2f02497b4102b1ea91b0c30f322",
+        "size": 1909
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_agent_sessions.py",
+        "sha256": "deea40b978e7dc6849c0ab7c45bc1f6a0959f4c8e80e6f5ba699872ee2ab1632",
+        "size": 50269
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_assertions.py",
+        "sha256": "58b1500696fa1d74229c43eec44f0a29d1fbcf3184bd8aa1f15529be1a839a9b",
+        "size": 6794
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_devflower.py",
+        "sha256": "5a537eeda8d05051d26529ea6125ae84d2356e1e68c14a8ec7f60b7958a4ca20",
+        "size": 6743
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_failure_modes.py",
+        "sha256": "30a792f89f501cddc090f842a7d3a64466f5fc65e2c0dd094e3f3050012d6eb0",
+        "size": 2366
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_integration_regressions.py",
+        "sha256": "c3d82896b7ba125ccf252c01a2d5dc16c58e247920d6daf257c6740c3d72b7fe",
+        "size": 16147
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_native_terminals.py",
+        "sha256": "4b01cf295b6bc71863f2b51a7ddf41db8b7214cd3fe8c02d8742317b457e5d86",
+        "size": 8526
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_orchestration.py",
+        "sha256": "24db446e8f9b6dd5c458d73213a4407c9f3c07ed17adf31f7dee0608bdc57c3d",
+        "size": 37435
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_provider_transport.py",
+        "sha256": "841781d161a2daefed95049f59a24345cf9bb513c0c55216269d5db951952cda",
+        "size": 9697
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_review_handoff.py",
+        "sha256": "0381201a705809e48a02d48452295ad064ca7fada248d915d1d93bf285140b3a",
+        "size": 13558
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_session_landlock.py",
+        "sha256": "43127c0275d63c7036ed095ea9f6d1206559c88ac453b8e592bcef648071b9a2",
+        "size": 8382
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_studio.py",
+        "sha256": "fa875e0fc752cfdcf9f3a084cfb118db2ffa02f0aa5de859d4e969a6ae057716",
+        "size": 17534
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_studio_progress.py",
+        "sha256": "5c5ef14103c5d74ad6a9f7bdd0c8a33ec52dd38d9c6a614733a5626338f233fd",
+        "size": 9195
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_studio_workflow.py",
+        "sha256": "d17410a462ef5778966ca46c733f2e6f8a499f95f86d614dc59d10e4f804880d",
+        "size": 31027
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_template_governance.py",
+        "sha256": "d2da5ef96c5d88d2f926b3e8a1f49f1aceab05a81949745d6176ca67690184e8",
+        "size": 16771
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_usable.py",
+        "sha256": "80633f7091e43e4c60820fe8f5b157d146ab8e680f2dce047980c2ccf3f0aa88",
+        "size": 32178
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_bridge.py",
+        "sha256": "e7acc6e4cc7a0f091a3a181e60f920f6cc8615cac8713cf6d1808353dad1bb69",
+        "size": 10737
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_data.py",
+        "sha256": "be729997fb0482c510b0df90bd9158c12fc2bc4af458f30958fd2205ed5940ee",
+        "size": 2512
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_graph.py",
+        "sha256": "e844f9e2cc34ebd218e3d16835490382cd5786bbfd88e900d384c8df7806d45d",
+        "size": 11237
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_nested.py",
+        "sha256": "f55a7beb0fb1d5f48bb46e1b1763fee0733cdfbc19ba585b78d7b1e2467c5f14",
+        "size": 11662
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_product.py",
+        "sha256": "e6ab8f337dc1f8ff7e41598e8ce9a339ca4f70e0aa6de34668a4c17421d56202",
+        "size": 16903
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_runtime.py",
+        "sha256": "b860b17b4c07152223cd7ebb30b97fa982ca873587043f5de85ee020e309148f",
+        "size": 35850
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_tool_activity.py",
+        "sha256": "d1edf342c8d18087203c9228643dcd291b1303e69f7a5f204c1da21abc098041",
+        "size": 9456
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workspace_sessions.py",
+        "sha256": "07c74fdf6326f14e68d6f6a517b39e70c1baee96f13ffad49a45c1ea81b3a4a4",
+        "size": 21084
+      },
+      {
+        "mode": "100644",
+        "path": "tests/usable_browser.cjs",
+        "sha256": "63dc274330fa55f797ca471ae45692b815328c6be725a39636d926d3cafd93e7",
+        "size": 33275
+      },
+      {
+        "mode": "100644",
+        "path": "tests/usable_browser.py",
+        "sha256": "404db4a815205bb522100aa9905b9a0572f21b9332ebd641b62e05ee77e4abbd",
+        "size": 7780
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_browser.cjs",
+        "sha256": "fa3d581a91cd75f238d464c65ffb5acc8037b547d3550fd1e894f7a1ae85f0ba",
+        "size": 55586
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_browser.py",
+        "sha256": "19287713928a73d71edadc46c9ca662cda2c70385ce975fccb8e7ac15f7ac74f",
+        "size": 4764
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_editor.test.mjs",
+        "sha256": "ba23e7a6770a66dea7c8545f2b3ee3563e3096efe63f63a6f488b8bf5e0f20b5",
+        "size": 3422
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_projection.test.mjs",
+        "sha256": "68df97d1f8a411a2c3b02cd16229e86bb174aefb18c39c2e2d24436b10d1998d",
+        "size": 3637
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workspace_browser.cjs",
+        "sha256": "5fa7fcd06be48c518850be131b1c7774aec860c9d78ac55069c156e19bb59d8c",
+        "size": 6219
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workspace_browser.py",
+        "sha256": "be8373840bc38773fbda73def28af9c976de605c90d5d7a5b666da8c0dcad388",
+        "size": 1978
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower.py",
+        "sha256": "29908899d5337f7cef11fbf5f824016d0cf58c90d16aa56782796d16035c2ae9",
+        "size": 11657
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_native_terminal.py",
+        "sha256": "27a59dd255960ffc88f07b7ecac5ed1027a1e26a0ac5231e094be2f2627e6eed",
+        "size": 4356
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_sessions.py",
+        "sha256": "fa5155e3096d90bdf78fcf1f8fe73c594bbee5fee8eb48c1896ea3e9a8a176bd",
+        "size": 1088
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_stable_bridge.py",
+        "sha256": "a74887f3834594d7e5c1e3b0ec6ee317b83a3d9af87d95485a3deb6634b057a3",
+        "size": 10452
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_studio.py",
+        "sha256": "22c8caea38ed2002a468562a4157fb8120bcd777ea2f2a79e7ad50a7b3e735df",
+        "size": 197
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_usable.py",
+        "sha256": "f29a33aa1b1b6cb840159f2b10fbe448ece639f24939e2bdfa89837a2ce36406",
+        "size": 7292
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_workbench.py",
+        "sha256": "b48deb1a9762e76f31c02b27cbc8ad148a65f08ce5e058f391464114a85926bc",
+        "size": 1219
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/__init__.py",
+        "sha256": "19170f5ed48d2a25dfa0621c8521022fa165b11e54afedaddacf35adeca5bcab",
+        "size": 75
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/adapters.py",
+        "sha256": "b9716f48aefb193445cde4f846207d0a1bb07125a029634080eab4e7cf72ca80",
+        "size": 15560
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/cli.py",
+        "sha256": "484c834467569e04cac87856e3777a0be24b08e23b5cb51258ab2f2fe49f0c4b",
+        "size": 2768
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/common.py",
+        "sha256": "c90cbbf5cc344353e2d1ed6b85277d2252922dd57a66b35df864d2b000a02901",
+        "size": 6336
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/contracts.py",
+        "sha256": "eee5b23023839016e19c28a6e0822fe0a90dcdae540bfefb545c7fef08bf9f78",
+        "size": 20794
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/controller.py",
+        "sha256": "68719378f945f1623c26980df6c5ebc5ffc7df8ba22b15d82ce3aa0c52b7d90a",
+        "size": 32370
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/delivery.py",
+        "sha256": "6e7255ddf2aa7871fdf66679e017b76463bdc768d6de73be49ab64ce98d5a245",
+        "size": 12657
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/gate.py",
+        "sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+        "size": 4176
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/github_delivery.py",
+        "sha256": "9fa66880c0507afcf1a0958b66816f1979a0dc08ae1cb28c97f288710bfba653",
+        "size": 10698
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/privacy.py",
+        "sha256": "f0679b5c368e3bb2fcf253c88632daffeebc1324c05fc8d5c606cc8752cfbdc5",
+        "size": 2585
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/process.py",
+        "sha256": "e79eed9cf3cf64cf16c6ff5939b087b136b605f7c34eb26a0e78ad19e05d9603",
+        "size": 9090
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/provider_transport.py",
+        "sha256": "5224d513ecd0eb1539259a3f59bcc403a35f1b2fa6b6a822578547d273bcd957",
+        "size": 10819
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/sandbox.py",
+        "sha256": "cb01d84d66d31d5929e47dd265ba03050046ceef90424cdd9730dffdf7323492",
+        "size": 3964
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/store.py",
+        "sha256": "f8e491c29c95a68b6e00a41acee92637daa347b2de3ced807d80df0dd3653cec",
+        "size": 5498
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/trust.py",
+        "sha256": "d56afec8b0f427826e44ad5667d79c0143b680025f8b18f8372295e1e531f0ab",
+        "size": 3406
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/verification.py",
+        "sha256": "0debf6b114f0f392b2848a12f7482abdb07591ca7188b01e782023fc81a0aa5c",
+        "size": 7122
+      },
+      {
+        "mode": "100644",
+        "path": "tools/review_handoff.py",
+        "sha256": "fa0f189811c622dabbc72afc6f27aadb5dc98ce61d7532888d9107e5ce0f70a4",
+        "size": 15286
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/__init__.py",
+        "sha256": "d2a831970647642f0e78e6ef59a0d317dec140396af70e3fe2a30d907e842230",
+        "size": 86
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/agent_sessions.py",
+        "sha256": "e1fae4e9b3a604a100c5411bd4ee39c3439cb6e347250c0392248499d03791be",
+        "size": 7827
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/graph.py",
+        "sha256": "3bfa93eb35fb8dea2d1092e6f192d2118e8643061a6a92adf0ee2e386e817ef1",
+        "size": 10585
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/native_terminals.py",
+        "sha256": "fd7d2324a54b6fa07680ca60ae1e234ae0db738dda1dc470a6bd22c90a6c24cb",
+        "size": 14066
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/projection.py",
+        "sha256": "e595c9e5ffc9c18473b925546db0a1ffa61b64691ecd89c6ebedbf29ed555590",
+        "size": 15100
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/server.py",
+        "sha256": "32d91fed82395ad0b794f942ba5a971b114f28e580c8f51ae5a29649f1e3e4e7",
+        "size": 17877
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_center.py",
+        "sha256": "b74cc114e4d8b32b219758c1d4c9e08db09677f091542d8b1df7f8c5c71158ce",
+        "size": 26579
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_runtime.py",
+        "sha256": "6d53ecf7cb1dcb2c48954b8e11e850b11c4b41470208ab14e6d63042604a1f66",
+        "size": 9504
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_sources.py",
+        "sha256": "858966a19faf587b8ac35f107b903a23ca4438d4f9c0d566838b025184369425",
+        "size": 12013
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_worker.py",
+        "sha256": "9f13ab8e41442b5832ca69c8c129cb855b9a75726e7d594734a57e58a2201834",
+        "size": 869
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/app.js",
+        "sha256": "5eb5d26bb7e5a5d4425fe3b1c3291ef7c710b446cbac4e59238fa87583ec3de1",
+        "size": 29261
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/index.html",
+        "sha256": "71dc4b96894fb6f0d73decaaf05ff9160666cb28101f6fb20b54d443c3592cda",
+        "size": 5228
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/style.css",
+        "sha256": "850f372a49339d4fb651ca5552a05706a7e6dc1b8bbf2d1e580a0d3474e14ea8",
+        "size": 10349
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable.css",
+        "sha256": "5b94357291c6719d4d5ae7490f34cef108f8609abdced7e7f4161bd062a34f26",
+        "size": 16143
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable.html",
+        "sha256": "00a5956aab5a8ef13a4253bf11bff58a8e5b40b24e5f83cb1e6a0697e5c5fbfc",
+        "size": 11315
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable.js",
+        "sha256": "3525a3af5f66d9b929a1b1d0bb3e0f8dac23ab80f4a0f350c3110f9956ca2012",
+        "size": 41275
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable_canvas.js",
+        "sha256": "51d2e8e12d254cd8fbb372a5ff2862eb440eb2d1fc437e3222b70366929aaba8",
+        "size": 13740
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable_sessions.js",
+        "sha256": "1309575979893dbdf25a7b015cd5b116c60323f09280bcbda69cfcdb521f2a5a",
+        "size": 10374
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workbench.css",
+        "sha256": "5f1d5a9fb163bb81368d27f352f28b684c78e5797e08e132c8c512bd9f7dd03b",
+        "size": 57845
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workbench.html",
+        "sha256": "4f9c78b5a9554bb793ce72ba435a47d8685c71ff725a4faa3b4c0aef5ce1ff03",
+        "size": 359
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workbench.js",
+        "sha256": "27be547d814729e2f05e8dcd02bb31b381a85e856cbf4addb45c969674a972ee",
+        "size": 1034762
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workspace.js",
+        "sha256": "8bdb1f8c58150f8d16bbcf0a0c45feafbc7f6066ba4a22fb1f29e6069006d52d",
+        "size": 5914
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/terminal_text.py",
+        "sha256": "9dbce361fc22c2b6c82b63ecc0e68894cd36170b19b1544e3ae203a4820262cd",
+        "size": 3014
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/tool_activity.py",
+        "sha256": "bf1b30d4b3930900fefd9318fc0a94c7b6de85258b68180377c1a63fac7082a7",
+        "size": 4805
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_graph.py",
+        "sha256": "d0de282093bafb437079c705d23ac65f2006c113bac3265d72c87f8561a552e3",
+        "size": 12537
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_projection.py",
+        "sha256": "e6806be835379d6933c525b9c2da6e8daf4bfcc20190c82ee5e251b056ed8c5e",
+        "size": 10659
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_runtime.py",
+        "sha256": "ab18e47ad896dfdf88a2125b8e66ab114bf2b6a442e8b3f6371184d2d6766114",
+        "size": 31033
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_server.py",
+        "sha256": "5abcc3f58adb33a11c0febb5b77e52ab5b014f6dafe0cea85faaef1c9f6b17b3",
+        "size": 12424
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_store.py",
+        "sha256": "c80bceb77979a11688792cf113325b628d0be8b2d1e7f13beb56fa4b9060e218",
+        "size": 6701
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_verification.py",
+        "sha256": "b679b44a85b6f0a98a48908c82ae1c5d84b318a397e0b648c17168cbd5c31e0d",
+        "size": 4378
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_data.py",
+        "sha256": "5a8bc90698d674b7d0d7650dae21da91f0a29fb88b48bc72ee2df499711ac5a6",
+        "size": 997
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_examples.py",
+        "sha256": "3003e84c51791c2a7d14e0462f52294e7eea498773c7a8b956a30e845d65858d",
+        "size": 2916
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_external.py",
+        "sha256": "3f5273a5a3c21f30d8e38438a5daba1f050bdb77e4dcfc0b2e8e5fdc89279ba3",
+        "size": 5210
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_graph.py",
+        "sha256": "2f75a709a9ed3e0698250687a2c65fb7699f4f47acd0f76df5e7c354219b67ca",
+        "size": 9587
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_rpc.py",
+        "sha256": "3d96287ec49d4a8675b5e6a369177fa2a91f7c5a922c144ccd0b47b5e7297e2d",
+        "size": 2104
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_runtime.py",
+        "sha256": "41d45ec6af39565b39cbf27fff0c531dc270e8805079c3cc96ae606d41be9de8",
+        "size": 21953
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_scheduler.py",
+        "sha256": "3dcceb275bc880b3f1ff2f24e37049e41a25460aaf6d86a6dd353f990c3f7054",
+        "size": 24093
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_server.py",
+        "sha256": "f6098a5e51ff6d3ba4ad74aaff0136ccc39d6c2dfa5c5d90a4c410d3029513d9",
+        "size": 9518
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_sessions.py",
+        "sha256": "988b5eb2275f4bd23fc35a7e78296139c5169c18c6d61b6c7e668566c71894e5",
+        "size": 32231
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_store.py",
+        "sha256": "f303e9a5ebbc8ea825eb70303a12f585aa7b08263281b2fc8854c6d8ab0b85b9",
+        "size": 4535
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/EditorToolbar.jsx",
+        "sha256": "7ea2acd13572cf2e4fb0fb9da3f778998dce2b2faca9fec3d6a284516e867f58",
+        "size": 2397
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/HandoffEdge.jsx",
+        "sha256": "d7bbe0c26ebaf07b749977e1be89f938c2a98bb9a1f43fa446a7ab2a44cf5256",
+        "size": 711
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/NativeTerminal.jsx",
+        "sha256": "9d3826f025d65f405df2b9c2a58c8da312ce1065412530ed06e8bc260f80d490",
+        "size": 9496
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/RuntimeOverview.jsx",
+        "sha256": "1cd6264bf3f15c7d68206dc9f5d0dcde1d8911941881b65de217ca0c2a527aaf",
+        "size": 2638
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/SessionList.jsx",
+        "sha256": "7c95a3e7b7eb4d13fffcceed54d1c67c39d1c86adf2cedb4c22368fc4b1d579b",
+        "size": 2697
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/THIRD_PARTY_LICENSES.txt",
+        "sha256": "3b9c5ba21b2bd979d982fe7b508549290d216aa6a94a68c44c1cf06519c03a7e",
+        "size": 148699
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/ToolActivity.jsx",
+        "sha256": "a90aaaed2c4d10380f6b34e5db22d738b332a5cc45e2306a67f945de6d2af509",
+        "size": 1585
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/build.mjs",
+        "sha256": "edfda0a88b64a288817b7bda871820afb8d3d09f2ba961d7b1b4edf737d1b3c7",
+        "size": 591
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/canvas_editing.mjs",
+        "sha256": "5c7088569734063407f281b1634031c6eafee212dd2c70fa19c80a27d5897a84",
+        "size": 4631
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/index.jsx",
+        "sha256": "e82476887055c26a28c618ff47d4ce76641fe1f87c72e60e9442c273163ab5a8",
+        "size": 69683
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/package-lock.json",
+        "sha256": "dec537aae450ed4889b451f092a2e97e1a2e2bd34513434defbe6eea51385aaf",
+        "size": 80955
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/package.json",
+        "sha256": "10892c8461809ef6cc57ef4ffc485d1cef78d7d1ee8f1d94a0ecc698e071e62e",
+        "size": 391
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/polish.css",
+        "sha256": "ac385246dfb4f727e1ca5969bb0137e2a42598a85facf25a2072062a7d41fab2",
+        "size": 11133
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/product.css",
+        "sha256": "dce7ae3fa9b4b1d32d94220beba1211498afc1af4a12d6e55bfa95af8db12369",
+        "size": 4971
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/runtime_projection.mjs",
+        "sha256": "4ce71a1a51502d5c4f3978d6c1efc36d0bc3d0268aed6a57f239ef7b9f0f5779",
+        "size": 4008
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/style.css",
+        "sha256": "7327c047f83ffba16cba75fca3a8a7dbb8f60a96407ec59352c0644ea34de7c7",
+        "size": 20789
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/trace_views.jsx",
+        "sha256": "8a356491bd8be7cd94bb88e7bd986ab6a9d6264f08b67faf6291c11f18d7e6a2",
+        "size": 6876
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_worker.py",
+        "sha256": "e73e9ba4ca004eaa2c4cc145f3db043250b57e0da26108f2c0f911a783113bdf",
+        "size": 903
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workspace_sessions.py",
+        "sha256": "14b3b90a2fab4b1ace14b640c6df9c8d2bda0574f36923bd94766e25517d66db",
+        "size": 13188
+      }
+    ],
+    "git_tree": "c0b01275df195a2e74668442b82a93264c14ba3c",
+    "head": "546cba4ec92390eeef2218e119647485ee358ce1",
+    "status": ""
+  },
+  "pr17-r5": {
+    "branch": "flow/pr15-pr17-final-validation",
+    "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+    "files": [
+      {
+        "mode": "100644",
+        "path": ".github/workflows/studio.yml",
+        "sha256": "5dbde6eb18d6d823e249fc9f4597500a1cbddb857b2deabb370b7f21512af7ad",
+        "size": 1154
+      },
+      {
+        "mode": "100644",
+        "path": ".github/workflows/usable.yml",
+        "sha256": "20c96b09094e21321507c5b4e6ac730f0c608db2a1c404f86f3835677e64360a",
+        "size": 6641
+      },
+      {
+        "mode": "100644",
+        "path": ".gitignore",
+        "sha256": "1118ee6938acb2eda78950ce0a4a16e2990c1a601812a66fad2a0d6093c24580",
+        "size": 204
+      },
+      {
+        "mode": "100644",
+        "path": "AGENTS.md",
+        "sha256": "359f5e5540a1690ba3ea481452967dcb2b0190543a70565e2ad1e513b46f2f25",
+        "size": 2887
+      },
+      {
+        "mode": "100644",
+        "path": "CLAUDE.md",
+        "sha256": "1dc6e5b9b0c8d7b0c9a0c7c3f0b355c82437fd1a87080ef3327cfd2c607e5028",
+        "size": 330
+      },
+      {
+        "mode": "100644",
+        "path": "README.md",
+        "sha256": "6c5136fd2e096b4c1842fe91e0fe11f132373e440379943ec40f04018573769d",
+        "size": 3294
+      },
+      {
+        "mode": "100644",
+        "path": "WORKFLOW.md",
+        "sha256": "1b6668049d625e135ddeb17d5099ad06d122e18d6de866b8f051e20d3f2e11d2",
+        "size": 7927
+      },
+      {
+        "mode": "100644",
+        "path": "docs/BRANCHING.md",
+        "sha256": "b7ca35f5a67108981624bb6bcb86957ab29c4433fe341952699baa8b86dd8964",
+        "size": 3245
+      },
+      {
+        "mode": "100644",
+        "path": "docs/ORCHESTRATOR.md",
+        "sha256": "cee650dd57d5f3be6bdeaac7f7a23db4546d3ab7a91e6a71d1c795fd09ab542f",
+        "size": 13918
+      },
+      {
+        "mode": "100644",
+        "path": "docs/REFERENCES.md",
+        "sha256": "678d91543ccbcc3a24f184dbd44901ae9148ff49ffd7f4a087b63f45caf12f46",
+        "size": 1943
+      },
+      {
+        "mode": "100644",
+        "path": "docs/REVIEW_HANDOFF.md",
+        "sha256": "fb08fe60304c3672d8707821d07c5439cf2c28cdd794a795c7ebc14099f9e0e3",
+        "size": 4128
+      },
+      {
+        "mode": "100644",
+        "path": "docs/STUDIO.md",
+        "sha256": "b2d7dd87708b5efaeda3c7bab14c24580fde4436c5064328663ccc96bc96dc55",
+        "size": 16211
+      },
+      {
+        "mode": "100644",
+        "path": "docs/USABLE.md",
+        "sha256": "3c8b56c03aad125f673e0d1f97fbab0404873302e45845141f52c0bb0fa9ae0c",
+        "size": 25603
+      },
+      {
+        "mode": "100644",
+        "path": "docs/WORKBENCH.md",
+        "sha256": "cfea1f4fea0e9b20384a1a613e2c9bd95169bf03c488bfa9fd5f1205608a07f3",
+        "size": 18810
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/issue9/README.md",
+        "sha256": "9de1dfbc21b88bed370d9a8cf5203ed96470db4579bb6325e2bec2a085d54fe5",
+        "size": 7836
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/ACCEPTANCE.md",
+        "sha256": "3f6a79535d06653136b18a1e5aff441eaabd3879e0849b387235789ed723f242",
+        "size": 3785
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/LOCAL_AGENT_PROMPT.md",
+        "sha256": "89b383ccc95a8732e23898b006ba05466fea50f24dfd75a4d7815b8e556c0b9f",
+        "size": 5542
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/README.md",
+        "sha256": "8a8feb207ffcae2493a6ee244c55b9debac9e4aa523ebfaab23a390cc155a5bd",
+        "size": 15265
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/examples/review-result.example.json",
+        "sha256": "f36a1e52aa57f3272d37f426a91a3889185c717db6eca20284151a719a7ee69d",
+        "size": 434
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/examples/workflow-policy.example.json",
+        "sha256": "510cb3c07ef9f18748a6b30b3645d316b56b0903cb8ef5ee4ec49ee66984730b",
+        "size": 1037
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/schemas/README.md",
+        "sha256": "2ba2ca5df30f542bb8659e56666b1a931b10d0a023d83a373e2ffb5b97c3f34a",
+        "size": 1383
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/schemas/review-result.schema.json",
+        "sha256": "3b0fc0ddcb965c47a2475a14e67b6628c895cffc5af1242a0549874496b0ed0d",
+        "size": 1529
+      },
+      {
+        "mode": "100644",
+        "path": "docs/design/v0.2-a/schemas/workflow-policy.schema.json",
+        "sha256": "3f42a72bfdad8b43d9a7e6974ea9a639cd354d0338567af4613fa7a8f812712e",
+        "size": 2672
+      },
+      {
+        "mode": "100644",
+        "path": "examples/orchestrator/prepare.py",
+        "sha256": "ffef8796d3bfb0805a1b8022415d8a2a72a8bd045008d843dd14afed4fc84fff",
+        "size": 4963
+      },
+      {
+        "mode": "100644",
+        "path": "examples/usable/session_operator.example.json",
+        "sha256": "5a031e3dfad0e4caeb102b00f4448036ad76ceb658d46e4702a0f4b0f325157d",
+        "size": 1662
+      },
+      {
+        "mode": "100644",
+        "path": "examples/usable/verification_profiles.py",
+        "sha256": "26249d31efc014a62e37c7ab12421eaa0eab1f7e4a6f176c5f67c5265da764a2",
+        "size": 1189
+      },
+      {
+        "mode": "100644",
+        "path": "templates/PROJECT.md",
+        "sha256": "3de1d87ca31d533ef95c0ba6f28c9eb370a8a473e9e34b0c18bbf1e69589c629",
+        "size": 582
+      },
+      {
+        "mode": "100644",
+        "path": "templates/TASK.md",
+        "sha256": "cf90dd8ca345dca7f048e3295e1e8fd4e478a5edb11fc73e9c034c8a2bf596e8",
+        "size": 1155
+      },
+      {
+        "mode": "100644",
+        "path": "tests/browser_driver.cjs",
+        "sha256": "a4ebea6ef762ce690618b8fe02b8a4b03c7b4913d802062a33abf8523fee5eec",
+        "size": 1093
+      },
+      {
+        "mode": "100644",
+        "path": "tests/host_isolation.py",
+        "sha256": "5cde538a41a662f431519ef23c31f4582a8015224b9a59310cadd22af8a0a141",
+        "size": 5418
+      },
+      {
+        "mode": "100644",
+        "path": "tests/native_sessions.py",
+        "sha256": "29c5f1b55f983831d1073261953f3ced6f0040daa7ca4c9c9c4691173c3362cb",
+        "size": 7331
+      },
+      {
+        "mode": "100644",
+        "path": "tests/session_browser.cjs",
+        "sha256": "f20c98129cde66fddc2072398854c6084435a26825e355bd998c8c05a612422f",
+        "size": 12732
+      },
+      {
+        "mode": "100644",
+        "path": "tests/session_browser.py",
+        "sha256": "8bf17c623acb297c82c611336e507326a3851e9383846224fd6bd6e1dd20af15",
+        "size": 5141
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_browser.py",
+        "sha256": "dd348f444247a044a688084741deb51c36418aacd8bb413aff883b800ea4bbd1",
+        "size": 7730
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_identity_races.cjs",
+        "sha256": "9a12e8a502b7439e671e024d8fb17027e43eb093cf5987417a2953229cbb5dd6",
+        "size": 16630
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_identity_races.py",
+        "sha256": "4912977cf45ee586bc96fa24d67ab35a3b82e32c84df6ddfa3bc3f61f0f268dd",
+        "size": 3261
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_races.cjs",
+        "sha256": "2923e221ad089beca3fe7d63a2a7f2c8f7cf7894f637049299ae0d77e2640479",
+        "size": 5394
+      },
+      {
+        "mode": "100644",
+        "path": "tests/studio_races.py",
+        "sha256": "9dfc3857f67d49d95fb42cd437949462f0b6739d581fad196bae2597e0db5aad",
+        "size": 1915
+      },
+      {
+        "mode": "100644",
+        "path": "tests/template_browser.cjs",
+        "sha256": "05ea6e3f4cd4b733d24ce75d39653acded82a9ee1bcdf2384b91b297eff84437",
+        "size": 5899
+      },
+      {
+        "mode": "100644",
+        "path": "tests/template_browser.py",
+        "sha256": "b4ca99ef7d55186e5c25a0142a389f777d01f2f02497b4102b1ea91b0c30f322",
+        "size": 1909
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_agent_sessions.py",
+        "sha256": "deea40b978e7dc6849c0ab7c45bc1f6a0959f4c8e80e6f5ba699872ee2ab1632",
+        "size": 50269
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_assertions.py",
+        "sha256": "58b1500696fa1d74229c43eec44f0a29d1fbcf3184bd8aa1f15529be1a839a9b",
+        "size": 6794
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_devflower.py",
+        "sha256": "5a537eeda8d05051d26529ea6125ae84d2356e1e68c14a8ec7f60b7958a4ca20",
+        "size": 6743
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_failure_modes.py",
+        "sha256": "30a792f89f501cddc090f842a7d3a64466f5fc65e2c0dd094e3f3050012d6eb0",
+        "size": 2366
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_integration_regressions.py",
+        "sha256": "c3d82896b7ba125ccf252c01a2d5dc16c58e247920d6daf257c6740c3d72b7fe",
+        "size": 16147
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_issue16.py",
+        "sha256": "ca812ea14b73d92b456756d5303964ad02b370826fbdd1ebe9d3ff5810fbfe47",
+        "size": 18880
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_native_terminals.py",
+        "sha256": "4b01cf295b6bc71863f2b51a7ddf41db8b7214cd3fe8c02d8742317b457e5d86",
+        "size": 8526
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_orchestration.py",
+        "sha256": "24db446e8f9b6dd5c458d73213a4407c9f3c07ed17adf31f7dee0608bdc57c3d",
+        "size": 37435
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_provider_transport.py",
+        "sha256": "005de5f2feeeaa203e3183062d33b8cb34a81e30b3b3b6ea547d1d91a77f6a9d",
+        "size": 11017
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_review_handoff.py",
+        "sha256": "0381201a705809e48a02d48452295ad064ca7fada248d915d1d93bf285140b3a",
+        "size": 13558
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_session_landlock.py",
+        "sha256": "43127c0275d63c7036ed095ea9f6d1206559c88ac453b8e592bcef648071b9a2",
+        "size": 8382
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_studio.py",
+        "sha256": "fa875e0fc752cfdcf9f3a084cfb118db2ffa02f0aa5de859d4e969a6ae057716",
+        "size": 17534
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_studio_progress.py",
+        "sha256": "5c5ef14103c5d74ad6a9f7bdd0c8a33ec52dd38d9c6a614733a5626338f233fd",
+        "size": 9195
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_studio_workflow.py",
+        "sha256": "d17410a462ef5778966ca46c733f2e6f8a499f95f86d614dc59d10e4f804880d",
+        "size": 31027
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_template_governance.py",
+        "sha256": "d2da5ef96c5d88d2f926b3e8a1f49f1aceab05a81949745d6176ca67690184e8",
+        "size": 16771
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_usable.py",
+        "sha256": "87f042f26ecd68007355630a8becae08d8dff5ba32bda1080c0224393a3eae61",
+        "size": 36178
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_bridge.py",
+        "sha256": "e7acc6e4cc7a0f091a3a181e60f920f6cc8615cac8713cf6d1808353dad1bb69",
+        "size": 10737
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_data.py",
+        "sha256": "be729997fb0482c510b0df90bd9158c12fc2bc4af458f30958fd2205ed5940ee",
+        "size": 2512
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_graph.py",
+        "sha256": "e844f9e2cc34ebd218e3d16835490382cd5786bbfd88e900d384c8df7806d45d",
+        "size": 11237
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_nested.py",
+        "sha256": "f55a7beb0fb1d5f48bb46e1b1763fee0733cdfbc19ba585b78d7b1e2467c5f14",
+        "size": 11662
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_product.py",
+        "sha256": "e6ab8f337dc1f8ff7e41598e8ce9a339ca4f70e0aa6de34668a4c17421d56202",
+        "size": 16903
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_runtime.py",
+        "sha256": "b860b17b4c07152223cd7ebb30b97fa982ca873587043f5de85ee020e309148f",
+        "size": 35850
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workbench_tool_activity.py",
+        "sha256": "d1edf342c8d18087203c9228643dcd291b1303e69f7a5f204c1da21abc098041",
+        "size": 9456
+      },
+      {
+        "mode": "100644",
+        "path": "tests/test_workspace_sessions.py",
+        "sha256": "07c74fdf6326f14e68d6f6a517b39e70c1baee96f13ffad49a45c1ea81b3a4a4",
+        "size": 21084
+      },
+      {
+        "mode": "100644",
+        "path": "tests/usable_browser.cjs",
+        "sha256": "63dc274330fa55f797ca471ae45692b815328c6be725a39636d926d3cafd93e7",
+        "size": 33275
+      },
+      {
+        "mode": "100644",
+        "path": "tests/usable_browser.py",
+        "sha256": "404db4a815205bb522100aa9905b9a0572f21b9332ebd641b62e05ee77e4abbd",
+        "size": 7780
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_browser.cjs",
+        "sha256": "9f2b76f9c95a9313951935fc3f6c50e20d7ffd1815e6c065d877745847038fa8",
+        "size": 77562
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_browser.py",
+        "sha256": "a06bf41f4d7170637728167512d2a2a6c176bc68d2f2a56dc17f774432b90c60",
+        "size": 5671
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_editor.test.mjs",
+        "sha256": "684063623a736a9038accbde8edadf42bff8aa52e1d2e48be441d308d28f7828",
+        "size": 4907
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workbench_projection.test.mjs",
+        "sha256": "68df97d1f8a411a2c3b02cd16229e86bb174aefb18c39c2e2d24436b10d1998d",
+        "size": 3637
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workspace_browser.cjs",
+        "sha256": "5fa7fcd06be48c518850be131b1c7774aec860c9d78ac55069c156e19bb59d8c",
+        "size": 6219
+      },
+      {
+        "mode": "100644",
+        "path": "tests/workspace_browser.py",
+        "sha256": "be8373840bc38773fbda73def28af9c976de605c90d5d7a5b666da8c0dcad388",
+        "size": 1978
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower.py",
+        "sha256": "29908899d5337f7cef11fbf5f824016d0cf58c90d16aa56782796d16035c2ae9",
+        "size": 11657
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_native_terminal.py",
+        "sha256": "27a59dd255960ffc88f07b7ecac5ed1027a1e26a0ac5231e094be2f2627e6eed",
+        "size": 4356
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_sessions.py",
+        "sha256": "fa5155e3096d90bdf78fcf1f8fe73c594bbee5fee8eb48c1896ea3e9a8a176bd",
+        "size": 1088
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_stable_bridge.py",
+        "sha256": "a74887f3834594d7e5c1e3b0ec6ee317b83a3d9af87d95485a3deb6634b057a3",
+        "size": 10452
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_studio.py",
+        "sha256": "22c8caea38ed2002a468562a4157fb8120bcd777ea2f2a79e7ad50a7b3e735df",
+        "size": 197
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_usable.py",
+        "sha256": "f29a33aa1b1b6cb840159f2b10fbe448ece639f24939e2bdfa89837a2ce36406",
+        "size": 7292
+      },
+      {
+        "mode": "100644",
+        "path": "tools/devflower_workbench.py",
+        "sha256": "b48deb1a9762e76f31c02b27cbc8ad148a65f08ce5e058f391464114a85926bc",
+        "size": 1219
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/__init__.py",
+        "sha256": "19170f5ed48d2a25dfa0621c8521022fa165b11e54afedaddacf35adeca5bcab",
+        "size": 75
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/adapters.py",
+        "sha256": "b9716f48aefb193445cde4f846207d0a1bb07125a029634080eab4e7cf72ca80",
+        "size": 15560
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/cli.py",
+        "sha256": "484c834467569e04cac87856e3777a0be24b08e23b5cb51258ab2f2fe49f0c4b",
+        "size": 2768
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/common.py",
+        "sha256": "c90cbbf5cc344353e2d1ed6b85277d2252922dd57a66b35df864d2b000a02901",
+        "size": 6336
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/contracts.py",
+        "sha256": "eee5b23023839016e19c28a6e0822fe0a90dcdae540bfefb545c7fef08bf9f78",
+        "size": 20794
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/controller.py",
+        "sha256": "68719378f945f1623c26980df6c5ebc5ffc7df8ba22b15d82ce3aa0c52b7d90a",
+        "size": 32370
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/delivery.py",
+        "sha256": "6e7255ddf2aa7871fdf66679e017b76463bdc768d6de73be49ab64ce98d5a245",
+        "size": 12657
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/gate.py",
+        "sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+        "size": 4176
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/github_delivery.py",
+        "sha256": "9fa66880c0507afcf1a0958b66816f1979a0dc08ae1cb28c97f288710bfba653",
+        "size": 10698
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/privacy.py",
+        "sha256": "f0679b5c368e3bb2fcf253c88632daffeebc1324c05fc8d5c606cc8752cfbdc5",
+        "size": 2585
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/process.py",
+        "sha256": "e79eed9cf3cf64cf16c6ff5939b087b136b605f7c34eb26a0e78ad19e05d9603",
+        "size": 9090
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/provider_transport.py",
+        "sha256": "9a0bb9d888374c7b3e894b9f42ddab1d4fa1ce65e8782dda320175a99e7bffc8",
+        "size": 11007
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/sandbox.py",
+        "sha256": "cb01d84d66d31d5929e47dd265ba03050046ceef90424cdd9730dffdf7323492",
+        "size": 3964
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/store.py",
+        "sha256": "f8e491c29c95a68b6e00a41acee92637daa347b2de3ced807d80df0dd3653cec",
+        "size": 5498
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/trust.py",
+        "sha256": "d56afec8b0f427826e44ad5667d79c0143b680025f8b18f8372295e1e531f0ab",
+        "size": 3406
+      },
+      {
+        "mode": "100644",
+        "path": "tools/orchestration/verification.py",
+        "sha256": "0debf6b114f0f392b2848a12f7482abdb07591ca7188b01e782023fc81a0aa5c",
+        "size": 7122
+      },
+      {
+        "mode": "100644",
+        "path": "tools/review_handoff.py",
+        "sha256": "fa0f189811c622dabbc72afc6f27aadb5dc98ce61d7532888d9107e5ce0f70a4",
+        "size": 15286
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/__init__.py",
+        "sha256": "d2a831970647642f0e78e6ef59a0d317dec140396af70e3fe2a30d907e842230",
+        "size": 86
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/agent_sessions.py",
+        "sha256": "e1fae4e9b3a604a100c5411bd4ee39c3439cb6e347250c0392248499d03791be",
+        "size": 7827
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/data_contracts.py",
+        "sha256": "88c187e7d26f59c3199944c7896f3ce5496488c66fc49064b0eb52b396bec20f",
+        "size": 1780
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/graph.py",
+        "sha256": "3bfa93eb35fb8dea2d1092e6f192d2118e8643061a6a92adf0ee2e386e817ef1",
+        "size": 10585
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/model_catalog.py",
+        "sha256": "2d4e656c22132a7415b1dfa93b2d6b1a3b28784177bf6de347d1f8bcbc07e6d6",
+        "size": 9326
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/native_terminals.py",
+        "sha256": "fd7d2324a54b6fa07680ca60ae1e234ae0db738dda1dc470a6bd22c90a6c24cb",
+        "size": 14066
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/projection.py",
+        "sha256": "e595c9e5ffc9c18473b925546db0a1ffa61b64691ecd89c6ebedbf29ed555590",
+        "size": 15100
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/routing.py",
+        "sha256": "254a45fdec00f076650e42903ed427ffc21432ee5f01181e492dc0a700fbeb75",
+        "size": 5611
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/server.py",
+        "sha256": "32d91fed82395ad0b794f942ba5a971b114f28e580c8f51ae5a29649f1e3e4e7",
+        "size": 17877
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_center.py",
+        "sha256": "eeb56fc81350ff3ff296bfc75a5b480934b1a720b5638705e8d9305f3b80baae",
+        "size": 27984
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_runtime.py",
+        "sha256": "6d53ecf7cb1dcb2c48954b8e11e850b11c4b41470208ab14e6d63042604a1f66",
+        "size": 9504
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_sources.py",
+        "sha256": "858966a19faf587b8ac35f107b903a23ca4438d4f9c0d566838b025184369425",
+        "size": 12013
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/session_worker.py",
+        "sha256": "9f13ab8e41442b5832ca69c8c129cb855b9a75726e7d594734a57e58a2201834",
+        "size": 869
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/app.js",
+        "sha256": "5eb5d26bb7e5a5d4425fe3b1c3291ef7c710b446cbac4e59238fa87583ec3de1",
+        "size": 29261
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/index.html",
+        "sha256": "71dc4b96894fb6f0d73decaaf05ff9160666cb28101f6fb20b54d443c3592cda",
+        "size": 5228
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/style.css",
+        "sha256": "850f372a49339d4fb651ca5552a05706a7e6dc1b8bbf2d1e580a0d3474e14ea8",
+        "size": 10349
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable.css",
+        "sha256": "5b94357291c6719d4d5ae7490f34cef108f8609abdced7e7f4161bd062a34f26",
+        "size": 16143
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable.html",
+        "sha256": "00a5956aab5a8ef13a4253bf11bff58a8e5b40b24e5f83cb1e6a0697e5c5fbfc",
+        "size": 11315
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable.js",
+        "sha256": "3525a3af5f66d9b929a1b1d0bb3e0f8dac23ab80f4a0f350c3110f9956ca2012",
+        "size": 41275
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable_canvas.js",
+        "sha256": "51d2e8e12d254cd8fbb372a5ff2862eb440eb2d1fc437e3222b70366929aaba8",
+        "size": 13740
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/usable_sessions.js",
+        "sha256": "1309575979893dbdf25a7b015cd5b116c60323f09280bcbda69cfcdb521f2a5a",
+        "size": 10374
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workbench.css",
+        "sha256": "148b22f274818b10edeb549ee2adae8749d878259adf1fc813e33fb646366d9f",
+        "size": 101349
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workbench.html",
+        "sha256": "4f9c78b5a9554bb793ce72ba435a47d8685c71ff725a4faa3b4c0aef5ce1ff03",
+        "size": 359
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workbench.js",
+        "sha256": "c37bd0358333e1c01dc343b4bb859305a5e2fcc128e0d04e4c17d32e847e8b9f",
+        "size": 1083317
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/static/workspace.js",
+        "sha256": "8bdb1f8c58150f8d16bbcf0a0c45feafbc7f6066ba4a22fb1f29e6069006d52d",
+        "size": 5914
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/terminal_text.py",
+        "sha256": "9dbce361fc22c2b6c82b63ecc0e68894cd36170b19b1544e3ae203a4820262cd",
+        "size": 3014
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/tool_activity.py",
+        "sha256": "bf1b30d4b3930900fefd9318fc0a94c7b6de85258b68180377c1a63fac7082a7",
+        "size": 4805
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_graph.py",
+        "sha256": "d0de282093bafb437079c705d23ac65f2006c113bac3265d72c87f8561a552e3",
+        "size": 12537
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_projection.py",
+        "sha256": "e6806be835379d6933c525b9c2da6e8daf4bfcc20190c82ee5e251b056ed8c5e",
+        "size": 10659
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_runtime.py",
+        "sha256": "ab18e47ad896dfdf88a2125b8e66ab114bf2b6a442e8b3f6371184d2d6766114",
+        "size": 31033
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_server.py",
+        "sha256": "5abcc3f58adb33a11c0febb5b77e52ab5b014f6dafe0cea85faaef1c9f6b17b3",
+        "size": 12424
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_store.py",
+        "sha256": "cba2fd9253fcbd14f2e02c347331a885ab2820921e5c91838b8505a3214de32e",
+        "size": 7446
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/usable_verification.py",
+        "sha256": "b679b44a85b6f0a98a48908c82ae1c5d84b318a397e0b648c17168cbd5c31e0d",
+        "size": 4378
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_data.py",
+        "sha256": "5a8bc90698d674b7d0d7650dae21da91f0a29fb88b48bc72ee2df499711ac5a6",
+        "size": 997
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_examples.py",
+        "sha256": "a9099026e18832bbbecfd526867c157f5d5fef01c750cfeb60d1b648583408c1",
+        "size": 3815
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_external.py",
+        "sha256": "3f5273a5a3c21f30d8e38438a5daba1f050bdb77e4dcfc0b2e8e5fdc89279ba3",
+        "size": 5210
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_failures.py",
+        "sha256": "8c0d507a7e3e24e71cd3b7e301d88b2008a35e073f217b8d83ae9e5098fd24d3",
+        "size": 2454
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_graph.py",
+        "sha256": "3d3969ce8e7211dd0a867760a60051f76c91a30f7423a6dc15041d77da3ca342",
+        "size": 11128
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_rpc.py",
+        "sha256": "58a39d32665cc62464079d77b419e84455376536ee20af1d45eb4f7e550ac48c",
+        "size": 3264
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_runtime.py",
+        "sha256": "0c90d6b6f6fb13b0a9b5412d85e8ab6ce0c4cf0f8f39e96a096673389f449c0e",
+        "size": 22516
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_scheduler.py",
+        "sha256": "e5e4198b0021221aa13a297b8a081b30625c5d68c0e9fdd118734929a34925f0",
+        "size": 27946
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_server.py",
+        "sha256": "ac2d535d6f0b03081e6b6202e3b017408f5e3ab468e6921f4a438f82c69d825e",
+        "size": 9804
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_sessions.py",
+        "sha256": "b0dccb9c3a24f35f00cacf8ebff30a0afb0954090c3d901a6c44f48c8d25b9b8",
+        "size": 32515
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_store.py",
+        "sha256": "f303e9a5ebbc8ea825eb70303a12f585aa7b08263281b2fc8854c6d8ab0b85b9",
+        "size": 4535
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/CanvasMenus.jsx",
+        "sha256": "80be1425434c6bc3b9448819b115d774831ebbb38e3d26bd6c1f7f553059600e",
+        "size": 3276
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/DraftPreview.jsx",
+        "sha256": "cc04d19054627d3a4d094d0032978d2a20bf03efa2e5760aee553a090a171a0d",
+        "size": 2389
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/EditorToolbar.jsx",
+        "sha256": "856ea37d411af6d98b38999286da375ba6a838ba318aed6e236a62c88f48e4c0",
+        "size": 2846
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/HandoffEdge.jsx",
+        "sha256": "5d5c9ff2e7d1e01dc423b08c8a006dbea29aea46744aafc77980bf6afe880d2a",
+        "size": 947
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/ModelSelector.jsx",
+        "sha256": "1145e758ec96a4bc449603ab0f9738c7d87654d7cccbaaeb0e7efffdbb7e4a80",
+        "size": 2762
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/NativeTerminal.jsx",
+        "sha256": "d8fc6c058552b65dd4f94f6d90f80641bb5f1f6a0c522e3872c7298ba70850bd",
+        "size": 9621
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/RouterEditor.jsx",
+        "sha256": "d9ed3e17c09e88b88b9ad2ec1d057b470b409e579b24204799b37b476eaa5adc",
+        "size": 5271
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/RuntimeOverview.jsx",
+        "sha256": "a3f6b5e6d57dfcb716aca967f00c9e0613bf3ed3adaa6fae4593619f3a364245",
+        "size": 2796
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/SessionList.jsx",
+        "sha256": "7c95a3e7b7eb4d13fffcceed54d1c67c39d1c86adf2cedb4c22368fc4b1d579b",
+        "size": 2697
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/StudioChrome.jsx",
+        "sha256": "e9c89b9d0c1a996b63461ae0450812f3ce642bbe09489765664ab6fa1f76b09b",
+        "size": 3087
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/THIRD_PARTY_LICENSES.txt",
+        "sha256": "9fe56f103078c6a02f64f6e9ce51197ebd35047848f268979520bc5d6030ef72",
+        "size": 148933
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/ToolActivity.jsx",
+        "sha256": "a90aaaed2c4d10380f6b34e5db22d738b332a5cc45e2306a67f945de6d2af509",
+        "size": 1585
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/WorkspaceLayout.jsx",
+        "sha256": "e88f13e898aa6b466fb9aee5ca984b8760fa673eb7f084840862012fbba9ecf5",
+        "size": 5363
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/build.mjs",
+        "sha256": "edfda0a88b64a288817b7bda871820afb8d3d09f2ba961d7b1b4edf737d1b3c7",
+        "size": 591
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/canvas_editing.mjs",
+        "sha256": "95dd51944df7d62b02b931a4fffdef161b9c7ea60db98e89fd139dfad3f0ccff",
+        "size": 5558
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/index.jsx",
+        "sha256": "1e35acfe8d8902dcd865b48710b847fa88172c7b47fef350080b6b3a1dd0a55f",
+        "size": 83861
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/interactions.css",
+        "sha256": "47e575ed4018be3552d9dcd62f50aa169a9df4ac297d27ff7e2da3258f2d4b49",
+        "size": 10151
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/package-lock.json",
+        "sha256": "dec537aae450ed4889b451f092a2e97e1a2e2bd34513434defbe6eea51385aaf",
+        "size": 80955
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/package.json",
+        "sha256": "10892c8461809ef6cc57ef4ffc485d1cef78d7d1ee8f1d94a0ecc698e071e62e",
+        "size": 391
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/polish.css",
+        "sha256": "8fb6c6960a252337ff9df095a25dadd858c1fd4fee443d5c10f09186db10b12c",
+        "size": 17082
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/product.css",
+        "sha256": "dce7ae3fa9b4b1d32d94220beba1211498afc1af4a12d6e55bfa95af8db12369",
+        "size": 4971
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/runtime_projection.mjs",
+        "sha256": "4ce71a1a51502d5c4f3978d6c1efc36d0bc3d0268aed6a57f239ef7b9f0f5779",
+        "size": 4008
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/studio.css",
+        "sha256": "e8d33c1801dcb061f16da5127d2cf4bff38f19b3e5d5fb8f7d4308a6ff1a2aed",
+        "size": 28202
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/style.css",
+        "sha256": "7327c047f83ffba16cba75fca3a8a7dbb8f60a96407ec59352c0644ea34de7c7",
+        "size": 20789
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/trace_views.jsx",
+        "sha256": "5797bcce01dc23b046aa3fb17be37d948a840932ccbb5a8376925b3cb7792a3c",
+        "size": 9245
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/useCloseView.jsx",
+        "sha256": "b6db8cb29d52ab7064e3f9d6ada995840083a88661dff0e33bd51dc69806e90d",
+        "size": 971
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/vendor/sim/LICENSE",
+        "sha256": "b13f17c74ba17a5cc136e624fd6f78d75124f2b038a25f0b7eba48a1ca00c0ec",
+        "size": 11347
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/vendor/sim/NOTICE",
+        "sha256": "f7c2fd75ef8745b6f966111bbeb1b592649aaae081ed4d689bd3d6f8571786b7",
+        "size": 100
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/vendor/sim/PROVENANCE.md",
+        "sha256": "adbf748fa89ff80668da7b4e2a3d27ecfdd4cc69b394c1743f566dd0505ce2d2",
+        "size": 556
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/vendor/sim/use-canvas-context-menu.ts",
+        "sha256": "405ea73778e4742dd66852da9d76d8a21ae43efb888010472f26b2d7e91dceec",
+        "size": 5205
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_ui/vendor/sim/use-drag-resize.ts",
+        "sha256": "44cdfe5c30069c2869f8c5a866f27ac546d3cb8a7682c7ac78fc4aa1d6baa9f9",
+        "size": 7375
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workbench_worker.py",
+        "sha256": "3c797115968ca3fdd66af430343970d6c32c4ad5f1c1062fcab69845416091cd",
+        "size": 1291
+      },
+      {
+        "mode": "100644",
+        "path": "tools/studio/workspace_sessions.py",
+        "sha256": "14b3b90a2fab4b1ace14b640c6df9c8d2bda0574f36923bd94766e25517d66db",
+        "size": 13188
+      }
+    ],
+    "git_tree": "6c873146e04a3c820213e179a24931e9ba5e21df",
+    "head": "a3b22f37e7e23f11fbc23d9e613e1662d91a17ec",
+    "status": ""
+  }
+}

@@ -1,0 +1,1336 @@
+{
+  "schema_version": 1,
+  "run_id": "7120c8604d44468eb353931ac0cbb384",
+  "contract_sha256": "e82900437dac636aaae0fb71b28b08e61f4cf6d969173c89e7550e889039295c",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/workbench-ux-polish",
+      "base": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+      "head": "546cba4ec92390eeef2218e119647485ee358ce1",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/16",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/15",
+      "candidate_sha256": "302125c7e87ff5f7bb4e6bcc57ac38ae0ecb375ac445d22410a5adc7ab9f28c9",
+      "git_tree": "c0b01275df195a2e74668442b82a93264c14ba3c"
+    },
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/model-session-routing",
+      "base": "546cba4ec92390eeef2218e119647485ee358ce1",
+      "head": "a3b22f37e7e23f11fbc23d9e613e1662d91a17ec",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/16",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/17",
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "git_tree": "6c873146e04a3c820213e179a24931e9ba5e21df"
+    }
+  ],
+  "reviews": [
+    {
+      "scope": "r1-pr15",
+      "session_id": "7b5f8436-e97e-40a6-ad58-de81dc7f92f9",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15/.claude",
+      "cwd": "/home/workspace/DevFlower",
+      "native_records": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15/.claude/projects/-home-workspace-DevFlower/7b5f8436-e97e-40a6-ad58-de81dc7f92f9.jsonl",
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_model": "unknown",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+      "git_tree": "1797893a1eca77744c59e6b4e86e96c275f689e3",
+      "completed": false,
+      "verdict": "BLOCKED",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 1789
+        },
+        "exit": 1,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 4162848,
+          "pid": 4162848,
+          "sid": 4162848,
+          "start": "139799712"
+        },
+        "seconds": 332.766,
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "290f5351be24f4259312096f10dbd579131785d006f52802097d05a5cf70992a"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "name": "r1-pr15",
+      "raw_model_verdict": null,
+      "verdict_origin": "external supervisor only; no model verdict"
+    },
+    {
+      "scope": "r1-pr15-recovery1",
+      "session_id": "40d2a746-534f-4c09-8585-f7c68e5bddac",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1/.claude",
+      "cwd": "/home/workspace/DevFlower",
+      "native_records": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1/.claude/projects/-home-workspace-DevFlower/40d2a746-534f-4c09-8585-f7c68e5bddac.jsonl",
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_model": "claude-opus-5-5[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "candidate_sha256": "164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9",
+      "git_tree": "1797893a1eca77744c59e6b4e86e96c275f689e3",
+      "completed": true,
+      "verdict": "NEEDS_CORRECTION",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 8909
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 4172127,
+          "pid": 4172127,
+          "sid": 4172127,
+          "start": "139863579"
+        },
+        "seconds": 311.362,
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "c088a83d8837f1a5cf6b7b329374d8d76e1ff8d2686714392c08f47cd57933d1"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "name": "r1-pr15-recovery1",
+      "raw_model_verdict": "NEEDS_CORRECTION",
+      "verdict_origin": "native structured report",
+      "original_report_sha256": "e062a5b0c164650a56ed91a3b511a2029137fe1f88b8cc756d9bcd79e4f2335b"
+    },
+    {
+      "scope": "r2-pr15-corrected",
+      "session_id": "40d2a746-534f-4c09-8585-f7c68e5bddac",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1/.claude",
+      "cwd": "/home/workspace/DevFlower",
+      "native_records": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1/.claude/projects/-home-workspace-DevFlower/40d2a746-534f-4c09-8585-f7c68e5bddac.jsonl",
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_model": "claude-opus-5-5[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "candidate_sha256": "67554e7d833e9fe0de3e47e8f0420eb3aeed5d2e6cfd31c31e78e659e915fe49",
+      "git_tree": "2716787b924811e59db2fc3447e13b0e1e78de02",
+      "completed": true,
+      "verdict": "ACCEPT_WITH_LIMITATIONS",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 9506
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 37365,
+          "pid": 37365,
+          "sid": 37365,
+          "start": "140016949"
+        },
+        "seconds": 389.505,
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "f1290f0f275683580a84b7226fcb799363c21b5fc591f9ec2775dca1ba663eee"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "name": "r2-pr15-corrected",
+      "raw_model_verdict": "ACCEPT_WITH_LIMITATIONS",
+      "verdict_origin": "native structured report",
+      "original_report_sha256": "d89225b3e90d76f7962191117eb765f50d3ad34b6cb1132f7f5c2a1861481dc4"
+    },
+    {
+      "scope": "r3-pr15-evidence",
+      "session_id": "40d2a746-534f-4c09-8585-f7c68e5bddac",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1/.claude",
+      "cwd": "/home/workspace/DevFlower",
+      "native_records": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r1-pr15-recovery1/.claude/projects/-home-workspace-DevFlower/40d2a746-534f-4c09-8585-f7c68e5bddac.jsonl",
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_model": "claude-opus-5-5[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "candidate_sha256": "67554e7d833e9fe0de3e47e8f0420eb3aeed5d2e6cfd31c31e78e659e915fe49",
+      "git_tree": "2716787b924811e59db2fc3447e13b0e1e78de02",
+      "completed": true,
+      "verdict": "NEEDS_CORRECTION",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 10880
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 85068,
+          "pid": 85068,
+          "sid": 85068,
+          "start": "140113647"
+        },
+        "seconds": 800.296,
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "385f94a450af1985a5eecc282ef57d5e20d2359332f4cebb106b9a1c06e3238c"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "name": "r3-pr15-evidence",
+      "raw_model_verdict": "NEEDS_CORRECTION",
+      "verdict_origin": "native structured report",
+      "original_report_sha256": "d02a7afca1b05abf795f5731b1a6237baabca65ce97b7409a7800eb6976d97f2"
+    },
+    {
+      "scope": "r4-pr15-final",
+      "session_id": "be372e4c-cede-4628-b13f-415d38a023f5",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r4-pr15-final",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r4-pr15-final/.claude",
+      "cwd": "/home/workspace/DevFlower",
+      "native_records": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r4-pr15-final/.claude/projects/-home-workspace-DevFlower/be372e4c-cede-4628-b13f-415d38a023f5.jsonl",
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_model": "claude-opus-5-5[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "candidate_sha256": "302125c7e87ff5f7bb4e6bcc57ac38ae0ecb375ac445d22410a5adc7ab9f28c9",
+      "git_tree": "c0b01275df195a2e74668442b82a93264c14ba3c",
+      "completed": true,
+      "verdict": "ACCEPT",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 8935
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 199871,
+          "pid": 199871,
+          "sid": 199871,
+          "start": "140300098"
+        },
+        "seconds": 398.562,
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "d41c551781056799962301561fac760432538d0aedf5bb9f08c674dc7410a827"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "name": "r4-pr15-final",
+      "raw_model_verdict": "ACCEPT",
+      "verdict_origin": "native structured report",
+      "original_report_sha256": "04b7dd1bb3511601bdf530a9c639deb383395515c14a616b29a681caaeaeb476",
+      "identity_recovery": {
+        "actor": "Root fixed external supervisor metadata repair, no new native request",
+        "original_session_sha256": "d651bf19bbc53b59c35aa2c6c738a889e709ca0df61183154faa1ac34a6ea67c",
+        "raw_verdict_sha256": "04b7dd1bb3511601bdf530a9c639deb383395515c14a616b29a681caaeaeb476",
+        "native_record_sha256": "84055c9252163f1ddf7d14f46ee493897c1712c7d3a9623be3d5a0eb2a23607b",
+        "native_session_id": "be372e4c-cede-4628-b13f-415d38a023f5",
+        "launch_cwd": "/home/workspace/DevFlower",
+        "observed_native_cwds": [
+          "/home/workspace/DevFlower",
+          "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/reviews/r4-pr15-final/candidate",
+          "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/reviews/r4-pr15-final/candidate/tools/studio/workbench_ui"
+        ],
+        "original_supervisor_sha256": "312d6a085588e88fb4b17fbdec344e86ba7c3fc255b78cb93a86213b8c621888",
+        "agent_exit": 0,
+        "postprocess_exit": 1,
+        "reason": "Readonly provenance mounting loop reused the record variable; identity metadata was shadowed. The original sid/schema/prompt/source/verdict and actual process assertions were intact; native UUID and original launch cwd verified against the original native record.",
+        "source_report_modified": false,
+        "requests_repeated": 0
+      }
+    },
+    {
+      "scope": "r5-pr17-final",
+      "session_id": "76136142-e48a-44d6-bfd0-8f32269616e5",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r5-pr17-final",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r5-pr17-final/.claude",
+      "cwd": "/home/workspace/DevFlower",
+      "native_records": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r5-pr17-final/.claude/projects/-home-workspace-DevFlower/76136142-e48a-44d6-bfd0-8f32269616e5.jsonl",
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_model": "unknown",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "git_tree": "6c873146e04a3c820213e179a24931e9ba5e21df",
+      "completed": false,
+      "verdict": "BLOCKED",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 0
+        },
+        "exit": -15,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 215643,
+          "pid": 215643,
+          "sid": 215643,
+          "start": "140374260"
+        },
+        "seconds": 900.034,
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "status": "EXITED",
+        "timeout": true
+      },
+      "name": "r5-pr17-final",
+      "raw_model_verdict": null,
+      "verdict_origin": "external supervisor only; no model verdict"
+    },
+    {
+      "scope": "r5-pr17-recovery2",
+      "session_id": "76136142-e48a-44d6-bfd0-8f32269616e5",
+      "home": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r5-pr17-final",
+      "config_root": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r5-pr17-final/.claude",
+      "cwd": "/home/workspace/DevFlower",
+      "native_records": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/runtime/r5-pr17-final/.claude/projects/-home-workspace-DevFlower/76136142-e48a-44d6-bfd0-8f32269616e5.jsonl",
+      "requested_model": "claude-opus-5-5[1m]",
+      "requested_effort": "high",
+      "reported_model": "claude-opus-5-5[1m]",
+      "resolved_model": "unknown",
+      "resolved_effort": "unknown",
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "git_tree": "6c873146e04a3c820213e179a24931e9ba5e21df",
+      "completed": true,
+      "verdict": "NEEDS_CORRECTION",
+      "process": {
+        "bytes": {
+          "stderr": 0,
+          "stdout": 18138
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 230503,
+          "pid": 230503,
+          "sid": 230503,
+          "start": "140490568"
+        },
+        "seconds": 189.261,
+        "sha256": {
+          "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "09bec224ae058dd2d8170bb62359c63e81863e73bffc41bf2c8a5a1fcb240801"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "name": "r5-pr17-recovery2",
+      "raw_model_verdict": "NEEDS_CORRECTION",
+      "verdict_origin": "native structured report",
+      "original_report_sha256": "9cc21364bec720c2b31776149f35afaf285e548bf8f561b0e6d0cc65edd110d6"
+    }
+  ],
+  "verification": {
+    "pr15-final-review": {
+      "candidate_sha256": "302125c7e87ff5f7bb4e6bcc57ac38ae0ecb375ac445d22410a5adc7ab9f28c9",
+      "commands": {
+        "baseline": {
+          "argv": [
+            "python3",
+            "tools/devflower.py",
+            "check",
+            "--baseline"
+          ],
+          "exit": 0,
+          "log": "baseline.log",
+          "seconds": 0.032,
+          "sha256": "328260c6882ae7d98082730ce4206161b5a5f15b44a7426538254946732217f1",
+          "tests": null,
+          "timeout": false
+        },
+        "editor": {
+          "argv": [
+            "node",
+            "--test",
+            "tests/workbench_editor.test.mjs"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "editor.log",
+          "seconds": 0.164,
+          "sha256": "6511f246dec51343817c0daf6c35caac3d3971dbbbcb3140fde7dd11137edf0d",
+          "skipped": 0,
+          "tests": 6,
+          "timeout": false
+        },
+        "host": {
+          "argv": [
+            "python3",
+            "tests/host_isolation.py"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "host.log",
+          "seconds": 0.917,
+          "sha256": "bfbda74585043974997f1f84ca20e3dd454d8d7d1ea1ba89551b2272aa2b742f",
+          "skipped": 0,
+          "tests": 6,
+          "timeout": false
+        },
+        "projection": {
+          "argv": [
+            "node",
+            "--test",
+            "tests/workbench_projection.test.mjs"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "projection.log",
+          "seconds": 0.164,
+          "sha256": "b0492708cc3871ebe9d1762461876adf71a864b8bd971947da5a41897c765bca",
+          "skipped": 0,
+          "tests": 12,
+          "timeout": false
+        },
+        "python": {
+          "argv": [
+            "python3",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-v"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "python.log",
+          "seconds": 106.908,
+          "sha256": "81eb4cc842762c51094defaa5c4fa4cfbd261878c6e560ba225cfe142db6a000",
+          "skipped": 0,
+          "tests": 478,
+          "timeout": false
+        },
+        "session_browser": {
+          "argv": [
+            "python3",
+            "tests/session_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-pr15/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr15-final-review/session_browser"
+          ],
+          "exit": 0,
+          "log": "session_browser.log",
+          "seconds": 7.578,
+          "sha256": "16e7881f4f04e00ed1278c5bf20ad688abfb8e2bc3dfd0dd3839331189cfee23",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": null,
+            "checks": 32,
+            "failures": null,
+            "skipped": null
+          }
+        },
+        "studio_identity_races": {
+          "argv": [
+            "python3",
+            "tests/studio_identity_races.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-pr15/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr15-final-review/studio_identity_races"
+          ],
+          "exit": 0,
+          "log": "studio_identity_races.log",
+          "seconds": 11.327,
+          "sha256": "07d0a6eb5e76e9b25abed5ee77e672d8ebc342ad408e459273cffb2c5a2a3dbb",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 17,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "studio_races": {
+          "argv": [
+            "python3",
+            "tests/studio_races.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-pr15/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr15-final-review/studio_races"
+          ],
+          "exit": 0,
+          "log": "studio_races.log",
+          "seconds": 3.372,
+          "sha256": "45d33fb7331505e6417ee8b30bee4895318270d565ca2fbdd3e26c1819eea993",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": null,
+            "checks": null,
+            "failures": null,
+            "skipped": null
+          }
+        },
+        "syntax-app": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/app.js"
+          ],
+          "exit": 0,
+          "log": "syntax-app.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-usable": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/usable.js"
+          ],
+          "exit": 0,
+          "log": "syntax-usable.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-usable_canvas": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/usable_canvas.js"
+          ],
+          "exit": 0,
+          "log": "syntax-usable_canvas.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-usable_sessions": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/usable_sessions.js"
+          ],
+          "exit": 0,
+          "log": "syntax-usable_sessions.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-workbench": {
+          "argv": [
+            "node",
+            "--input-type=module",
+            "--check"
+          ],
+          "exit": 0,
+          "log": "syntax-workbench.log",
+          "seconds": 0.079,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-workspace": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/workspace.js"
+          ],
+          "exit": 0,
+          "log": "syntax-workspace.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "template_browser": {
+          "argv": [
+            "python3",
+            "tests/template_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-pr15/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr15-final-review/template_browser"
+          ],
+          "exit": 0,
+          "log": "template_browser.log",
+          "seconds": 3.42,
+          "sha256": "62b2f3c89faf00ad8484cbbb1ff3ac08b0eeb80c082c51f6d60b9c867e93afb3",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 6,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "usable_browser": {
+          "argv": [
+            "python3",
+            "tests/usable_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-pr15/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr15-final-review/usable_browser"
+          ],
+          "exit": 0,
+          "log": "usable_browser.log",
+          "seconds": 12.285,
+          "sha256": "4ff7f357ae6c0b906b3a823f379c9917885fd20934bd6f9c6a697cdfe7cffdc5",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 34,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "workbench_browser": {
+          "argv": [
+            "python3",
+            "tests/workbench_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-pr15/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr15-final-review/workbench_browser"
+          ],
+          "exit": 0,
+          "log": "workbench_browser.log",
+          "seconds": 65.626,
+          "sha256": "373ef49a654a5d1aa8683df480cfd37e80d283949d83294ce30894a136a59eda",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 37,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "workspace_browser": {
+          "argv": [
+            "python3",
+            "tests/workspace_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-pr15/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr15-final-review/workspace_browser"
+          ],
+          "exit": 0,
+          "log": "workspace_browser.log",
+          "seconds": 7.576,
+          "sha256": "9b32dfa96405bc01badcd0794c9f61682684bfa6e173123b9a806b3e24916d5e",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 7,
+            "failures": 0,
+            "skipped": 0
+          }
+        }
+      },
+      "complete_binding_sha256": "1f61244e715e01080e20195887719cc1e793846656422541a5dc3f22aaa4a3e4"
+    },
+    "pr17-r5": {
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "commands": {
+        "baseline": {
+          "argv": [
+            "python3",
+            "tools/devflower.py",
+            "check",
+            "--baseline"
+          ],
+          "exit": 0,
+          "log": "baseline.log",
+          "seconds": 0.032,
+          "sha256": "328260c6882ae7d98082730ce4206161b5a5f15b44a7426538254946732217f1",
+          "tests": null,
+          "timeout": false
+        },
+        "editor": {
+          "argv": [
+            "node",
+            "--test",
+            "tests/workbench_editor.test.mjs"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "editor.log",
+          "seconds": 0.164,
+          "sha256": "55b54be80879b6065399bbdbc84404cde5728c3b7d8bd4ab47a81771f3d2d09a",
+          "skipped": 0,
+          "tests": 8,
+          "timeout": false
+        },
+        "host": {
+          "argv": [
+            "python3",
+            "tests/host_isolation.py"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "host.log",
+          "seconds": 0.865,
+          "sha256": "b3eccf5e6e6901a1edf3d0a7ee4ce322bdfcabe5f480d928443cb415284cfc98",
+          "skipped": 0,
+          "tests": 6,
+          "timeout": false
+        },
+        "projection": {
+          "argv": [
+            "node",
+            "--test",
+            "tests/workbench_projection.test.mjs"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "projection.log",
+          "seconds": 0.164,
+          "sha256": "9a918983776af23ae7a544c629204e720046478c279f5c7c32bbf4aac11c0624",
+          "skipped": 0,
+          "tests": 12,
+          "timeout": false
+        },
+        "python": {
+          "argv": [
+            "python3",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-v"
+          ],
+          "errors": 0,
+          "exit": 0,
+          "failures": 0,
+          "log": "python.log",
+          "seconds": 110.644,
+          "sha256": "cedc2d551ef29e923c4bb8f31457bc9e89b1c83389e9839ea76c4e1813558d2e",
+          "skipped": 0,
+          "tests": 517,
+          "timeout": false
+        },
+        "session_browser": {
+          "argv": [
+            "python3",
+            "tests/session_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-workbench/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr17-r5/session_browser"
+          ],
+          "exit": 0,
+          "log": "session_browser.log",
+          "seconds": 7.327,
+          "sha256": "16e7881f4f04e00ed1278c5bf20ad688abfb8e2bc3dfd0dd3839331189cfee23",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": null,
+            "checks": 32,
+            "failures": null,
+            "skipped": null
+          }
+        },
+        "studio_identity_races": {
+          "argv": [
+            "python3",
+            "tests/studio_identity_races.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-workbench/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr17-r5/studio_identity_races"
+          ],
+          "exit": 0,
+          "log": "studio_identity_races.log",
+          "seconds": 11.533,
+          "sha256": "e22b1c7ea8a68921fa804c54ee386468912fcdc07c59ba3b5e4e7155ef523cbd",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 17,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "studio_races": {
+          "argv": [
+            "python3",
+            "tests/studio_races.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-workbench/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr17-r5/studio_races"
+          ],
+          "exit": 0,
+          "log": "studio_races.log",
+          "seconds": 3.319,
+          "sha256": "45d33fb7331505e6417ee8b30bee4895318270d565ca2fbdd3e26c1819eea993",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": null,
+            "checks": null,
+            "failures": null,
+            "skipped": null
+          }
+        },
+        "syntax-app": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/app.js"
+          ],
+          "exit": 0,
+          "log": "syntax-app.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-usable": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/usable.js"
+          ],
+          "exit": 0,
+          "log": "syntax-usable.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-usable_canvas": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/usable_canvas.js"
+          ],
+          "exit": 0,
+          "log": "syntax-usable_canvas.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-usable_sessions": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/usable_sessions.js"
+          ],
+          "exit": 0,
+          "log": "syntax-usable_sessions.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-workbench": {
+          "argv": [
+            "node",
+            "--input-type=module",
+            "--check"
+          ],
+          "exit": 0,
+          "log": "syntax-workbench.log",
+          "seconds": 0.089,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "syntax-workspace": {
+          "argv": [
+            "node",
+            "--check",
+            "tools/studio/static/workspace.js"
+          ],
+          "exit": 0,
+          "log": "syntax-workspace.log",
+          "seconds": 0.064,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tests": null,
+          "timeout": false
+        },
+        "template_browser": {
+          "argv": [
+            "python3",
+            "tests/template_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-workbench/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr17-r5/template_browser"
+          ],
+          "exit": 0,
+          "log": "template_browser.log",
+          "seconds": 3.32,
+          "sha256": "62b2f3c89faf00ad8484cbbb1ff3ac08b0eeb80c082c51f6d60b9c867e93afb3",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 6,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "usable_browser": {
+          "argv": [
+            "python3",
+            "tests/usable_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-workbench/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr17-r5/usable_browser"
+          ],
+          "exit": 0,
+          "log": "usable_browser.log",
+          "seconds": 12.283,
+          "sha256": "4ff7f357ae6c0b906b3a823f379c9917885fd20934bd6f9c6a697cdfe7cffdc5",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 34,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "workbench_browser": {
+          "argv": [
+            "python3",
+            "tests/workbench_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-workbench/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr17-r5/workbench_browser"
+          ],
+          "exit": 0,
+          "log": "workbench_browser.log",
+          "seconds": 96.39,
+          "sha256": "df4bc8a0c3b85be4803e661d303447e4c6a2dac37a73b2452dc128e1868457c5",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 56,
+            "checks": null,
+            "failures": 0,
+            "skipped": 0
+          }
+        },
+        "workspace_browser": {
+          "argv": [
+            "python3",
+            "tests/workspace_browser.py",
+            "--chromium",
+            "/home/silver/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome",
+            "--node",
+            "/home/silver/.local/share/node-v22.14.0-linux-x64/bin/node",
+            "--playwright-module",
+            "/home/workspace/DevFlower/development/final-workbench/tests/browser_driver.cjs",
+            "--artifacts",
+            "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/regression/pr17-r5/workspace_browser"
+          ],
+          "exit": 0,
+          "log": "workspace_browser.log",
+          "seconds": 5.474,
+          "sha256": "9b32dfa96405bc01badcd0794c9f61682684bfa6e173123b9a806b3e24916d5e",
+          "tests": null,
+          "timeout": false,
+          "browser_summary": {
+            "tests": 7,
+            "failures": 0,
+            "skipped": 0
+          }
+        }
+      },
+      "complete_binding_sha256": "ae6edbdc823d548f0bf940c190be1c8bf18dd076203b0839ffc09632e63961c6"
+    }
+  },
+  "native": {
+    "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+    "checks": {
+      "sequence": {
+        "passed": true,
+        "run": "1912e5b8db8fe5eebd9b4e15bbff5782",
+        "calls": 2
+      },
+      "merge": {
+        "passed": true,
+        "run": "99c5e94c8d27ce5cf0db002e8820a8e5",
+        "calls": 3
+      },
+      "route-code": {
+        "passed": true,
+        "run": "ab15d7c5477683526e11af1302f56856",
+        "calls": 2
+      },
+      "route-research": {
+        "passed": true,
+        "run": "719a474509b7d057e397841ffc0dca52",
+        "calls": 2
+      },
+      "loop-early": {
+        "passed": true,
+        "run": "0f2114d55d7dbc7feb8030e082fc64f9",
+        "calls": 2
+      },
+      "loop-cap": {
+        "passed": true,
+        "run": "c89c563ab4b3c558ca48f15bfcc352ee",
+        "calls": 10
+      },
+      "real-terminal-rechecked": {
+        "passed": true
+      },
+      "real-terminal-claude": {
+        "passed": true
+      },
+      "interaction-checks-completed": {
+        "passed": true
+      },
+      "interaction-demo-current": {
+        "passed": true
+      },
+      "final-ui-current": {
+        "passed": true
+      }
+    },
+    "positive_workflow_native_calls": 21,
+    "expected_negatives": [
+      "loop-cap stops FAILED at five rounds; all ten model turns exit0, no false success",
+      "owned stop ->CANCELLED and owned process groups dead"
+    ],
+    "retained_unexpected": "First current-candidate Codex PTY refused with managed HOME occupied/recovery, then a separately authorized confirmed-dead recheck restored the same SID; no automatic retry or hidden duplicate writer.",
+    "personal_ux_accepted": false
+  },
+  "budget": {
+    "recoveries": [
+      {
+        "from": "r1-pr15",
+        "name": "r1-pr15-recovery1",
+        "round": 1
+      },
+      {
+        "from": "r5-pr17-final",
+        "name": "r5-pr17-recovery2",
+        "round": 5
+      }
+    ],
+    "source_rounds": [
+      {
+        "name": "r1-pr15",
+        "round": 1,
+        "source": "/home/workspace/DevFlower/development/issue14-ux"
+      },
+      {
+        "name": "r2-pr15-corrected",
+        "round": 2,
+        "source": "/home/workspace/DevFlower/development/final-pr15"
+      },
+      {
+        "name": "r3-pr15-evidence",
+        "round": 3,
+        "source": "/home/workspace/DevFlower/development/final-pr15"
+      },
+      {
+        "name": "r4-pr15-final",
+        "round": 4,
+        "source": "/home/workspace/DevFlower/development/final-pr15"
+      },
+      {
+        "name": "r5-pr17-final",
+        "round": 5,
+        "source": "/home/workspace/DevFlower/development/final-workbench"
+      }
+    ]
+  },
+  "stable_source_sha256": "5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821",
+  "personal_ux_accepted": false,
+  "raw_archive_local": "/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024",
+  "probes": [
+    {
+      "session_id": "aebb7c8a-e5fd-4fbc-9a6a-e8650278c570",
+      "success": true,
+      "process": {
+        "bytes": {
+          "stderr": 447,
+          "stdout": 1607
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 4107065,
+          "pid": 4107065,
+          "sid": 4107065,
+          "start": "139658474"
+        },
+        "seconds": 6.736,
+        "sha256": {
+          "stderr": "a212d0422c3349751bf36435f98a40653574bfaf3977637269d2fe80e4fbc775",
+          "stdout": "8356e77f468062a3810ea5458f6f571ff3d9b3585e8012e972fbf98677ade9fd"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "requests": null,
+      "native_messages_requests": null
+    },
+    {
+      "session_id": "aebb7c8a-e5fd-4fbc-9a6a-e8650278c570",
+      "success": true,
+      "process": {
+        "bytes": {
+          "stderr": 447,
+          "stdout": 1609
+        },
+        "exit": 0,
+        "overflow": false,
+        "process": {
+          "boot_id": "9457f150-de9a-4b96-822b-16c78eacb613",
+          "host": "silver-work-station",
+          "pgid": 4108135,
+          "pid": 4108135,
+          "sid": 4108135,
+          "start": "139666919"
+        },
+        "seconds": 6.116,
+        "sha256": {
+          "stderr": "64186565f9767964fb368365c2820d161a10940a2bb6c2c871bd0ee672336f84",
+          "stdout": "e25e669435b62e235f9e5453e1511fbb15087a6ca5dcdea9209d5e5ca0dc252a"
+        },
+        "status": "EXITED",
+        "timeout": false
+      },
+      "requests": null,
+      "native_messages_requests": null
+    }
+  ],
+  "gate_receipts": [
+    {
+      "run_id": "7120c8604d44468eb353931ac0cbb384",
+      "round": 5,
+      "stage": "pr17",
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "contract_sha256": "8f4b3ce335a2054b737e3fc2e4300096543accb7fb4347bd80c8f0cdcc053c7c",
+      "status": "BLOCKED",
+      "review": "r5-pr17-recovery2",
+      "stable_approved": false,
+      "user_personal_ux_acceptance": false,
+      "main_merge_authorized": "conditional only after both Gates and integration review",
+      "fixed_gate_sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+      "raw_verdict": "NEEDS_CORRECTION",
+      "raw_report_sha256": "9cc21364bec720c2b31776149f35afaf285e548bf8f561b0e6d0cc65edd110d6",
+      "git_tree": "6c873146e04a3c820213e179a24931e9ba5e21df",
+      "reason": "required verification failed or stale",
+      "error_class": "Blocked"
+    },
+    {
+      "run_id": "7120c8604d44468eb353931ac0cbb384",
+      "round": 4,
+      "stage": "pr15",
+      "candidate_sha256": "302125c7e87ff5f7bb4e6bcc57ac38ae0ecb375ac445d22410a5adc7ab9f28c9",
+      "contract_sha256": "a1c7c38c52863db3f6b0832f1143851ad156c4c1aeefb3c8ff17be91d5a04bdb",
+      "status": "BLOCKED",
+      "review": "r4-pr15-final",
+      "stable_approved": false,
+      "user_personal_ux_acceptance": false,
+      "main_merge_authorized": "conditional only after both Gates and integration review",
+      "fixed_gate_sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+      "raw_verdict": "ACCEPT",
+      "raw_report_sha256": "04b7dd1bb3511601bdf530a9c639deb383395515c14a616b29a681caaeaeb476",
+      "git_tree": "c0b01275df195a2e74668442b82a93264c14ba3c",
+      "reason": "'candidate_sha256'",
+      "error_class": "KeyError"
+    },
+    {
+      "run_id": "7120c8604d44468eb353931ac0cbb384",
+      "round": 5,
+      "stage": "pr17",
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "contract_sha256": "8f4b3ce335a2054b737e3fc2e4300096543accb7fb4347bd80c8f0cdcc053c7c",
+      "status": "BLOCKED",
+      "review": "r5-pr17-final",
+      "stable_approved": false,
+      "user_personal_ux_acceptance": false,
+      "main_merge_authorized": "conditional only after both Gates and integration review",
+      "fixed_gate_sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+      "reason": "[Errno 2] No such file or directory: '/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/reviews/r5-pr17-final/independent-verdict.json'",
+      "error_class": "FileNotFoundError"
+    },
+    {
+      "run_id": "7120c8604d44468eb353931ac0cbb384",
+      "round": 4,
+      "stage": "pr15",
+      "candidate_sha256": "302125c7e87ff5f7bb4e6bcc57ac38ae0ecb375ac445d22410a5adc7ab9f28c9",
+      "contract_sha256": "a1c7c38c52863db3f6b0832f1143851ad156c4c1aeefb3c8ff17be91d5a04bdb",
+      "status": "ACCEPT",
+      "review": "r4-pr15-final",
+      "stable_approved": false,
+      "user_personal_ux_acceptance": false,
+      "main_merge_authorized": "conditional only after both Gates and integration review",
+      "fixed_gate_sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+      "raw_verdict": "ACCEPT",
+      "raw_report_sha256": "04b7dd1bb3511601bdf530a9c639deb383395515c14a616b29a681caaeaeb476",
+      "git_tree": "c0b01275df195a2e74668442b82a93264c14ba3c"
+    },
+    {
+      "run_id": "7120c8604d44468eb353931ac0cbb384",
+      "round": 5,
+      "stage": "pr17",
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "contract_sha256": "8f4b3ce335a2054b737e3fc2e4300096543accb7fb4347bd80c8f0cdcc053c7c",
+      "status": "BLOCKED",
+      "review": "r5-pr17-recovery2",
+      "stable_approved": false,
+      "user_personal_ux_acceptance": false,
+      "main_merge_authorized": "conditional only after both Gates and integration review",
+      "fixed_gate_sha256": "12f0b6aaf8d257e1ce0b87346e2f328089ab28fc96c52691719b7f28787630ab",
+      "raw_verdict": "NEEDS_CORRECTION",
+      "raw_report_sha256": "9cc21364bec720c2b31776149f35afaf285e548bf8f561b0e6d0cc65edd110d6",
+      "git_tree": "6c873146e04a3c820213e179a24931e9ba5e21df",
+      "reason": "[Errno 2] No such file or directory: '/home/workspace/DevFlower/archives/devflower-pr15-pr17-final-20261024/stage-pr17-r5/interaction-checks-final/proof.json'",
+      "error_class": "FileNotFoundError"
+    }
+  ],
+  "independent_counterexamples": [
+    {
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "actor": "Root controlled runner executing independent Claude-authored counterexample unchanged",
+      "fixture": "fresh successful native catalog omission; synthetic capability input, not claim that the actual account default is unavailable",
+      "actual_exit": 0,
+      "expected": "REJECTED or equivalent independent native verification",
+      "observed": "ADMITTED without equivalent native verification",
+      "passed": false,
+      "counts": {
+        "tests": 1,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0
+      },
+      "raw_log_sha256": "ac9989e62d119b4363d235f9ebe07070b209bfa0d6c5ae49abca1d2e03f24694",
+      "script_sha256": "088bf8c1b8d0163619fab0afae482a1f42f387b8732a85e9b153b5ebb5f58349"
+    }
+  ],
+  "final_disposition": {
+    "status": "BLOCKED",
+    "pr15_review": "ACCEPT",
+    "pr15_gate": "ACCEPT",
+    "pr17_review": "NEEDS_CORRECTION",
+    "pr17_gate": "BLOCKED",
+    "pr17_gate_exit": 2,
+    "open_required_findings": [
+      "I16-A-MODEL-ADMISSION"
+    ],
+    "source_rounds_used": 5,
+    "infrastructure_recoveries_used": 2,
+    "health_probes_used": 2,
+    "pr15_merged": false,
+    "pr17_merged": false,
+    "main_head": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+    "main_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5",
+    "local_main_sync": "fetch and pull --ff-only succeeded",
+    "user_ux_accepted": false,
+    "stable_promoted": false
+  }
+}

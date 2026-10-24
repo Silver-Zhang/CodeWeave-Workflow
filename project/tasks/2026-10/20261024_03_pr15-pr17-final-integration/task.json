@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "20261024_03_pr15-pr17-final-integration",
+  "date": "2026-10-24",
+  "mode": "B",
+  "status": "阻塞",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/workbench-ux-polish",
+      "base": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+      "head": "546cba4ec92390eeef2218e119647485ee358ce1",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/16",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/15",
+      "candidate_sha256": "302125c7e87ff5f7bb4e6bcc57ac38ae0ecb375ac445d22410a5adc7ab9f28c9",
+      "git_tree": "c0b01275df195a2e74668442b82a93264c14ba3c"
+    },
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/model-session-routing",
+      "base": "546cba4ec92390eeef2218e119647485ee358ce1",
+      "head": "a3b22f37e7e23f11fbc23d9e613e1662d91a17ec",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/16",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/17",
+      "candidate_sha256": "0d1869aa19b15629fc0de6e68668fc8815a10505a77d214fd8a5662835f265a5",
+      "git_tree": "6c873146e04a3c820213e179a24931e9ba5e21df"
+    }
+  ]
+}
