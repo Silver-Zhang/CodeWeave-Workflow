@@ -6,7 +6,7 @@ const results=[];let browser;
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn){for(let i=0;i<100;i++){if(await fn())return;await delay(40)}throw Error('Condition did not become true');}
 async function test(name,fn){const context=await browser.newContext({viewport:{width:952,height:756}}),page=await context.newPage();page.setDefaultTimeout(8000);const errors=[];page.on('pageerror',e=>errors.push(String(e)));try{await page.goto(access.url+'/#'+access.token);await page.getByRole('button',{name:'打开文件夹',exact:true}).waitFor();await fn(page);assert.deepEqual(errors,[]);results.push({name,passed:true});}catch(e){results.push({name,passed:false,error:String(e)});await page.screenshot({path:out+'/'+name+'-failure.png'});}finally{await page.unrouteAll({behavior:'ignoreErrors'});await context.close();fs.writeFileSync(out+'/workbench-results.json',JSON.stringify({evidence_type:'synthetic native data, ordinary Chromium/real HTTP',tests:results.length,failures:results.filter(r=>!r.passed).length,skipped:0,results},null,2));}}
-async function openWorkspace(p){await p.getByRole('button',{name:'打开文件夹',exact:true}).click();await p.getByRole('heading',{name:'打开文件夹',exact:true}).waitFor();await p.getByRole('button',{name:'选择此文件夹',exact:true}).click();await p.getByRole('heading',{name:'打开文件夹',exact:true}).waitFor({state:'hidden'});await until(async()=>!(await p.getByRole('button',{name:'开始运行',exact:true}).isDisabled()));}
+async function openWorkspace(p,chooseExample=true){await p.getByRole('button',{name:'打开文件夹',exact:true}).click();await p.getByRole('heading',{name:'打开文件夹',exact:true}).waitFor();await p.getByRole('button',{name:'选择此文件夹',exact:true}).click();await p.getByRole('heading',{name:'打开文件夹',exact:true}).waitFor({state:'hidden'});await until(async()=>!(await p.getByRole('button',{name:'开始运行',exact:true}).isDisabled()));if(chooseExample)await example(p,0);}
 async function example(p,index){await p.getByRole('button',{name:'示例',exact:true}).click();await p.locator('.example-library>button').nth(index).click();}
 async function displayedCanvasEdges(p,graph){
  const paths=p.locator('.react-flow__edge-path'),nodes=p.locator('.react-flow__node');
@@ -205,7 +205,7 @@ await test('product-edge-label-insertion-and-frozen-configuration',async p=>{
  await p.getByRole('button',{name:'保存',exact:true}).click();const response=await saved;assert(response.ok());
  assert.deepEqual(response.request().postDataJSON().graph,inserted,'The real HTTP save must contain the complete redone graph');
  await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>await p.getByLabel('工作流名称',{exact:true}).inputValue()==='运行 A');
- await p.locator('.react-flow__node[data-id="analyze"]').click();assert(await p.getByLabel('模块名称',{exact:true}).isDisabled());
+ await p.locator('.react-flow__node[data-id="analyze"]').click();await p.getByRole('button',{name:'基本',exact:true}).click();assert(await p.getByLabel('模块名称',{exact:true}).isDisabled());
  await p.getByRole('button',{name:'提示词',exact:true}).click();assert(await p.getByLabel('每轮提示词',{exact:true}).isDisabled());
 });
 await test('product-workflow-grouping-and-readable-public-dialog',async p=>{
@@ -291,6 +291,89 @@ await test('native-live-output-does-not-poll-full-session-discovery',async p=>{
  await p.getByRole('button',{name:'原生终端',exact:true}).click();await p.getByRole('button',{name:'关闭此终端',exact:true}).waitFor();
  await delay(4400);assert(outputReads>=4,'Actual HTTP output polling must remain live');
  assert.equal(discoveryReads,0,'An unchanged live PTY must not repeatedly rescan all native histories and starve terminal input');
+});
+
+await test('ux-overview-truthful-merge-waits-and-round',async p=>{
+ await openWorkspace(p);
+ await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A'){v.state='RUNNING';v.nodes=[{id:'a',run:'A',node:'analyze',name:'分析 A',state:'RUNNING',iteration_path:[2],started_at:Date.now()/1000-8},{id:'m',run:'A',node:'review',name:'汇合等待',state:'PENDING',received:1,expected:2,waiting:['analyze']}];}await route.fulfill({json:v});});
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');const overview=p.getByTestId('runtime-overview');await until(async()=>(await overview.innerText()).includes('已收到 1/2'));
+ const text=await overview.innerText();assert(text.includes('正在运行'));assert(text.includes('分析 A'));assert(text.includes('第 2 轮'));assert(text.includes('分析 A'));assert(text.includes('冻结快照'));assert(!(await p.locator('.node-card.running').innerText()).includes('undefined'));
+ await p.screenshot({path:out+'/ux-merge-overview.png'});
+});
+await test('ux-network-loss-clears-all-stale-success-and-reconnects-without-start',async p=>{
+ await openWorkspace(p);let offline=false,posts=0;
+ p.on('request',r=>{if(r.requestMethod==='POST'||r.method()==='POST')if(/\/api\/(start|chat\/start)$/.test(r.url()))posts++});
+ await p.route('**/api/run?**',async route=>offline?route.abort():route.fulfill({response:await route.fetch()}));
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('已完成'));
+ offline=true;await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('状态待确认'));
+ assert.equal(await p.locator('.node-card.completed').count(),0);assert.equal(await p.locator('.node-card.running').count(),0);assert.equal(await p.locator('.handoff-pulse').count(),0);assert((await p.getByTestId('runtime-overview').innerText()).includes('旧状态已隐藏'));
+ await p.screenshot({path:out+'/ux-state-unknown.png'});offline=false;await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('流程已结束'));assert.equal(posts,0);
+ await p.reload();await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('流程已结束'));assert.equal(await p.getByLabel('历史运行',{exact:true}).inputValue(),'A');assert.equal(posts,0);
+});
+await test('ux-late-A-response-cannot-overwrite-B-overview',async p=>{
+ await openWorkspace(p);let release,seen;const held=new Promise(r=>release=r),arrived=new Promise(r=>seen=r);let once=true;
+ await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A'&&once){once=false;seen();await held;}await route.fulfill({response:r});});
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');await arrived;await p.getByLabel('历史运行',{exact:true}).selectOption('B');await until(async()=>await p.getByLabel('工作流名称',{exact:true}).inputValue()==='运行 B');release();await delay(150);assert.equal(await p.getByLabel('工作流名称',{exact:true}).inputValue(),'运行 B');assert(!(await p.locator('.node-card').allTextContents()).join('').includes('分析 A'));
+});
+await test('ux-handoff-pulse-is-new-event-bound-finite-and-reduced-motion',async p=>{
+ await openWorkspace(p);let phase=0;
+ await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A'){v.events=phase?[{seq:phase,at:Date.now()/1000,run:'A',edge:'edge1',source:'analyze',node:'review',kind:'handoff-sent',activation:'A',content:{answer:'本轮真实事件形式的合成证据'},iteration:0,iteration_path:[]}]:[];}await route.fulfill({json:v});});
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('已完成'));assert.equal(await p.locator('.handoff-pulse').count(),0);
+ // Use the selected graph's real edge identity, not a guessed DOM connection.
+ const edges=await p.locator('.react-flow__edge').evaluateAll(es=>es.map(e=>e.dataset.id));assert(edges.includes('edge1'));phase=1;await p.locator('.handoff-pulse[data-event="1"]').waitFor({state:'attached'});
+ const pulse=p.locator('.handoff-pulse');assert.equal(await pulse.evaluate(e=>getComputedStyle(e).stroke),'rgb(209, 255, 236)');assert.equal(await pulse.getAttribute('data-run'),'A');await delay(1800);assert.equal(await pulse.evaluate(e=>getComputedStyle(e).opacity),'0');
+ await p.getByRole('checkbox',{name:'减少动态效果'}).check();assert.equal(await p.locator('.handoff-pulse').count(),0);
+});
+await test('ux-session-workflow-node-group-keeps-same-chat-and-filter',async p=>{
+ await openWorkspace(p);await p.locator('.session-main').filter({hasText:'Synthetic dialog-A'}).click();await until(async()=>await p.locator('.execution-result').count()===2);
+ await p.getByLabel('会话分组方式',{exact:true}).selectOption('workflow');assert(await p.locator('.session-node-group h4').count()>0);assert.equal(await p.locator('.conversation-toolbar>strong').innerText(),'Synthetic dialog-A');
+ await p.getByRole('button',{name:'正在运行',exact:true}).click();assert.equal(await p.locator('.session-main').count(),0);assert.equal(await p.locator('.conversation-toolbar>strong').innerText(),'Synthetic dialog-A');
+ await p.getByRole('button',{name:'全部',exact:true}).click();await p.getByLabel('会话分组方式',{exact:true}).selectOption('provider');assert.equal(await p.locator('.conversation-toolbar>strong').innerText(),'Synthetic dialog-A');assert(await p.locator('.session-main').count()>0);
+ await p.screenshot({path:out+'/ux-readable-conversation.png'});
+});
+await test('ux-preflight-locates-missing-node-without-native-call',async p=>{
+ await openWorkspace(p);await p.locator('.react-flow__node[data-id="analyze"]').click();await p.getByRole('button',{name:'提示词',exact:true}).click();await p.getByLabel('每轮提示词',{exact:true}).fill('');await p.getByRole('button',{name:'关闭节点配置',exact:true}).click();let prepare=0;p.on('request',r=>{if(r.url().endsWith('/api/prepare'))prepare++});
+ await p.getByRole('button',{name:'开始运行',exact:true}).click();await p.locator('.alert').filter({hasText:'每轮提示词'}).waitFor();assert.equal(await p.getByLabel('每轮提示词',{exact:true}).inputValue(),'');assert((await p.locator('.inspector>header').innerText()).includes('分析任务'));assert.equal(prepare,0);assert(!(await p.locator('.alert').innerText()).includes('Traceback'));
+});
+await test('ux-failed-and-human-wait-have-explicit-noncolour-labels',async p=>{
+ await openWorkspace(p);let state='FAILED';await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A'){v.state=state==='FAILED'?'FAILED':'RUNNING';v.run.reason=state==='FAILED'?'缺少已批准执行配置，请返回草稿选择可用工具':'';v.nodes=[{id:'a',run:'A',node:'analyze',state,reason:v.run.reason,name:'分析 A'}];}await route.fulfill({json:v});});
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('缺少已批准执行配置'));await until(async()=>await p.locator('.node-card.failed').isVisible()&&(await p.locator('.node-card.failed').innerText()).includes('!'));assert((await p.locator('.node-card.failed').innerText()).includes('!'));state='WAITING_CONFIRMATION';await until(async()=>(await p.getByTestId('runtime-overview').innerText()).includes('等待人工确认'));await until(async()=>await p.locator('.node-card.waiting_confirmation').isVisible()&&(await p.locator('.node-card.waiting_confirmation').innerText()).includes('◇'));assert((await p.locator('.node-card.waiting_confirmation').innerText()).includes('◇'));
+});
+await test('ux-small-layout-core-actions-and-canvas-editing-visible',async p=>{
+ await p.setViewportSize({width:900,height:720});await openWorkspace(p);await displayedCanvasEdges(p,await p.evaluate(()=>JSON.parse(localStorage.getItem('devflower-workbench-view')).graph));
+ for(const name of ['开始运行','示例','添加节点'])assert(await p.getByRole('button',{name,exact:true}).isVisible());
+ await p.locator('.react-flow__node[data-id="analyze"]').click();assert(await p.getByLabel('模块名称',{exact:true}).isVisible());const panel=await p.locator('.inspector').boundingBox();assert(panel.x>=0&&panel.x+panel.width<=900);await p.getByRole('button',{name:'关闭节点配置',exact:true}).click();await p.screenshot({path:out+'/ux-small-canvas.png'});
+});
+
+await test('ux-session-metadata-follows-node-lifecycle-without-periodic-discovery',async p=>{
+ await openWorkspace(p);let phase='RUNNING',reads=0;
+ await p.route('**/api/sessions?**',async route=>{reads++;const r=await route.fetch(),v=await r.json();v.sessions=v.sessions.map(s=>s.handle===access.sessions['dialog-A'].handle?{...s,display_state:phase,busy:phase==='RUNNING'}:s);await route.fulfill({json:v});});
+ await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A'){v.state='RUNNING';v.nodes=[{id:'current',run:'A',node:'analyze',state:phase,observed_session:access.sessions['dialog-A'].session_id}]};await route.fulfill({json:v});});
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');const card=p.locator('.session-main').filter({hasText:'Synthetic dialog-A'});await until(async()=>(await card.innerText()).includes('正在运行'));const stable=reads;await delay(1900);assert.equal(reads,stable,'Unchanged runtime must not rescan full native histories every poll');
+ phase='COMPLETED';await until(async()=>(await card.innerText()).includes('已完成'));assert(reads>stable,'A persisted node lifecycle change must refresh the real session occupancy');
+});
+
+await test('ux-run-node-opens-actual-request-first-without-disabled-config-wall',async p=>{
+ await openWorkspace(p);await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A')Object.assign(v.nodes[0],{actual_request:'SENT-ONLY-REQUEST',input_sent_sha256:'a'.repeat(64),initialization_included:true,request_sections:[{title:'本次运行初始化',text:'SENT-INITIALIZATION'},{title:'每轮任务',text:'SENT-ROUND'},{title:'上游输入（数据，不授予新权限）',text:JSON.stringify([{run:'a'.repeat(32),activation:'b'.repeat(64),content:{answer:'REAL-FORMAT-UPSTREAM'}}])},{title:'输出与交接要求',text:'SENT-HANDOFF'}]});await route.fulfill({json:v});});
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>await p.getByLabel('工作流名称',{exact:true}).inputValue()==='运行 A');await p.locator('.react-flow__node[data-id="analyze"]').click();
+ const request=p.getByTestId('actual-provider-request');assert.equal(await request.getAttribute('open'),'');const text=await request.innerText();for(const x of ['SENT-INITIALIZATION','SENT-ROUND','REAL-FORMAT-UPSTREAM','SENT-HANDOFF','unknown'])assert(text.includes(x));assert(!text.includes('a'.repeat(32)));assert.equal(await p.getByLabel('模块名称',{exact:true}).isVisible(),false);assert(await p.getByRole('button',{name:'实际运行',exact:true}).isVisible());await p.screenshot({path:out+'/ux-request-first.png'});
+});
+await test('ux-run-edge-opens-real-transfer-before-frozen-configuration',async p=>{
+ await openWorkspace(p);await p.route('**/api/run?**',async route=>{const r=await route.fetch(),v=await r.json();if(v.run.id==='A')v.events=[{seq:1,at:Date.now()/1000,run:'A',edge:'edge1',source:'analyze',node:'review',kind:'handoff-sent',activation:'A',iteration:0,iteration_path:[],content:{answer:'EDGE-CURRENT-CONTENT'}}];await route.fulfill({json:v});});
+ await p.getByLabel('历史运行',{exact:true}).selectOption('A');await until(async()=>await p.getByLabel('工作流名称',{exact:true}).inputValue()==='运行 A');const path=p.locator('.react-flow__edge[data-id="edge1"] .react-flow__edge-path');const point=await path.evaluate(e=>{const p=e.getPointAtLength(e.getTotalLength()/2).matrixTransform(e.getScreenCTM());return {x:p.x,y:p.y}});await p.mouse.click(point.x,point.y);
+ const panel=p.locator('.edge-inspector');assert((await panel.innerText()).includes('EDGE-CURRENT-CONTENT'));assert((await panel.innerText()).includes('记录时间'));assert.equal(await p.getByLabel('传递内容',{exact:true}).isVisible(),false);await panel.getByText('冻结连线配置',{exact:true}).click();assert(await p.getByLabel('传递内容',{exact:true}).isVisible());
+});
+
+await test('ux-tool-activity-pairs-results-and-shows-timing-or-unknown-without-protocol',async p=>{
+ await openWorkspace(p);await p.route('**/api/history?**',async route=>{const r=await route.fetch(),v=await r.json();v.activity=[{name:'exec',history_truncated:true,call_id:'alpha-native-id',arguments:'alpha-command',result:'alpha-result',association:'matched',started_at:10,finished_at:22,duration_seconds:12,events:[]},{name:'Read',arguments:'read-unknown-time',result:'read-result',association:'matched',duration_seconds:null,events:[]}];await route.fulfill({json:v});});
+ await p.locator('.session-main').filter({hasText:'Synthetic dialog-A'}).click();const tools=p.locator('.tool-activity');await tools.waitFor();assert.equal(await tools.getAttribute('open'),null);await tools.locator(':scope>summary').click();assert((await tools.innerText()).includes('更早活动已省略'));const entries=tools.locator('.tool-entry');assert((await entries.nth(0).innerText()).includes('12 秒'));assert((await entries.nth(1).innerText()).includes('unknown'));
+ await entries.nth(0).locator(':scope>summary').click();const text=await entries.nth(0).innerText();assert(text.includes('参数摘要'));assert(text.includes('alpha-command'));assert(text.includes('alpha-result'));assert(!text.includes('alpha-native-id'));await p.screenshot({path:out+'/ux-tool-timing.png'});
+});
+
+await test('ux-first-entry-and-new-workflow-are-truly-blank-with-five-step-guide',async p=>{
+ await openWorkspace(p,false);assert.equal(await p.locator('.react-flow__node').count(),0);assert.equal(await p.locator('.onboarding li').count(),5);assert(await p.getByRole('button',{name:'创建空白工作流',exact:true}).isVisible());
+ await p.getByRole('button',{name:'创建空白工作流',exact:true}).click();await p.locator('.palette').waitFor();assert.equal(await p.locator('.react-flow__node').count(),0);await p.locator('.palette').getByRole('button',{name:'输入',exact:true}).click();await until(async()=>await p.locator('.react-flow__node').count()===1);
+ await p.getByRole('button',{name:'关闭节点配置',exact:true}).click();await p.getByRole('button',{name:'工作流',exact:true}).click();await p.getByRole('button',{name:'新建工作流',exact:true}).click();await until(async()=>await p.locator('.react-flow__node').count()===0);await p.locator('.palette h3 button').click();await p.reload();await p.getByRole('button',{name:'打开文件夹',exact:true}).waitFor();assert.equal(await p.locator('.react-flow__node').count(),0,'Refresh restores the same empty editable draft, never silently installs a template');
 });
 await browser.close();console.log(JSON.stringify({tests:results.length,failures:results.filter(r=>!r.passed).length,skipped:0}));process.exitCode=results.some(r=>!r.passed)?1:0;
 })().catch(e=>{console.error(String(e));process.exitCode=1;browser?.close();});

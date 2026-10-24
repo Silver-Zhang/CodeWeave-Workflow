@@ -272,7 +272,7 @@ class WorkbenchSessions:
         for group in groups:
             if isinstance(group.get('actual_request'),str):group['actual_request']=safe_text(group['actual_request'])
         execution_results=self.execution_results(workspace,row,related,messages,query,secrets)
-        activity=[];summaries=[]
+        activity=[];summaries=[];activity_omitted=False
         with opened(row['native']['path']) as fd:
             with os.fdopen(os.dup(fd),'rb') as stream:
                 total=0
@@ -281,12 +281,12 @@ class WorkbenchSessions:
                     if not raw:break
                     if len(raw)>1048576 or total>16*1024*1024:raise Invalid('工具活动超过读取预算')
                     obj=json.loads(raw);items=[]
-                    if row['profile']['provider']=='claude' and obj.get('type') in ('user','assistant'):
+                    if row['profile']['provider']=='claude' and obj.get('type') in ('user','assistant') and not obj.get('isMeta') and not obj.get('isSidechain'):
                         content=obj.get('message',{}).get('content',[])
                         if isinstance(content,list):
                             for c in content:
                                 if isinstance(c,dict) and c.get('type') in ('tool_use','tool_result'):
-                                    items.append({'kind':c['type'],'name':c.get('name','工具结果'),'content':c.get('input',c.get('content',''))})
+                                    items.append({'kind':c['type'],'name':c.get('name','工具结果'),'content':c.get('input',c.get('content','')),'call_id':c.get('id') if c['type']=='tool_use' else c.get('tool_use_id'),'at':obj.get('timestamp')})
                     elif row['profile']['provider']=='codex' and obj.get('type')=='response_item':
                         v=obj.get('payload',{})
                         # Only an explicit public summary; never content, thinking or encrypted payloads.
@@ -295,12 +295,23 @@ class WorkbenchSessions:
                                 if isinstance(part,dict) and part.get('type')=='summary_text' and isinstance(part.get('text'),str):
                                     summaries.append({'source':'provider-public-summary','text':safe_text(redact(part['text'][:8000],secrets))})
                             summaries=summaries[-20:]
-                        if v.get('type') in ('function_call','function_call_output'):
-                            items.append({'kind':v['type'],'name':v.get('name','工具结果'),'content':v.get('arguments',v.get('output',''))})
+                        if v.get('type') in ('function_call','function_call_output','custom_tool_call','custom_tool_call_output'):
+                            # Codex 0.163 emits custom_tool_call for its exec tool.
+                            # Whitelist visible tool fields only; protocol metadata
+                            # and reasoning payloads must never enter chat activity.
+                            items.append({'kind':v['type'],'name':v.get('name','工具结果'),
+                                          'content':v.get('arguments',v.get('input',v.get('output',''))),'call_id':v.get('call_id'),'at':obj.get('timestamp')})
                     for v in items:
-                        value=redact(v,secrets);text=json.dumps(value['content'],ensure_ascii=False)
+                        from .tool_activity import visible_content
+                        value=redact(v,secrets)
+                        # JSON/text-block decoding may reveal escaped secrets.
+                        text=safe_text(redact(visible_content(value['content'],protocol=v['kind'] in ('tool_result','function_call_output','custom_tool_call_output')),secrets))
                         activity.append(dict(value,content=safe_text(text[:4000]),truncated=len(text)>4000))
+                    if len(activity)>100:activity_omitted=True
                     activity=activity[-100:]
+        from .tool_activity import group_tools
+        activity=group_tools(activity)
+        if activity_omitted and activity:activity[0]['history_truncated']=True
         # No thinking/reasoning payloads or full protocol envelopes cross this boundary.
         return dict(result,messages=messages,execution_results=execution_results,groups=groups,activity=activity,summaries=summaries)
 
