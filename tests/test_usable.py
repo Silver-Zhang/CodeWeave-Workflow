@@ -1,5 +1,7 @@
 """Usable v1 contract tests. Fake services here are not model acceptance."""
 import copy
+from contextlib import closing
+import sqlite3
 import hashlib
 from http.server import ThreadingHTTPServer
 import json
@@ -104,6 +106,51 @@ class StorageTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.store = Storage(Path(self.tmp.name) / "storage")
+
+    def test_metadata_put_survives_real_transient_writer_lock(self):
+        self.store.put('session', 'existing', {'unchanged': True})
+        with closing(sqlite3.connect(self.store.path)) as writer:
+            writer.execute('BEGIN IMMEDIATE')
+            original_db = self.store.db
+            self.store.db = lambda: closing(sqlite3.connect(self.store.path, timeout=.001))
+            # First real SQLITE_BUSY rolls back/closes before releasing the writer.
+            with patch('studio.usable_store.time.sleep', side_effect=lambda _: writer.rollback()) as delay:
+                self.store.put('session', 'new', {'native_session': 'same-turn'})
+            self.assertEqual(delay.call_count, 1)
+            self.store.db = original_db
+        self.assertEqual(self.store.get('session', 'new'), {'native_session': 'same-turn'})
+        self.assertEqual(self.store.get('session', 'existing'), {'unchanged': True})
+        self.assertEqual(len(self.store.listing('session')), 2)
+
+    def test_metadata_put_persistent_busy_is_bounded_without_phantom_commit(self):
+        with closing(sqlite3.connect(self.store.path)) as writer:
+            writer.execute('BEGIN IMMEDIATE')
+            opened = []
+            def connection():
+                db = sqlite3.connect(self.store.path, timeout=.001); opened.append(db)
+                return closing(db)
+            self.store.db = connection
+            with patch('studio.usable_store.time.sleep') as delay:
+                with self.assertRaises(sqlite3.OperationalError) as error:
+                    self.store.put('session', 'new', {'value': 'not committed'})
+            self.assertEqual(error.exception.sqlite_errorcode, sqlite3.SQLITE_BUSY)
+            self.assertEqual(delay.call_count, 2); self.assertEqual(len(opened), 3)
+            for db in opened:
+                with self.assertRaises(sqlite3.ProgrammingError): db.execute('SELECT 1')
+            writer.rollback()
+        with self.assertRaises(Invalid): self.store.get('session', 'new')
+        self.store.put('session', 'new', {'value': 'later independent write'})
+        self.assertEqual(self.store.get('session', 'new')['value'], 'later independent write')
+
+    def test_metadata_put_readonly_is_not_retried_and_preserves_previous_data(self):
+        self.store.put('session', 'old', {'value': 'original'})
+        self.store.db = lambda: closing(sqlite3.connect(self.store.path.as_uri() + '?mode=ro', uri=True))
+        with patch('studio.usable_store.time.sleep') as delay:
+            with self.assertRaises(sqlite3.OperationalError) as error:
+                self.store.put('session', 'old', {'value': 'must not replace'})
+        self.assertEqual(error.exception.sqlite_errorcode, sqlite3.SQLITE_READONLY)
+        delay.assert_not_called()
+        self.assertEqual(self.store.get('session', 'old'), {'value': 'original'})
 
     def test_immutable_drafts_keep_cas(self):
         first = self.store.save_draft(template("A"))

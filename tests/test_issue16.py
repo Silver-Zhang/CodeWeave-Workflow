@@ -199,3 +199,17 @@ class UnexpectedWorkerTests(unittest.TestCase):
   with patch('studio.workbench_failures.group_alive',return_value=True),patch('studio.workbench_failures.stop') as stop:
    abort_unexpected(self.rt,'r',RuntimeError('x'));self.assertEqual(stop.call_count,1)
   self.assertEqual(self.db.get('activation','other')['state'],'RUNNING')
+
+ def test_sqlite_failure_persists_only_fixed_diagnostic_not_error_payload(self):
+  import sqlite3
+  from studio.workbench_failures import abort_unexpected
+  self.db.put('run','r',dict(id='r',state='RUNNING'))
+  error=sqlite3.OperationalError('SECRET_DATABASE_PAYLOAD')
+  error.sqlite_errorcode=sqlite3.SQLITE_BUSY
+  error.sqlite_errorname='SECRET_FORGED_ENUM'
+  abort_unexpected(self.rt,'r',error)
+  row=self.db.get('run','r')
+  self.assertEqual(row['state'],'RECOVERY_REQUIRED');self.assertEqual(row['sqlite_errorcode'],5)
+  self.assertEqual(row['sqlite_errorname'],'SQLITE_BUSY');self.assertNotIn('SECRET_',str(row))
+  abort_unexpected(self.rt,'r',RuntimeError('second error must not overwrite'))
+  self.assertEqual(self.db.get('run','r'),row)

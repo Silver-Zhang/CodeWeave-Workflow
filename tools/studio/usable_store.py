@@ -38,8 +38,19 @@ class Storage:
         return closing(sqlite3.connect(self.path, timeout=10))
 
     def put(self, kind, key, data):
-        with self.lock, self.db() as db, db:
-            db.execute("INSERT OR REPLACE INTO objects VALUES(?,?,?)", (kind, key, canonical(data).decode()))
+        value = canonical(data).decode()
+        for attempt in range(3):
+            try:
+                with self.lock, self.db() as db, db:
+                    db.execute("INSERT OR REPLACE INTO objects VALUES(?,?,?)", (kind, key, value))
+                return
+            except sqlite3.OperationalError as exc:
+                code = getattr(exc, 'sqlite_errorcode', None)
+                if type(code) is not int or code & 255 != sqlite3.SQLITE_BUSY or attempt == 2:
+                    raise
+                # Only an atomic metadata upsert retries, after rollback/close.
+                # Never repeat the caller's native Agent or permit consumption.
+                time.sleep(.05 * (2 ** attempt))
 
     def get(self, kind, key):
         with self.db() as db:
