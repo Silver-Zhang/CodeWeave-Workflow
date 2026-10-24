@@ -81,6 +81,23 @@ export function validConnection(graph, source, target, exceptEdge) {
   return true;
 }
 
+// Preview every resulting connection before offering or applying an insertion.
+// The temporary node never becomes part of a saved document or Runtime state.
+export function canAddConnectedKind(graph, pending, kind) {
+  if (!graph || !pending) return false;
+  const original = pending.splitEdge ? graph.edges.find(e => e.id === pending.splitEdge) : null;
+  if (pending.splitEdge && !original) return false;
+  const source = original?.source || pending.source, target = original?.target || pending.target;
+  let id = '__connection_preview__';
+  while (graph.nodes.some(n => n.id === id)) id += '_';
+  const preview = {nodes: [...graph.nodes, {id, kind}], edges: graph.edges.filter(e => e !== original)};
+  if (source) {
+    if (!validConnection(preview, source, id)) return false;
+    preview.edges.push({id: '__connection_preview_edge__', source, target: id});
+  }
+  return !target || validConnection(preview, id, target);
+}
+
 export function inspectorPlacement(rect, bounds, width = 370) {
   const gap = 16, top = Math.max(bounds.top + gap, Math.min(rect.top, bounds.bottom - 400));
   if (rect.right + width + gap <= bounds.right) return {pinned: false, x: rect.right + gap, y: top};

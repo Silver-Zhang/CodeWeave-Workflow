@@ -26,7 +26,7 @@ import {ToolActivity} from './ToolActivity.jsx';
 import {DataValue,VisibleRequest,HandoffTrace} from './trace_views.jsx';
 import {NativeTerminal} from './NativeTerminal.jsx';
 import {EditorToolbar} from './EditorToolbar.jsx';
-import {selectedFragment,pasteFragment,removeSelection,arrangeSelection,validConnection,inspectorPlacement} from './canvas_editing.mjs';
+import {selectedFragment,pasteFragment,removeSelection,arrangeSelection,validConnection,canAddConnectedKind,inspectorPlacement} from './canvas_editing.mjs';
 
 const ACCESS_KEY='devflower-workbench-capability';
 let accessToken=location.hash.slice(1)||localStorage.getItem(ACCESS_KEY)||'';
@@ -209,6 +209,7 @@ setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
  function closeCanvasMenu(){canvasMenu.closeMenu();const opener=menuOpener.current;requestAnimationFrame(()=>{if(opener?.isConnected)opener.focus()})}
  function chooseCanvasNode(kind){const pending=pendingAdd;if(!pending||pending.canvasKey!==canvasKey||pending.generation!==generation.current||viewMode!=='draft'||!Object.hasOwn(KINDS,kind)){setPendingAdd(null);return}
   const original=pending.splitEdge?currentGraph.edges.find(e=>e.id===pending.splitEdge):null;if(pending.splitEdge&&!original||pending.source&&!currentGraph.nodes.some(n=>n.id===pending.source)||pending.target&&!currentGraph.nodes.some(n=>n.id===pending.target)){setPendingAdd(null);setNotice('连接对象已改变，请重新选择连接点');return}
+  if(!canAddConnectedKind(currentGraph,pending,kind)){setNotice('此节点的端口与当前连接不兼容，请选择其他类型');setPendingAdd(null);return}
   addNode(kind,(g,n)=>{n.position=pending.flow;const source=original?.source||pending.source,target=original?.target||pending.target;if(original){g.edges.find(e=>e.id===original.id).target=n.id;g.edges.push({id:uid('e'),source:n.id,target:original.target,transfer:'result',when:'always'})}else if(source){const from=g.nodes.find(x=>x.id===source);g.edges.push({id:uid('e'),source,target:n.id,transfer:'result',when:from.kind==='condition'?'true':'always',...(from.kind==='router'?{route:from.routes[0].label}:{})})}else if(target)g.edges.push({id:uid('e'),source:n.id,target,transfer:'result',when:'always'})});setPinned(true);setPendingAdd(null)
  }
  async function prepareChat(){if(!workspace||!message.trim())throw Error('请先打开工作区并输入消息');const existing=chats.find(s=>s.handle===tab);const context=copyContext;const handle=newChat||context?'new':existing?.handle;if(!handle)throw Error('请先选择会话');
@@ -273,7 +274,7 @@ setStatus(s);setChatProfile(s.profiles.find(p=>p.available)?.id||'');
    </main></div>
   {tab==='canvas'&&<StudioTools kinds={KINDS} disabled={!workspace||viewMode==='run'} onAdd={addNode} onLibrary={()=>setLibrary(!library)} palette={palette} library={library} inspecting={Boolean(node||selectedEdge)} onTools={()=>{setSelected(null);setEdge(null);setPalette(false);setLibrary(false)}}/>}
   {tab==='canvas'&&<ResizeHandle className="tools-resize" name="调整检查器宽度" value={layout.layout.tools} onPointerDown={layout.tools.handlePointerDown} onKeyDown={e=>layout.keyResize('tools',e)}/>}
-  {pendingAdd&&tab==='canvas'&&viewMode==='draft'&&<ConnectedNodePicker pending={pendingAdd} kinds={KINDS} onChoose={chooseCanvasNode} onClose={closeNodePicker}/>}
+  {pendingAdd&&tab==='canvas'&&viewMode==='draft'&&<ConnectedNodePicker pending={pendingAdd} kinds={KINDS} canChoose={kind=>canAddConnectedKind(currentGraph,pendingAdd,kind)} onChoose={chooseCanvasNode} onClose={closeNodePicker}/>}
   {(canvasMenu.isBlockMenuOpen||canvasMenu.isPaneMenuOpen)&&viewMode==='draft'&&tab==='canvas'&&<CanvasContextMenu menu={canvasMenu} onAdd={()=>openNodePicker({clientX:canvasMenu.position.x,clientY:canvasMenu.position.y})} onFit={()=>{rf?.fitView({padding:.2,maxZoom:1});canvasMenu.closeMenu()}} onAction={action=>{editorCommand(action);canvasMenu.closeMenu()}}/>}
   {node&&tab==='canvas'&&<aside className={'inspector '+(pinned?'pinned':'')} style={pinned?{}:{'--inspector-x':anchor.x+'px',left:anchor.x,top:Math.max(100,anchor.y),maxHeight:`calc(100vh - ${Math.max(100,anchor.y)+18}px)`}}><header><span className="node-symbol"><Settings2 size={17}/></span><strong>{node.name}</strong><button aria-label="固定为侧栏" title="固定为侧栏" onClick={()=>setPinned(!pinned)}><Pin size={16}/></button><button aria-label="关闭节点配置" onClick={()=>setSelected(null)}><X size={16}/></button></header><nav>{[...(viewMode==='run'?[['runtime','实际运行']]:[]),['basic','基本'],['prompts','提示词'],['advanced','高级']].map(([k,label])=><button key={k} className={configTab===k?'active':''} onClick={()=>setConfigTab(k)}>{label}</button>)}</nav><div className="inspector-body">{viewMode==='run'&&<p className="hint">正在查看冻结运行；修改配置请先点击顶部“编辑草稿”。</p>}
    <fieldset disabled={viewMode==='run'}>

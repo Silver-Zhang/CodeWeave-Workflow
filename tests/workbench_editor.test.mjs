@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {selectedFragment, pasteFragment, removeSelection, arrangeSelection, validConnection,
+import {selectedFragment, pasteFragment, removeSelection, arrangeSelection, validConnection, canAddConnectedKind,
   inspectorPlacement} from '../tools/studio/workbench_ui/canvas_editing.mjs';
 
 const graph = () => ({version: 3, nodes: [
@@ -59,4 +59,27 @@ test('inspector uses a free side or reserves sidebar instead of covering its tar
   assert.equal(inspectorPlacement({left: 300, right: 500, top: 200}, bounds).x, 516);
   assert.equal(inspectorPlacement({left: 900, right: 1100, top: 200}, bounds).x, 514);
   assert.equal(inspectorPlacement({left: 450, right: 850, top: 200}, bounds).pinned, true);
+});
+
+test('inserting between nodes requires both compatible ports and never changes the draft preview', () => {
+  const g = graph(), before = structuredClone(g), pending = {splitEdge: 'ab'};
+  assert.equal(canAddConnectedKind(g, pending, 'start'), false);
+  assert.equal(canAddConnectedKind(g, pending, 'result'), false);
+  assert.equal(canAddConnectedKind(g, pending, 'agent'), true);
+  assert.deepEqual(g, before);
+  const inserted = {nodes: [...g.nodes, {id: 'new', kind: 'agent'}], edges: g.edges.filter(e => e.id !== 'ab')};
+  inserted.edges.push({id: 'first', source: 'a', target: 'new'}, {id: 'second', source: 'new', target: 'b'});
+  assert(inserted.edges.every(e => validConnection(inserted, e.source, e.target, e.id)));
+});
+
+test('connected additions reject missing context and allow input/output only on their open side', () => {
+  const g = graph();
+  assert.equal(canAddConnectedKind(g, {source: 'b', target: 'a'}, 'agent'), false);
+  assert.equal(canAddConnectedKind(g, {splitEdge: 'removed'}, 'agent'), false);
+  assert.equal(canAddConnectedKind(g, {source: 'removed'}, 'agent'), false);
+  assert.equal(canAddConnectedKind(g, {target: 'removed'}, 'agent'), false);
+  assert.equal(canAddConnectedKind(g, {source: 'a'}, 'start'), false);
+  assert.equal(canAddConnectedKind(g, {source: 'a'}, 'result'), true);
+  assert.equal(canAddConnectedKind(g, {target: 'b'}, 'start'), true);
+  assert.equal(canAddConnectedKind(g, {target: 'b'}, 'result'), false);
 });

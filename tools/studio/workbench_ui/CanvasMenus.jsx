@@ -1,9 +1,9 @@
 import React,{useState,useEffect,useRef} from 'react';
 import {Search,X,Plus,Copy,ClipboardPaste,Trash2,Scan,ArrowRight} from 'lucide-react';
 
-export function ConnectedNodePicker({pending,kinds,onChoose,onClose}){
+export function ConnectedNodePicker({pending,kinds,onChoose,onClose,canChoose}){
  const [query,setQuery]=useState(''),[active,setActive]=useState(0),ref=useRef(null);
- const entries=Object.entries(kinds).filter(([kind,[name]])=>(pending.source?kind!=='start':pending.target?!['result','output'].includes(kind):true)&&(name+' '+kind).toLowerCase().includes(query.toLowerCase()));
+ const entries=Object.entries(kinds).filter(([kind,[name]])=>canChoose(kind)&&(name+' '+kind).toLowerCase().includes(query.toLowerCase()));
  useEffect(()=>{ref.current?.focus()},[]);
  const choose=kind=>{if(kind)onChoose(kind)};
  return <div className="connected-node-picker" role="dialog" aria-label="在画布添加节点" style={{left:Math.min(Math.max(12,pending.screen.x),innerWidth-272),top:Math.min(Math.max(75,pending.screen.y),Math.max(75,innerHeight-410))}} onPointerDown={e=>e.stopPropagation()} onKeyDown={e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();setActive(i=>(i+(e.key==='ArrowDown'?1:entries.length-1))%Math.max(1,entries.length))}else if(e.key==='Enter'){e.preventDefault();choose(entries[active]?.[0])}}}>
