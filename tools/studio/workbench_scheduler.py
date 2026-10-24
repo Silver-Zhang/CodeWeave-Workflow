@@ -300,6 +300,18 @@ class Scheduler:
                            'reason': safe_text(str(exc)), 'finished_at': time.time()}, event={'kind':'node-cancelled' if state=='CANCELLED' else 'node-failed','reason':safe_text(str(exc))})
 
     def native_turn(self, node, key, inputs, prefix, iteration):
+        try:
+            return self._native_turn(node, key, inputs, prefix, iteration)
+        except (Blocked, Invalid, OSError, ValueError):
+            chat_key = digest(canonical([self.run, prefix + node['id']]))
+            try: chat = self.db.get('node-session', chat_key)
+            except Invalid: chat = None
+            if chat:
+                from .model_admission import ModelAdmission
+                ModelAdmission(self.rt).invalidate(chat['binding'], chat['cwd'])
+            raise
+
+    def _native_turn(self, node, key, inputs, prefix, iteration):
         run = self.controls();self.rt.check_operator()
         # Persist the reservation and initialization identity before native side effects.
         # Sessions and initialization are shared across every round of this node path.
@@ -307,9 +319,13 @@ class Scheduler:
         try: chat = self.db.get('node-session', chat_key)
         except Invalid:
             chat = run.get('bindings',{}).get(prefix + node['id']) or self.rt.node_binding(run['workspace'], node)
+            from .model_admission import ModelAdmission
+            ModelAdmission(self.rt).require(chat['binding'], chat['cwd'])
             chat.update(id=chat_key, initialized=False, run=self.run, node=prefix + node['id'],name=node['name'])
             self.db.put('node-session', chat_key, chat)
             self.rt.db.put('chat-profile',digest(chat['binding']['home'].encode()),dict(workspace=chat['workspace'],binding=chat['binding']))
+        from .model_admission import ModelAdmission
+        ModelAdmission(self.rt).require(chat['binding'], chat['cwd'])
         if callable(getattr(self.rt,'recipient_inputs',None)):
             inputs=self.rt.recipient_inputs(chat['cwd'],inputs)
             inputs=[dict(item,content_sha256=digest(canonical(item['content']))) for item in inputs]
@@ -342,6 +358,9 @@ class Scheduler:
             self.db.change('activation',key,{'source_at_request':source_identity})
             self.rt.recheck_session(chat)
             journal = Journal(self, key)
+            from .model_admission import ModelAdmission
+            admission = ModelAdmission(self.rt)
+            verification=admission.require(binding, cwd)
             receipt = CLI(binding['provider'], binding, dict(step_timeout_seconds=node.get('timeout', 300), max_log_bytes=4_000_000)).start(
                 prompt, cwd, artifacts, schema, journal, self.run)
             if not write and tree_hash(cwd) != before: raise Blocked('只读执行后源码身份发生变化')
@@ -372,4 +391,5 @@ class Scheduler:
             native_snapshot=self.rt.native_snapshot(run['workspace'],binding)
             self.db.change('node-session',chat_key,native_snapshot)
             self.db.change('activation', key, {'receipt': visible, 'completion_sha256': digest(canonical(completion))})
+            admission.renew(binding,cwd,receipt,verification)
             return result

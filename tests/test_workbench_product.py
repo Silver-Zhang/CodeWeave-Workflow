@@ -57,7 +57,7 @@ class StorageContentionTests(unittest.TestCase):
 
 class ProductProjectionTests(unittest.TestCase):
     def test_node_link_does_not_select_another_homes_identical_uuid(self):
-        base, rt = fixture(self)
+        base, rt = fixture(self, admission=True)
         _, first = structured_session(base, rt, 'same-uuid-first', 'codex')
         _, second = structured_session(base, rt, 'same-uuid-second', 'codex')
         self.assertEqual(first['session_id'], second['session_id'])
@@ -68,7 +68,7 @@ class ProductProjectionTests(unittest.TestCase):
             manager.activation_session(base.project['id'], 'same-uuid-second-run', 'same-uuid-first-turn-1')
 
     def test_existing_session_reports_its_bound_profile_not_the_default_other_provider(self):
-        base, rt = fixture(self)
+        base, rt = fixture(self, admission=True)
         _, session = structured_session(base, rt, 'actual-codex-config', 'codex')
         row = next(r for r in WorkbenchSessions(rt).listing(base.project['id'])['sessions']
                    if r['handle'] == session['handle'])
@@ -77,7 +77,7 @@ class ProductProjectionTests(unittest.TestCase):
                                                model=profile['model'], effort=profile['effort']))
 
     def test_sidebar_exposes_bound_workflow_and_human_node_name(self):
-        base, rt = fixture(self)
+        base, rt = fixture(self, admission=True)
         _, session = structured_session(base, rt, 'named-workflow')
         row = next(r for r in WorkbenchSessions(rt).listing(base.project['id'])['sessions']
                    if r['handle'] == session['handle'])
@@ -86,7 +86,7 @@ class ProductProjectionTests(unittest.TestCase):
         self.assertEqual(row['node_name'], 'Synthetic named-workflow')
 
     def test_explicit_public_summary_is_separate_from_hidden_reasoning(self):
-        base, rt = fixture(self)
+        base, rt = fixture(self, admission=True)
         path, _ = structured_session(base, rt, 'public-summary', 'codex')
         with path.open('a') as stream:
             stream.write(json.dumps({'type': 'response_item', 'payload': {'type': 'reasoning',
@@ -100,7 +100,7 @@ class ProductProjectionTests(unittest.TestCase):
         self.assertNotIn('HIDDEN-', json.dumps(history))
 
     def test_codex_custom_exec_activity_is_visible_redacted_and_not_protocol_metadata(self):
-        base, rt = fixture(self)
+        base, rt = fixture(self, admission=True)
         path, _ = structured_session(base, rt, 'custom-exec', 'codex')
         records = [
             {'type':'custom_tool_call','name':'exec','input':'node --test tests/example.test.mjs',
@@ -124,7 +124,7 @@ class ProductProjectionTests(unittest.TestCase):
 
     def test_native_tool_ids_pair_reverse_results_and_preserve_public_timing(self):
         for provider in ('codex','claude'):
-            base, rt = fixture(self)
+            base, rt = fixture(self, admission=True)
             path, _ = structured_session(base, rt, 'timed-'+provider, provider)
             records=[]
             for phase,key,second,text in [('call','alpha',0,'alpha-command'),('call','beta',1,'beta-command'),
@@ -159,7 +159,7 @@ class IndependentCounterexampleTests(unittest.TestCase):
                 with self.assertRaises(Blocked):validate_profile(dict(kind='verify',argv=argv,executable_sha256=sha,dependencies={exe:sha}))
 
     def test_duplicate_source_target_edges_do_not_duplicate_merge_inputs(self):
-        base,rt=fixture(self);g=examples(rt.operator['profiles'])[1]
+        base,rt=fixture(self, admission=True);g=examples(rt.operator['profiles'])[1]
         g['edges'].append(dict(id='duplicate',source='branchA',target='merge'))
         with self.assertRaises(Invalid):validate_graph(g)
 
@@ -201,7 +201,7 @@ class IndependentCounterexampleTests(unittest.TestCase):
             validate_profile(profile)
 
     def test_actual_sidebar_execute_entry_shares_only_readonly_source_leases(self):
-        base,rt=fixture(self);center=rt.session_center
+        base,rt=fixture(self, admission=True);center=rt.session_center
         for permission in ('read','workspace-write'):
             with self.subTest(permission=permission):
                 value=center.prepare(dict(workspace=base.project['id'],handle='new',profile='default-codex',
@@ -217,21 +217,21 @@ class IndependentCounterexampleTests(unittest.TestCase):
                 self.assertEqual(observed,[permission=='read'])
 
     def test_finished_run_controls_do_not_rewrite_historical_state(self):
-        base,rt=fixture(self);rt.flow.put('run','closed',dict(id='closed',state='COMPLETED'))
+        base,rt=fixture(self, admission=True);rt.flow.put('run','closed',dict(id='closed',state='COMPLETED'))
         before=rt.flow.get('run','closed')
         for action in ('pause','stop','resume'):
             with self.assertRaises(Conflict):rt.control('closed',action)
         self.assertEqual(rt.flow.get('run','closed'),before)
 
     def test_discovered_but_unapproved_model_is_not_an_executable_choice(self):
-        base,rt=fixture(self)
+        base,rt=fixture(self, admission=True)
         rt.flow.put('model-catalog','codex',{'id':'codex','models':[dict(id='unapproved-native-model',efforts=['high'])]})
         cap=next(c for c in WorkbenchSessions(rt).capabilities() if c['provider']=='codex')
         model=next(m for m in cap['models'] if m['id']=='unapproved-native-model')
         self.assertFalse(model.get('execution_allowed',True))
 
     def test_selected_branch_merge_waits_for_all_terminal_states_and_runs_downstream_once(self):
-        base,rt=fixture(self)
+        base,rt=fixture(self, admission=True)
         for selected in (True,False):
             with self.subTest(selected=selected),tempfile.TemporaryDirectory() as folder:
                 graph=examples(rt.operator['profiles'])[1]

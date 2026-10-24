@@ -7,5 +7,5 @@ export function useCloseView(layers){
   if(active&&!old.get(key))openers.current.set(key,document.activeElement);
   if(!active&&old.get(key)){const target=openers.current.get(key);requestAnimationFrame(()=>{if(target?.isConnected)target.focus()});openers.current.delete(key)}
  }previous.current=new Map(layers.map(([key,active])=>[key,active]));});
- useEffect(()=>{const handler=e=>{if(e.key!=='Escape')return;const layer=[...current.current].reverse().find(x=>x[1]);if(!layer)return;e.preventDefault();e.stopImmediatePropagation();layer[2]()};window.addEventListener('keydown',handler,true);return()=>window.removeEventListener('keydown',handler,true)},[]);
+ useEffect(()=>{const handler=e=>{if(e.key!=='Escape'||e.target?.closest?.('[data-local-escape]'))return;const layer=[...current.current].reverse().find(x=>x[1]);if(!layer)return;e.preventDefault();e.stopImmediatePropagation();layer[2]()};window.addEventListener('keydown',handler,true);return()=>window.removeEventListener('keydown',handler,true)},[]);
 }

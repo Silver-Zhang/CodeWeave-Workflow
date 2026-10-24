@@ -12,7 +12,7 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--chromium',required=True);p.add_argument('--artifacts',required=True);p.add_argument('--node',default='node');p.add_argument('--playwright-module',default='playwright');a=p.parse_args()
     root=Path(__file__).resolve().parents[1];out=Path(a.artifacts).resolve()
     if out.is_relative_to(root) or root.is_relative_to(out):p.error('Artifacts must stay outside source')
-    out.mkdir(parents=True,mode=0o700);owner=unittest.TestCase();base,rt=fixture(owner);workspace=base.project['id']
+    out.mkdir(parents=True,mode=0o700);owner=unittest.TestCase();base,rt=fixture(owner, admission=True);workspace=base.project['id']
     for label in ('A','B'):
         graph=examples(rt.operator['profiles'])[0];graph['name']='运行 '+label
         graph['budget']={'calls':10 if label=='A' else 12,'seconds':600 if label=='A' else 900}

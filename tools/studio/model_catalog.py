@@ -126,7 +126,8 @@ class ModelCatalog:
                 self.db.put('auth-probe',key,dict(id=key,at=now,**auth))
             except (Blocked,OSError,ValueError,KeyError):
                 self.db.put('auth-probe',key,dict(id=key,at=now,logged_in=None,auth_method='unknown',service_verified=False))
-        rows = cached.get('models') if cached else None
+        native_rows = cached.get('models') if cached else None
+        rows = native_rows
         source = cached.get('source') if cached else None
         at = cached.get('at') if cached else None
         if rows is None:
@@ -139,20 +140,28 @@ class ModelCatalog:
                 source = '预登记配置（不是完整模型列表）'
         approved = {m['id']: m.get('efforts', []) for m in self.rt.policy.get('models', {}).get(profile['provider'], [])}
         approved.setdefault(profile['model'], [profile['effort']])
-        # Always retain the explicit default, even when a gateway omits aliases.
+        # Registration remains visible, without inventing a discovery row or
+        # promoting a configured effort to native capability evidence.
         rows = list(rows)
-        if not any(m['id'] == profile['model'] for m in rows):
-            rows.append(dict(id=profile['model'], name=profile['model'], efforts=[profile['effort']],
-                             source='explicit operator registration', effort_source='explicit operator registration'))
+        for model, efforts in approved.items():
+            if not any(m['id'] == model for m in rows):
+                rows.append(dict(id=model, name=model, efforts=efforts,
+                                 source='explicit operator registration', effort_source='explicit operator registration'))
+        fresh = at is not None and 0 <= now-at <= TTL and not error
+        native_ids = {m['id'] for m in native_rows or []}
         models = []
         for m in rows:
-            efforts = [e for e in m.get('efforts', []) if e in approved.get(m['id'], [])]
-            if m['id'] == profile['model'] and profile['effort'] not in efforts: efforts.append(profile['effort'])
-            models.append(dict(m, efforts=efforts, execution_allowed=bool(efforts),
+            registered = m['id'] in approved
+            native = m['id'] in native_ids
+            models.append(dict(m, efforts=approved.get(m['id'], []),
+                native_efforts=list(m.get('efforts', [])) if native else [],
+                operator_registered=registered, discovered=native, discovery_current=bool(native and fresh),
+                execution_state='unverified' if registered else 'not-authorized',
+                execution_allowed=False, verification_scope='select exact configuration to verify',
                 inference_verified=False, physical_backend='unknown', resolved_effort='unknown',
-                unavailable_reason=None if efforts else '已发现；尚未登记可执行模型/强度，目录不是执行授权'))
+                unavailable_reason='已登记，执行能力待验证' if registered else '已发现但未获执行授权'))
         try:auth=self.db.get('auth-probe',key)
         except Invalid:auth=dict(logged_in=None,auth_method='unknown',service_verified=False)
         return dict(models=models, authentication=auth, source=source, updated_at=at, attempted_at=cached.get('attempted_at') if cached else None,
-                    stale=at is None or now-at>TTL or bool(error), error=error, ttl_seconds=TTL,
-                    discovery_complete=at is not None and now-at<=TTL and not error, physical_backend='unknown')
+                    stale=not fresh, error=error, ttl_seconds=TTL,
+                    discovery_complete=bool(fresh), physical_backend='unknown')

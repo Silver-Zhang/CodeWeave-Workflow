@@ -73,7 +73,7 @@ class WorkbenchRuntime(SessionRuntime):
         try: return Path(identity(cwd)['common_dir']) / 'devflower-writer.lock'
         except Blocked: return self.storage / ('source-' + digest(cwd.encode()) + '.lock')
 
-    def node_binding(self, workspace, node):
+    def node_binding(self, workspace, node, *, admission=True):
         project = self.session_center.workspace(workspace)
         if not any(Path(project['path']).is_relative_to(x) for x in self.operator['allowed_roots']): raise Blocked('工作区未获执行授权')
         profile = self.operator['profiles'].get(node.get('profile'))
@@ -116,7 +116,11 @@ class WorkbenchRuntime(SessionRuntime):
             raise Invalid('Codex当前由原生工具集和强制工作区隔离控制，不能承诺逐工具过滤')
         binding.update(model=model, effort=effort, role='implementer' if write else 'reviewer',
             responsibility=node.get('responsibility') or node.get('role', '通用 Agent'), tools=['native'] if profile['provider'] == 'codex' else tools,
-            timeout_seconds=node.get('timeout', 300))
+            timeout_seconds=node.get('timeout', 300), execution_mode=node.get('mode','Ask'),
+            admission_policy=self.policy_sha, admission_policy_file=str(self.policy_file))
+        if admission:
+            from .model_admission import ModelAdmission
+            ModelAdmission(self).require(binding, cwd)
         contexts=[]
         if node.get('context_from'):
             limit=node.get('context_limit',10)
@@ -221,6 +225,9 @@ class WorkbenchRuntime(SessionRuntime):
             raise Blocked('授权不属于此工作台候选')
         project=self.session_center.workspace(value['workspace'])
         if tree_hash(project['path'])!=value['source_sha256']: raise Conflict('工作区在预览后发生变化，请重新确认')
+        from .model_admission import ModelAdmission
+        for selected in value['bindings'].values():
+            ModelAdmission(self).require(selected['binding'], selected['cwd'])
         run=secrets.token_hex(16);row=dict(value,id=run,run=run,state='QUEUED',calls=0,paused=False,cancel_requested=False,
                                         created_at=time.time(),authorization=receipt)
         with self.flow.tx() as db:

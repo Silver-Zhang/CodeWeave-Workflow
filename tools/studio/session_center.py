@@ -151,7 +151,7 @@ class SessionCenter:
                 coverage=coverage, nested_coverage=nested, profile_coverage=profile_coverage,
                 unsupported=['copilot'], scanned_at=time.time()),
             capabilities={p: capabilities(p) for p in ('codex', 'claude', 'copilot')},
-            operations=[self.operation(x['id'], workspace) for x in self.db.listing('session-operation', filters={'workspace': workspace})])
+            operations=[self.operation(x['id'], workspace) for x in self.db.listing('session-operation', filters={'workspace': workspace}) if not x.get('diagnostic')])
 
     def _binding(self, handle, project, owned=None):
         p, native = handle['profile'], handle['native']
@@ -243,10 +243,10 @@ class SessionCenter:
         if not isinstance(request['prompt'], str) or not request['prompt'].strip() or len(request['prompt']) > 60000:
             raise Invalid('A bounded nonempty user message is required')
         selected=None
-        if hasattr(self.runtime,'node_binding') and any(k in request for k in ('model','effort','mode')):
+        if hasattr(self.runtime,'node_binding'):
             profile=self.runtime.operator['profiles'].get(request['profile'])
             if not profile:raise Invalid('请选择已登记的执行配置')
-            selected=self.runtime.node_binding(project['id'],dict(profile=request['profile'],provider=profile['provider'],session=request['handle'],model=request.get('model',profile['model']),effort=request.get('effort',profile['effort']),mode=request.get('mode','Ask'),permission=request['permission']))
+            selected=self.runtime.node_binding(project['id'],dict(profile=request['profile'],provider=profile['provider'],session=request['handle'],model=request.get('model',profile['model']),effort=request.get('effort',profile['effort']),mode=request.get('mode','Agent' if request['permission']=='workspace-write' else 'Ask'),permission=request['permission']))
         handle, native_sha, cwd = request['handle'], None, project['path']
         if handle == 'new':
             p = self.runtime.operator['profiles'].get(request['profile'])
@@ -325,6 +325,9 @@ class SessionCenter:
                 raise Conflict('Native session changed after preview')
         with opened(value['cwd'], directory=True):
             pass
+        if value['binding'].get('admission_policy'):
+            from .model_admission import ModelAdmission
+            ModelAdmission(self.runtime).require(value['binding'], value['cwd'])
 
     def operation(self, key, workspace):
         self.runtime.check_operator()
@@ -377,10 +380,16 @@ class SessionCenter:
                 schema = artifacts / 'reply.schema.json'
                 schema.write_bytes(canonical(REPLY_SCHEMA))
                 limits = dict(step_timeout_seconds=b.get('timeout_seconds', 1800), max_log_bytes=8_000_000)
+                verification=None
+                if b.get('admission_policy'):
+                    from .model_admission import ModelAdmission
+                    verification=ModelAdmission(self.runtime).require(b,value['cwd'])
                 reply = CLI(b['provider'], b, limits).start(value['prompt'] +
                     '\nReturn a JSON object with your visible answer in the string field reply.',
                     value['cwd'], artifacts, schema, journal, key)
                 validate(reply['report'], REPLY_SCHEMA)
+                if verification:
+                    ModelAdmission(self.runtime).renew(b,value['cwd'],reply,verification)
                 # Pin receipt to the actual UUID, requested environment and process.
                 summary = {k: reply.get(k) for k in ('session_id', 'requested_model', 'requested_effort',
                     'resolved_model', 'resolved_effort', 'permission_mode', 'process', 'usage')}
@@ -388,6 +397,9 @@ class SessionCenter:
                 self.db.update('session-operation', key, dict(state='CANCELLED' if journal.get(key)['data']['cancel_requested'] else 'COMPLETED',
                     receipt=summary, reply=safe_text(reply['report'].get('reply', ''))))
         except (Blocked, Conflict, Invalid, OSError, ValueError) as exc:
+            if value['binding'].get('admission_policy'):
+                from .model_admission import ModelAdmission
+                ModelAdmission(self.runtime).invalidate(value['binding'], value['cwd'])
             cancelled = journal.get(key)['data']['cancel_requested']
             self.db.update('session-operation', key, dict(state='CANCELLED' if cancelled else 'FAILED',
                 reason=safe_text(str(exc))))
@@ -412,6 +424,8 @@ class SessionJournal:
         if not isinstance(sid, str) or not UUID.fullmatch(sid):
             raise Blocked('Native journal returned an invalid exact UUID')
         row = self.db.get('session-operation', self.operation)
+        if row.get('diagnostic'):
+            return
         binding = dict(row['binding'], session_id=sid)
         self.db.put('chat-profile', digest(binding['home'].encode()),
                     dict(workspace=row['workspace'], binding=binding))

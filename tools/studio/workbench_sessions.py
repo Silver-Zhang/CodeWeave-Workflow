@@ -436,15 +436,8 @@ class WorkbenchSessions:
                 try:cli=self.db.get('cli-probe',name)
                 except Invalid:cli={'available':Path(profile['executable']).is_file(),'status':'registered; native capability refresh not yet performed'}
             catalog=ModelCatalog(self).get(name,profile,refresh)
-            successes=[]
-            for activation in self.db.list('activation'):
-                if activation.get('provider')!=profile['provider'] or not activation.get('receipt') or activation.get('state')!='COMPLETED':continue
-                try:bound=self.db.get('node-session',activation.get('chat_key',''))['binding']
-                except (Invalid,KeyError):continue
-                if bound.get('runtime_profile')==name and all(bound.get(k)==profile.get(k) for k in ('provider','executable','readonly_files','read_paths')):successes.append(activation)
-            for m in catalog['models']:m['inference_verified']=any(a.get('model')==m['id'] for a in successes)
             result.append(dict(id=name,provider=profile['provider'],available=cli['available'],cli=cli,**catalog,
-                inference_verified=bool(successes),modes=['Ask','Plan','Agent'],skills=[],subagents=False,
+                inference_verified=False,verification_scope='exact selection; use model-admission/status',modes=['Ask','Plan','Agent'],skills=[],subagents=False,
                 model=profile['model'],effort=profile['effort'],resolved_effort='unknown'))
         if selected is not None and not result:raise Invalid('请选择已登记的 Provider 配置')
         if selected is None:

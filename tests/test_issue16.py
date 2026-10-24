@@ -13,18 +13,18 @@ from orchestration.common import Blocked
 
 class CatalogTests(unittest.TestCase):
  def setUp(self):
-  self.base,self.rt=fixture(self);self.manager=WorkbenchSessions(self.rt);self.cat=ModelCatalog(self.manager);self.profile=self.rt.operator['profiles']['default-codex']
+  self.base,self.rt=fixture(self, admission=True);self.manager=WorkbenchSessions(self.rt);self.cat=ModelCatalog(self.manager);self.profile=self.rt.operator['profiles']['default-codex']
  def test_native_catalog_pagination_and_effort(self):
   with patch.object(self.manager,'rpc',side_effect=[{'data':[{'model':self.profile['model'],'supportedReasoningEfforts':[{'reasoningEffort':self.profile['effort']}]}],'nextCursor':'two'},{'data':[{'model':'new-unapproved','supportedReasoningEfforts':[{'reasoningEffort':'high'}]}]},{'account':{'type':'apiKey'}}]) as rpc:
    value=self.cat.get('default-codex',self.profile,True)
-  self.assertFalse(value['stale']);self.assertEqual(rpc.call_count,3);self.assertTrue(value['models'][0]['execution_allowed']);self.assertFalse(value['models'][1]['execution_allowed'])
+  self.assertFalse(value['stale']);self.assertEqual(rpc.call_count,3);self.assertFalse(value['models'][0]['execution_allowed']);self.assertTrue(value['models'][0]['discovered']);self.assertTrue(value['models'][0]['operator_registered']);self.assertFalse(value['models'][1]['execution_allowed'])
  def test_failure_never_claims_preregistered_as_complete(self):
   with patch.object(self.manager,'rpc',side_effect=Blocked('native failed')):value=self.cat.get('default-codex',self.profile,True)
   self.assertTrue(value['stale']);self.assertFalse(value['discovery_complete']);self.assertIn('native failed',value['error']);self.assertIn('不是完整',value['source'])
  def test_refresh_failure_keeps_last_good_marked_stale(self):
   with patch.object(self.manager,'rpc',return_value={'data':[{'model':self.profile['model']}]}):first=self.cat.get('default-codex',self.profile,True)
   with patch.object(self.manager,'rpc',side_effect=Blocked('offline')):second=self.cat.get('default-codex',self.profile,True)
-  self.assertEqual(first['updated_at'],second['updated_at']);self.assertTrue(second['stale']);self.assertEqual(first['models'],second['models'])
+  self.assertEqual(first['updated_at'],second['updated_at']);self.assertTrue(second['stale']);self.assertEqual([m['id'] for m in first['models']],[m['id'] for m in second['models']]);self.assertFalse(second['models'][0]['discovery_current'])
  def test_invalid_proxy_envelope_preserves_last_good_catalog(self):
   profile=dict(self.profile,provider='claude')
   response=MagicMock()
@@ -36,7 +36,7 @@ class CatalogTests(unittest.TestCase):
     with self.subTest(envelope=invalid):
      response.__enter__.return_value.read.return_value=json.dumps(invalid).encode()
      value=self.cat.get('proxy',profile,True)
-     self.assertEqual(value['updated_at'],first['updated_at']);self.assertEqual(value['models'],first['models'])
+     self.assertEqual(value['updated_at'],first['updated_at']);self.assertEqual([m['id'] for m in value['models']],[m['id'] for m in first['models']]);self.assertFalse(value['models'][0]['execution_allowed'])
      self.assertTrue(value['stale']);self.assertFalse(value['discovery_complete']);self.assertIn('无效响应格式',value['error'])
  def test_expired_cache_does_not_become_live(self):
   with patch.object(self.manager,'rpc',return_value={'data':[{'model':self.profile['model']}]}):value=self.cat.get('default-codex',self.profile,True)
@@ -152,7 +152,7 @@ class RouterSchedulingTests(unittest.TestCase):
   graph=self.graph();graph['edges'][1]['route']='unapproved'
   with self.assertRaises(Invalid):validate_graph(graph)
  def test_unselected_target_permissions_still_validated(self):
-  base,rt=fixture(self);graph=self.graph();graph['nodes'][2].update(profile='missing',provider='codex')
+  base,rt=fixture(self, admission=True);graph=self.graph();graph['nodes'][2].update(profile='missing',provider='codex')
   with self.assertRaises(Invalid):rt.prepare_flow(dict(workspace=base.project['id'],graph=graph,task='route must not grant permission'))
  def test_payload_hash_and_target_identity_bound(self):
   from orchestration.common import canonical,digest
@@ -172,7 +172,7 @@ class ConditionMissingTests(unittest.TestCase):
  def test_native_invalid_output_contract_has_no_recoverable_completion(self):
   from studio.workbench_examples import examples
   from studio.workbench_scheduler import Scheduler
-  base,rt=fixture(self);graph=examples(rt.operator['profiles'])[0];node=graph['nodes'][1];node['output_contract']=[dict(field='result.required',type='number',required=True)];run=dict(id='contract-fail',workspace=base.project['id'],graph=graph,created_at=time.time(),calls=0);rt.flow.put('run',run['id'],run);scheduler=Scheduler(rt,run['id']);activation=scheduler.activation(node,'',0,[])
+  base,rt=fixture(self, admission=True);graph=examples(rt.operator['profiles'])[0];node=graph['nodes'][1];node['output_contract']=[dict(field='result.required',type='number',required=True)];run=dict(id='contract-fail',workspace=base.project['id'],graph=graph,created_at=time.time(),calls=0);rt.flow.put('run',run['id'],run);scheduler=Scheduler(rt,run['id']);activation=scheduler.activation(node,'',0,[])
   report=dict(reply='answer',summary='summary',accepted=False,result_json='{}',artifacts=[],evidence=[],issues=[],next='')
   with patch('studio.workbench_scheduler.CLI.start',return_value=dict(report=report,session_id='synthetic-session',process=dict(exit=0))):
    with self.assertRaises(Invalid):scheduler.native_turn(node,activation['id'],[],'',0)
