@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "20261024_04_model-admission-fix",
+  "date": "2026-10-24",
+  "mode": "B",
+  "status": "阻塞",
+  "source_refs": [
+    {
+      "repo": "Silver-Zhang/DevFlower",
+      "branch": "flow/model-session-routing",
+      "base": "a3b22f37e7e23f11fbc23d9e613e1662d91a17ec",
+      "head": "4ebfcd169b60e203b61d6ce7d32a0f624027c50e",
+      "issue": 16,
+      "pr": 17,
+      "candidate_sha": "7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210",
+      "git_tree": "2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79"
+    }
+  ]
+}

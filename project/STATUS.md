@@ -1,11 +1,11 @@
 # 当前状态
 
-PR15/PR17 最终集成任务 `20261024_03_pr15-pr17-final-integration`，run `7120c8604d44468eb353931ac0cbb384`，最终阻塞。旧Issue16任务、负面裁决和历史证据保留。
+当前任务 `20261024_04_model-admission-fix`，run77f822033450473d8b1040ab620ef4f3，正式验收阻塞；先读本任务README/validation.json。旧任务03及五轮负面记录保持不变。
 
-PR15 546cba4/tree c0b0127/CF302125c7：478 Python、6host、142browser、18JS全0；真实顺序/汇合5回合；新R4硬ACCEPT，固定旧Stable Gate ACCEPT。
+PR17已推送 `4ebfcd169b60e203b61d6ce7d32a0f624027c50e` / tree `2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79` / CF `7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210`，175文件。模型发现、登记与精确配置原生执行验证分离；修复并发撤销被迟到验证覆盖的独立反例。
 
-PR17 a3b22f3/tree6c87314/CF0d1869aa：517 Python、6host、161browser、20JS全0；同候选21真实工作流回合、2新会话、两个CLI恢复/双写拒绝/关闭/停止/刷新验证完成。新R5最终NEEDS_CORRECTION：唯一必需OPEN P1 I16-A-MODEL-ADMISSION，新鲜目录缺失默认模型仍被准入。独立反例复现1项FAIL；固定Gate BLOCKED/exit2。
+最终同版本547 Python、6host、165browser、20JS全0，baseline/语法/重建通过；30项合成准入负例单列。真实Codex/Claude诊断成功，真实顺序流程Claude300秒超时、FAILED并撤销准入，汇合未继续，不复用旧候选成功。恢复预算2次用尽。
 
-5轮源码审核、2次基础设施恢复、2次健康探测全部用尽，禁止隐式第六轮。两PR CI绿色仍Draft，PR17依赖PR15；不合并main、不晋升Stable。下一任务需修复模型准入并重新授权审核，不借PR15 ACCEPT替PR17。
+新R1原始NEEDS_CORRECTION：旧I16-A P1 CLOSED，新增MA-05竞态OPEN，已在后续候选修复；R1固定旧Gate真实exit2/BLOCKED。R2原始BLOCKED：两个P1均CLOSED，I16-A和MA01–08 PASS，真实流程MA09/最终关口MA10 BLOCKED；固定旧Gate真实exit2/BLOCKED，Native Codex完成检查也BLOCKED。PR15/17保持Draft，不合并main、不晋升Stable。PR15旧硬ACCEPT不套用于PR17。
 
-干净main已fetch/pull --ff-only，与远端e35dec1/tree a0c16fa一致。入口 `python3 /home/workspace/DevFlower/.local/open-pr15-pr17-workbench.py` 已验证，仍为Development。原有工作树/Stable5816/认证/会话未覆盖，日志/截图/视频/HOME只在archives/devflower-pr15-pr17-final-20261024。用户本人UX未验收。
+Development入口 `python3 /home/workspace/DevFlower/.local/open-model-admission-workbench.py` 已验证；Stable5816及所有原生会话/认证/旧worktree未覆盖。原始证据仅archives/devflower-model-admission-20261024，用户本人UX未验收。
