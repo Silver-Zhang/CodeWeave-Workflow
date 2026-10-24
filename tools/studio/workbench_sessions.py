@@ -191,8 +191,7 @@ class WorkbenchSessions:
             if bound:
                 exact = next((name for name, profile in self.rt.operator['profiles'].items() if
                     all(bound.get(k) == profile.get(k) for k in
-                        ('provider', 'executable', 'read_paths', 'readonly_files')) and
-                    (name==bound.get('runtime_profile') or (bound.get('model'),bound.get('effort'))==(profile['model'],profile['effort']))), None)
+                        ('provider', 'executable', 'model', 'effort', 'read_paths', 'readonly_files'))), None)
                 named['execution'] = dict(profile=exact, provider=bound['provider'],
                                           model=bound['model'], effort=bound['effort'])
             if not query or query.casefold() in (title+' '+row['provider']).casefold():result.append(named)
@@ -306,7 +305,7 @@ class WorkbenchSessions:
                         from .tool_activity import visible_content
                         value=redact(v,secrets)
                         # JSON/text-block decoding may reveal escaped secrets.
-                        text=safe_text(redact(visible_content(value['content']),secrets))
+                        text=safe_text(redact(visible_content(value['content'],protocol=v['kind'] in ('tool_result','function_call_output','custom_tool_call_output')),secrets))
                         activity.append(dict(value,content=safe_text(text[:4000]),truncated=len(text)>4000))
                     if len(activity)>100:activity_omitted=True
                     activity=activity[-100:]
@@ -407,47 +406,42 @@ class WorkbenchSessions:
         for key,value in dict(operator=str(self.rt.operator_file),operator_sha256=self.rt.operator_sha256,candidate_sha256=self.rt.candidate_sha256,policy=str(self.rt.policy_file),policy_sha256=self.rt.policy_sha,workspace=workspace,handle=handle).items():command+=['--'+key.replace('_','-'),value]
         return dict(command=shlex.join(command),cwd=row['native']['cwd'],mode='只读原生终端；启动前重新核验原环境和占用，退出后释放同一 HOME 锁',attached=False)
 
-    _catalog_locks={}
-
-    def capabilities(self,refresh=False,selected=None):
-        if not refresh:return self._capabilities(False,selected)
-        if selected is None:
-            rows=[self.capabilities(True,name)[0] for name in self.rt.operator['profiles']]
-            return rows+[dict(id='copilot',provider='copilot',available=False,reason='认证、原生会话与隔离能力尚未验证')]
-        if selected not in self.rt.operator['profiles']:raise Invalid('请选择已登记的 Provider 配置')
-        import threading
-        lock=self._catalog_locks.setdefault((str(self.rt.storage),selected),threading.Lock())
-        if not lock.acquire(blocking=False):
-            return [dict(self._capabilities(False,selected)[0],refresh_pending=True)]
-        try:return self._capabilities(True,selected)
-        finally:lock.release()
-
-    def _capabilities(self,refresh=False,selected=None):
-        from .model_catalog import ModelCatalog
+    def capabilities(self,refresh=False):
         result=[]
         for name,profile in self.rt.operator['profiles'].items():
-            if selected is not None and selected!=name:continue
+            rows=self.rt.policy.get('models',{}).get(profile['provider'],[])
+            error=None;source='explicit operator registration'
             if refresh:
-                try:cli=self.rpc(dict(profile,home=str(self.rt.rpc_home/name)),str(self.rt.storage),'cli/probe',{'provider':profile['provider']})
-                except (Blocked,OSError,ValueError):cli={'available':False,'machine_output':False,'version':'unknown','reason':'原生接口探测未完成，请检查已登记工具路径后刷新'}
+                from orchestration.adapters import probe
+                cli=probe(profile['executable'],profile['provider'])
                 cli.update(id=name,at=time.time(),executable_sha256=digest(Path(profile['executable']).resolve().read_bytes()))
                 self.db.put('cli-probe',name,cli)
             else:
                 try:cli=self.db.get('cli-probe',name)
                 except Invalid:cli={'available':Path(profile['executable']).is_file(),'status':'registered; native capability refresh not yet performed'}
-            catalog=ModelCatalog(self).get(name,profile,refresh)
-            successes=[]
-            for activation in self.db.list('activation'):
-                if activation.get('provider')!=profile['provider'] or not activation.get('receipt') or activation.get('state')!='COMPLETED':continue
-                try:bound=self.db.get('node-session',activation.get('chat_key',''))['binding']
-                except (Invalid,KeyError):continue
-                if bound.get('runtime_profile')==name and all(bound.get(k)==profile.get(k) for k in ('provider','executable','readonly_files','read_paths')):successes.append(activation)
-            for m in catalog['models']:m['inference_verified']=any(a.get('model')==m['id'] for a in successes)
-            result.append(dict(id=name,provider=profile['provider'],available=cli['available'],cli=cli,**catalog,
-                inference_verified=bool(successes),modes=['Ask','Plan','Agent'],skills=[],subagents=False,
+            if profile['provider']=='codex' and refresh:
+                try:
+                    binding=dict(profile,home=str(self.rt.rpc_home))
+                    catalog=self.rpc(binding,str(self.rt.storage),'model/list',{'limit':100})
+                    rows=[{'id':r['model'],'name':r.get('displayName',r['model']),
+                           'efforts':[e['reasoningEffort'] for e in r.get('supportedReasoningEfforts',[])],
+                           'source':'native model/list','inference_verified':False} for r in catalog.get('data',[])]
+                    self.db.put('model-catalog',profile['provider'],{'id':profile['provider'],'models':rows,'at':time.time()})
+                    source='native model/list'
+                except (Blocked,OSError,ValueError) as exc:error=safe_text(str(exc))
+            else:
+                try:rows=self.db.get('model-catalog',profile['provider'])['models'];source='native model/list (cached catalog)'
+                except Invalid:pass
+            successes=[a for a in self.db.list('activation') if a.get('provider')==profile['provider'] and a.get('receipt') and a.get('state')=='COMPLETED']
+            approved = {m['id']: m.get('efforts', []) for m in self.rt.policy.get('models', {}).get(profile['provider'], [])}
+            approved.setdefault(profile['model'], [profile['effort']])
+            rows=[dict(m, execution_allowed=m['id'] in approved,
+                       efforts=[e for e in m.get('efforts', []) if e in approved.get(m['id'], [])],
+                       inference_verified=any(a.get('model')==m['id'] for a in successes)) for m in rows]
+            result.append(dict(id=name,provider=profile['provider'],available=cli['available'],cli=cli,models=rows,source=source,error=error,inference_verified=bool(successes),
+                modes=['Ask','Plan','Agent'],skills=[],subagents=False,
+                authentication='local credential overlay configured; service access requires an actual turn',
                 model=profile['model'],effort=profile['effort'],resolved_effort='unknown'))
-        if selected is not None and not result:raise Invalid('请选择已登记的 Provider 配置')
-        if selected is None:
-            result.append(dict(id='copilot',provider='copilot',available=False,installed=bool(__import__('shutil').which('copilot')),
-                reason='认证、模型发现与隔离执行尚未验证，不能作为可执行节点'))
+        result.append(dict(id='copilot',provider='copilot',available=False,installed=bool(__import__('shutil').which('copilot')),
+            reason='已检查本机 CLI；认证、模型发现与隔离执行尚未验证，不能作为可执行节点'))
         return result
