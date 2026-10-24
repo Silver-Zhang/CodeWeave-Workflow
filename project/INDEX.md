@@ -4,6 +4,7 @@
 
 | 日期 | 任务 | 模式 | 状态 |
 |---|---|---|---|
+| 2026-10-24 | [20261024_02_issue16-model-session-routing](tasks/2026-10/20261024_02_issue16-model-session-routing/README.md) | B | 阻塞 |
 | 2026-10-24 | [20261024_01_issue14-ux-polish](tasks/2026-10/20261024_01_issue14-ux-polish/README.md) | B | 待复核 |
 | 2026-10-23 | [20261023_02_pr13-final-integration](tasks/2026-10/20261023_02_pr13-final-integration/README.md) | B | 已完成 |
 | 2026-10-23 | [20261023_01_issue12-workbench](tasks/2026-10/20261023_01_issue12-workbench/README.md) | B | 阻塞 |

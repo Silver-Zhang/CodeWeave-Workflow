@@ -1,15 +1,11 @@
-# Issue14 交付接续
+# Issue16 接续
 
-任务20261024_01_issue14-ux-polish，合同cf63c4ee5ef1ecf4a3682cafffa958d90935a6909ace04e9604897ae950ffa85，run7e6325c995dc44ac959596695a13a041。用户本轮只允许增量PR，不合并main/不升级Stable；用户本人UX待确认。
+任务20261024_02_issue16-model-session-routing，run396d0ad7c4644a26bb6c70812dc3ef39；完整合同见本机archives/devflower-issue16-20261024/contract.json（含Sim F）。源码development/issue16-experience，flow/model-session-routing，HEAD 89203371f2457bca54998e041de4c9f1c4ea804d，tree fa31992832bdfb047e9fcf393313babee681e2e6，163文件SHA256 767cb7fc599473f1715d9c903e7d2e6aa9089658063c731709ee7054ef5d4560。PR17 Draft依赖PR15；main e35dec1，Stable5816不可覆盖。
 
-最新154文件候选164a0cd29d338e0bc9257a8bc7f3eb292befcc7305f10792831c921eb8b032b9/tree1797893a1eca77744c59e6b4e86e96c275f689e3。源码development/issue14-ux，flow/workbench-ux-polish，已正常提交/推送cdc53cd0e04ee1e980b229686725a148bf2f432e，远端身份读回一致；PR15 Draft https://github.com/Silver-Zhang/DevFlower/pull/15，studio/contracts/chromium三项CI均SUCCESS。main仍e35dec1，所有原worktree/Stable/会话保护。
+505Python/6host/151browser/18JS等最终回归全部0，证据regression/candidate-9。真实ae81候选四场景通过仅历史；最终同候选完整Codex/Claude场景尚未通过。R1原始NEEDS_CORRECTION保留，修复/补证待独立关闭；R2真实402无裁决；固定Gate最终BLOCKED，没有正向放行。不得改写旧失败/冒充硬ACCEPT。
 
-archives/devflower-issue14-20261024：snapshot10完整候选；regression/candidate10通过473Python、6host、142browser/HTTP、18JS，baseline/6syntax/byte-identical重建均0，无fail/error/skip。native/sequence run8f784b29b4fd2facdd1b006d92739f9b两次、native/merge run48b6934b3c6288f015b66141bb1c4c26三次真实调用，5原生身份/HOME/cwd/原件hash及输入hash核对通过。
+先核验是否余额恢复，再跑当前候选真实模型流程并冻结新证据；最多5轮源码尝试，本任务已R1/R2，最多剩3轮。基础设施安全重试最多2次，不反复重试明确402。Claude深度deepseek-flash[1m]/high，物理后端/生效effort unknown；Codex gpt-6.1-sol/xhigh。不换模型或复制全局认证。
 
-正式审核仅2/5轮：r1原始NEEDS_CORRECTION保留，工具ID/时间P1；r2原始硬ACCEPT、8PASS、P1 CLOSED，P3 HANDOFF-ATTEMPT NOT_REPRODUCED。SID55c5da7d-dbf1-4ba6-859c-e20a518e160e，HOME runtime/r1，cwd /home/workspace/DevFlower，原生记录HOME/.claude/projects/-home-workspace-DevFlower/<SID>.jsonl。请求/CLI回报deepseek-flash[1m]，请求high，实际后端/生效effort unknown。固定外部review.py以--resume-from r1恢复，不是--last；原局限/负面原样保留。
+明确Claude SID19e82b7a-d457-4b61-b6a3-1dc0dea84d2b，HOME archives/devflower-issue16-20261024/runtime/r1，cwd /home/workspace/DevFlower，原生位置HOME/.claude/projects/-home-workspace-DevFlower/<SID>.jsonl。固定外部监督器helpers/review.py可--resume-from r2 --name r3 --stable-gate-round 3；先重建最终同候选evidence再用，不能--last或让待审Controller自批。
 
-R2沙箱473中470通过、3fail因嵌套命名空间不可用，0errors/skips；外部host全473绿，3份审核者probe原样外部执行均0。非阻断残余：unknown-only/任意dict协议数据保留原样；同ID/内容异工具名不判冲突。不要把这些改写为已修复，不为追求更漂亮报告续开无必要审核。
-
-固定旧Gate5816源码SHA12f0b6aa，gates/r2/receipt.json实际exit0/ACCEPT；原始R2报告hash e6e5a31552e273174e32e463429cb410b980976b5d722447dbbfe28ac875d6e3。未用待审Controller批准自己，无main/Stable权限。
-
-Development入口.local/open-issue14-workbench.py，当前45393/164a0cd2，私有token不输出；旧Stable5816及Development33385不动。必要总结/清单在当前任务README/evidence-summary/candidate-manifest；大日志/截图/原生HOME仅本机。下一步仅研发分支同步收尾与用户体验确认，不自动扩展功能或新审核轮次。
+本机入口python3 /home/workspace/DevFlower/.local/open-issue16-workbench.py。源码允许正常开发PR提交推送，禁止合并main/晋升Stable/force/reset/clean/删除会话；用户个人UX仍待确认。task README为结论入口，evidence.json/manifest/R1原始结构化裁决为必要机器记录，原始大日志/截图/原生HOME只留本地。

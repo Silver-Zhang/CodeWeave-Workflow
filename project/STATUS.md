@@ -1,7 +1,7 @@
 # 当前状态
 
-Issue14 技术自动化验收通过，任务20261024_01_issue14-ux-polish待用户本人体验复核。源码flow/workbench-ux-polish已提交/推送cdc53cd0e04ee1e980b229686725a148bf2f432e，tree1797893a1eca77744c59e6b4e86e96c275f689e3；PR15保持Draft，studio/contracts/chromium三项CI均SUCCESS。
+Issue16 源码已推送 [Draft PR17](https://github.com/Silver-Zhang/DevFlower/pull/17)，依赖仍Draft的PR15，未合并。HEAD 89203371f245，tree fa31992832bd，候选 767cb7fc5994。
 
-473Python、6host、142Chromium/HTTP、18JS全0且无FAIL/ERROR/SKIP；真实5调用同候选通过。正式Claude R1 NEEDS_CORRECTION→修复→R2硬ACCEPT，8合同PASS、P1 CLOSED；固定旧Gate实际exit0/ACCEPT。独审沙箱3项隔离环境失败和两个非阻断工具边界据实保留。
+最终505 Python、6host、151 Chromium/HTTP、18JS、Baseline/语法/重建全0，FAIL/ERROR/SKIP=0。R1 NEEDS_CORRECTION 原件保留，修复/补证待复核；R2原生CLI因HTTP402余额不足退出，无有效独审，最终Gate BLOCKED。最终完整真实双工具场景待通道恢复后重跑，不能复用旧候选成功。
 
-main仍e35dec1，原Stable5816/旧Development33385保留，本轮不合并/晋升。原始日志/截图/原生会话仅本机archives/devflower-issue14-20261024。推荐入口python3 /home/workspace/DevFlower/.local/open-issue14-workbench.py（Development164a0cd2）。
+任务20261024_02_issue16-model-session-routing，状态阻塞。main e35dec1、Stable5816与原页面/会话全部保护；原始日志/截图/HOME只在本机archives/devflower-issue16-20261024。未晋升/未合并。

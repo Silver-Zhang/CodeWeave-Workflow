@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "20261024_02_issue16-model-session-routing",
+  "date": "2026-10-24",
+  "mode": "B",
+  "status": "阻塞",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/model-session-routing",
+      "base": "cdc53cd0e04ee1e980b229686725a148bf2f432e",
+      "head": "89203371f2457bca54998e041de4c9f1c4ea804d",
+      "issue": "https://github.com/Silver-Zhang/DevFlower/issues/16",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/17",
+      "candidate_sha256": "767cb7fc599473f1715d9c903e7d2e6aa9089658063c731709ee7054ef5d4560",
+      "git_tree": "fa31992832bdfb047e9fcf393313babee681e2e6"
+    }
+  ]
+}
