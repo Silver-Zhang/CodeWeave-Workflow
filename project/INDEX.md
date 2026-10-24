@@ -4,6 +4,7 @@
 
 | 日期 | 任务 | 模式 | 状态 |
 |---|---|---|---|
+| 2026-10-24 | [20261024_05_branch-cleanup-guide](tasks/2026-10/20261024_05_branch-cleanup-guide/README.md) | B | 已完成 |
 | 2026-10-24 | [20261024_04_model-admission-fix](tasks/2026-10/20261024_04_model-admission-fix/README.md) | B | 阻塞 |
 | 2026-10-24 | [20261024_03_pr15-pr17-final-integration](tasks/2026-10/20261024_03_pr15-pr17-final-integration/README.md) | B | 阻塞 |
 | 2026-10-24 | [20261024_02_issue16-model-session-routing](tasks/2026-10/20261024_02_issue16-model-session-routing/README.md) | B | 阻塞 |

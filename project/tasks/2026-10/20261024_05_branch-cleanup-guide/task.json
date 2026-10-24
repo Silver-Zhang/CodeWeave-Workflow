@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "20261024_05_branch-cleanup-guide",
+  "date": "2026-10-24",
+  "mode": "B",
+  "status": "已完成",
+  "source_refs": [
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "main",
+      "head": "e35dec13825ecbce39ae4092c3d94a059bc732b8"
+    },
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/model-session-routing",
+      "head": "4ebfcd169b60e203b61d6ce7d32a0f624027c50e",
+      "git_tree": "2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79",
+      "candidate_sha256": "7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/17"
+    },
+    {
+      "repo": "https://github.com/Silver-Zhang/DevFlower",
+      "branch": "flow/workbench-ux-polish",
+      "head": "546cba4ec92390eeef2218e119647485ee358ce1",
+      "pr": "https://github.com/Silver-Zhang/DevFlower/pull/15"
+    }
+  ]
+}

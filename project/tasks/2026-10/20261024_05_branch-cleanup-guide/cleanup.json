@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "task_id": "20261024_05_branch-cleanup-guide",
+  "observed_at": "2026-10-24T14:50:19.105574+00:00",
+  "source_unchanged": {
+    "head": "4ebfcd169b60e203b61d6ce7d32a0f624027c50e",
+    "git_tree": "2e3c444f036e6f2e02bfcddd8301a5f0b1cd8e79",
+    "candidate_sha256": "7b0c0b3bcc95235e02eadb74b71dd5f50d3d9c88da178b4787ff2090d1978210",
+    "files": 175
+  },
+  "main_unchanged": {
+    "head": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+    "git_tree": "a0c16fa6dccf9ad9fd9c7d52cd9495ada4db24d5"
+  },
+  "local_refs_deleted": [
+    {
+      "branch": "flow/agent-workspace-vnext",
+      "sha": "9399476bd34e188f6d0a334da3a82865560e4b17"
+    },
+    {
+      "branch": "flow/final-integration-review11",
+      "sha": "54529b477466dae2db37fec0f3a85fe2c019a4bd"
+    },
+    {
+      "branch": "flow/model-admission-fix",
+      "sha": "30e0af2bd9ea6c2f26ec1dbcbf0ab834d63e7580"
+    },
+    {
+      "branch": "flow/model-session-routing",
+      "sha": "1e019b35a92c7ddeb4f3ef9f02cbfa54c88ba3ff"
+    },
+    {
+      "branch": "flow/pr13-final-integration",
+      "sha": "f57b600f3811a75e80590586d03686fb0fd1fe8e"
+    },
+    {
+      "branch": "flow/pr15-pr17-final-validation",
+      "sha": "a3b22f37e7e23f11fbc23d9e613e1662d91a17ec"
+    },
+    {
+      "branch": "flow/workbench-canvas-stability",
+      "sha": "014b005b97a23ed59730953032cb3f90383e914b"
+    },
+    {
+      "branch": "flow/workbench-productization",
+      "sha": "f57b600f3811a75e80590586d03686fb0fd1fe8e"
+    },
+    {
+      "branch": "flow/workbench-ux-polish",
+      "sha": "cdc53cd0e04ee1e980b229686725a148bf2f432e"
+    }
+  ],
+  "local_final_names": [
+    "main",
+    "flow/model-session-routing",
+    "flow/workbench-ux-polish",
+    "project/devflower"
+  ],
+  "remote_refs_deleted": [
+    "flow/agent-workspace-vnext",
+    "flow/review-handoff",
+    "flow/workbench-canvas-stability",
+    "flow/workbench-productization"
+  ],
+  "remote_retained_readback": {
+    "flow/model-session-routing": "4ebfcd169b60e203b61d6ce7d32a0f624027c50e",
+    "flow/workbench-ux-polish": "546cba4ec92390eeef2218e119647485ee358ce1",
+    "main": "e35dec13825ecbce39ae4092c3d94a059bc732b8",
+    "project/codeweave": "91f765b00fd1b6b0427d460701cfecf131716fba",
+    "project/devflower": "f96981b5d19342713557f2b504c820a80d7cfcc1"
+  },
+  "backup": {
+    "local_directory": "/home/workspace/DevFlower/archives/devflower-branch-cleanup-20261024",
+    "bundle_sha256": "13afc09f1a78ae947596796dfa6d6c0ea0cf4f3e5218792005cc76d117964b10",
+    "bytes": 2426780,
+    "verify_exit": 0,
+    "raw_data_uploaded": false
+  },
+  "worktrees": {
+    "count": 12,
+    "deleted": 0,
+    "all_previous_heads_preserved": true,
+    "all_source_files_unchanged": true,
+    "old_worktrees_detached": 8
+  },
+  "stable": {
+    "source_sha256": "5816ba4776b35d625e163af805d656315a7c638ba4e60e576763b121d86b3821",
+    "promoted": false,
+    "entry_check_exit": 1,
+    "http_status": 400,
+    "reason": "Approved executable or native configuration changed"
+  },
+  "checks": [
+    {
+      "id": "records-structure",
+      "argv": [
+        "python3",
+        "-B",
+        "tools/devflower.py",
+        "check"
+      ],
+      "exit": 0
+    },
+    {
+      "id": "source-baseline",
+      "argv": [
+        "python3",
+        "-B",
+        "tools/devflower.py",
+        "check",
+        "--baseline"
+      ],
+      "exit": 0
+    },
+    {
+      "id": "development-launcher",
+      "argv": [
+        "python3",
+        "/home/workspace/DevFlower/.local/open-model-admission-workbench.py",
+        "--check"
+      ],
+      "exit": 0
+    },
+    {
+      "id": "stable-launcher",
+      "argv": [
+        "python3",
+        "/home/workspace/DevFlower/.local/open-stable.py",
+        "--check"
+      ],
+      "exit": 1
+    },
+    {
+      "id": "bundle-verify",
+      "argv": [
+        "git",
+        "bundle",
+        "verify",
+        "/home/workspace/DevFlower/archives/devflower-branch-cleanup-20261024/branches-before.bundle"
+      ],
+      "exit": 0
+    }
+  ],
+  "new_full_regression_run": false,
+  "new_native_model_call": false,
+  "new_independent_review": false,
+  "merge": {
+    "authorization_received": true,
+    "performed": false,
+    "pr15_state": "OPEN DRAFT",
+    "pr17_state": "OPEN DRAFT",
+    "pr17_ci": "3 SUCCESS",
+    "raw_independent_verdict": "BLOCKED",
+    "gate": "BLOCKED",
+    "gate_exit": 2,
+    "source_p1_findings": "CLOSED",
+    "remaining_contracts": [
+      "MA-09",
+      "MA-10"
+    ],
+    "reason": "final-candidate native sequence Claude timeout at 300s; merge scenario not run; no new passing evidence"
+  },
+  "guide": {
+    "path": "使用指南.md",
+    "sha256": "ee4b51454009c3c645107de4214f76f305124fde8f82f1e37a930ab193a97539"
+  },
+  "traceability": {
+    "project_task_records_retained": true,
+    "runtime_sqlite_retained": true,
+    "native_homes_retained": true,
+    "generic_studio_to_project_git_archive_implemented": false,
+    "current_external_delivery_steps_configured": false
+  },
+  "privacy": {
+    "native_sessions_uploaded": false,
+    "credentials_uploaded": false,
+    "raw_logs_uploaded": false,
+    "screenshots_uploaded": false
+  }
+}
