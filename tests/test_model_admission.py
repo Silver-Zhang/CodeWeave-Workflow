@@ -164,4 +164,14 @@ class AdmissionTests(unittest.TestCase):
   with self.assertRaises(Blocked):self.verify(side_effect=Blocked('Synthetic new native failure'))
   s=self.selected();self.assertFalse(self.gate.status(s['binding'],s['cwd'])['execution_allowed'])
 
+ def test_inflight_verification_cannot_overwrite_concurrent_revocation(self):
+  selected=self.selected()
+  def revoked(cli,*args):
+   self.gate.invalidate(selected['binding'],selected['cwd'],'concurrent-native-call-failed')
+   return self.response(cli,*args)
+  with self.assertRaisesRegex(Blocked,'迟到回执'):
+   self.verify(side_effect=revoked)
+  status=self.gate.status(selected['binding'],selected['cwd'])
+  self.assertFalse(status['execution_allowed']);self.assertEqual(self.rt.db.get('model-admission',status['key'])['state'],'FAILED')
+
 if __name__=='__main__':unittest.main()

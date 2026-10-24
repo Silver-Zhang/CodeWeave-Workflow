@@ -68,7 +68,7 @@ class ModelAdmission:
             raise Blocked('此模型/强度/工作方式和 Profile 尚无有效原生执行验证；请点击“验证执行”并确认。登记和目录发现不等于可执行，配置变化或验证过期需重验')
         return status
 
-    def _publish(self, event, expected_id=None):
+    def _publish(self, event, expected_id=None, expected_state='VERIFIED'):
         # Certificate and check history commit together. A late successful call
         # cannot overwrite a revocation or a newer independently verified check.
         with self.db.lock, self.db.db() as db, db:
@@ -76,7 +76,7 @@ class ModelAdmission:
             if expected_id is not None:
                 row=db.execute("SELECT data FROM objects WHERE kind='model-admission' AND id=?",(event['key'],)).fetchone()
                 previous=json.loads(row[0]) if row else {}
-                if previous.get('id')!=expected_id or previous.get('state')!='VERIFIED':return False
+                if previous.get('id')!=expected_id or previous.get('state')!=expected_state:return False
             for kind,key in [('model-admission-event',event['id']),('model-admission',event['key'])]:
                 db.execute('INSERT OR REPLACE INTO objects VALUES(?,?,?)',(kind,key,canonical(event).decode()))
         return True
@@ -194,7 +194,8 @@ class ModelAdmission:
                  'resolved_effort','process','permission_mode','raw_report_sha256','transport')})
             self.db.put('session-operation', check_id, dict(operation, diagnostic=True, state='COMPLETED',
                 created_at=event['at'], cwd=str(probe_cwd), permission='read', receipt=event['receipt']))
-            self._publish(event)
+            if not self._publish(event, expected_id=check_id, expected_state='STARTING'):
+                raise Blocked('执行验证期间准入已被撤销或更新；迟到回执不能覆盖，请重新确认验证')
             return self.status(binding, cwd)
         except (Blocked, Invalid, OSError, ValueError) as exc:
             self.invalidate(binding, cwd)
